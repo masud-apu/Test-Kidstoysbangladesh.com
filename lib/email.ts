@@ -21,7 +21,7 @@ export async function sendOrderConfirmationEmails(orderData: OrderData) {
   try {
     // Email to customer
     const customerEmailResult = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'no-reply@flexiiai.xyz',
+      from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
       to: customerEmail,
       subject: `অর্ডার নিশ্চিতকরণ - #${orderId}`,
       html: generateCustomerEmailTemplate(customerName, items, totalAmount, orderId),
@@ -29,7 +29,7 @@ export async function sendOrderConfirmationEmails(orderData: OrderData) {
 
     // Email to owner
     const ownerEmailResult = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'no-reply@flexiiai.xyz',
+      from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
       to: 'soyeb.jim@gmail.com',
       subject: `নতুন অর্ডার - #${orderId}`,
       html: generateOwnerEmailTemplate(orderData),
