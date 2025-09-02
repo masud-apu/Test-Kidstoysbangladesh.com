@@ -1,0 +1,35 @@
+name: Auto Update README
+
+on:
+  push:
+    branches:
+      - main   # or your default branch
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Skip if commit is from bot
+        run: |
+          if git log -1 --pretty=%B | grep -q "[auto-readme]"; then
+            echo "Commit from bot detected, skipping."
+            exit 0
+          fi
+
+      - name: Add space to README
+        run: |
+          echo " " >> README.md
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Update README [auto-readme]" || echo "No changes to commit"
+          git push
