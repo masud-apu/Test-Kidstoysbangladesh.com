@@ -5,6 +5,9 @@ on:
     branches:
       - main   # or your default branch
 
+permissions:
+  contents: write
+
 jobs:
   update-readme:
     runs-on: ubuntu-latest
