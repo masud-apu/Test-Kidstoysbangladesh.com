@@ -106,7 +106,7 @@ function CheckoutContent() {
   }
 
   if (!mounted) {
-    return <div className="container py-16 text-center">Loading...</div>
+    return <div className="container mx-auto max-w-6xl py-16 text-center">Loading...</div>
   }
   
   if (checkoutItems.length === 0) {
@@ -128,7 +128,7 @@ function CheckoutContent() {
 
   return (
     <>
-      <div className="container py-8">
+  <div className="container mx-auto max-w-6xl py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold font-bengali">চেকআউট</h1>
           <div className="text-sm text-muted-foreground">
