@@ -145,7 +145,7 @@ export default async function Home() {
                 Sale Items
                 <span className="text-red-600 ml-3">Up to 50% Off</span>
               </h2>
-              <p className="text-gray-600 mt-2">Amazing deals on premium toys - grab them before they're gone!</p>
+              <p className="text-gray-600 mt-2">Amazing deals on premium toys - grab them before they&apos;re gone!</p>
             </div>
             <Link href="/sale">
               <Button variant="outline" className="hidden md:flex items-center space-x-2 border-red-300 text-red-600 hover:bg-red-50">
