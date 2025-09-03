@@ -35,6 +35,8 @@ export function Header() {
                   fill
                   className="object-contain"
                   priority
+                  unoptimized
+                  sizes="160px"
                 />
               </div>
             </Link>
