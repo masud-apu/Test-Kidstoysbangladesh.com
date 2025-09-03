@@ -8,8 +8,8 @@ import {
   ShoppingCart, 
   Search, 
   Menu,
-  Home,
-  Store,
+  Sparkles,
+  Flame,
   X
 } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
@@ -27,35 +27,27 @@ export function Header() {
           {/* Main Header */}
           <div className="flex h-24 items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative w-16 h-16 transition-transform group-hover:scale-105">
+            <Link href="/" className="flex items-center group">
+              <div className="relative w-24 h-24 transition-transform group-hover:scale-105">
                 <Image
-                  src="/logo.svg"
+                  src="/main-logo.png"
                   alt="Kids Toys Bangladesh"
                   fill
                   className="object-contain"
                   priority
                 />
               </div>
-              <div className="hidden sm:block">
-                <div className="text-2xl font-bold bg-gradient-to-r from-red-500 via-blue-500 to-green-500 bg-clip-text text-transparent">
-                  Kids Toys
-                </div>
-                <div className="text-sm text-gray-600 -mt-1 font-medium">
-                  Bangladesh
-                </div>
-              </div>
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors font-medium">
-                <Home className="h-5 w-5" />
-                <span>Home</span>
+              <Link href="/new-arrivals" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                <Sparkles className="h-5 w-5" />
+                <span>New Arrival</span>
               </Link>
-              <Link href="/products" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors font-medium">
-                <Store className="h-5 w-5" />
-                <span>Shop</span>
+              <Link href="/sale" className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors font-medium">
+                <Flame className="h-5 w-5" />
+                <span>Sale</span>
               </Link>
             </nav>
 
@@ -127,30 +119,30 @@ export function Header() {
               {/* Navigation Links */}
               <div className="space-y-4">
                 <Link 
-                  href="/" 
+                  href="/new-arrivals" 
                   className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                    <Home className="h-6 w-6 text-white" />
+                    <Sparkles className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">Home</div>
-                    <div className="text-sm text-gray-600">Browse featured toys</div>
+                    <div className="font-semibold text-gray-900">New Arrival</div>
+                    <div className="text-sm text-gray-600">Latest toys & games</div>
                   </div>
                 </Link>
 
                 <Link 
-                  href="/products" 
-                  className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-green-50 to-blue-50 hover:from-green-100 hover:to-blue-100 transition-all duration-200"
+                  href="/sale" 
+                  className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center">
-                    <Store className="h-6 w-6 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+                    <Flame className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">Shop</div>
-                    <div className="text-sm text-gray-600">Explore all products</div>
+                    <div className="font-semibold text-gray-900">Sale</div>
+                    <div className="text-sm text-gray-600">Best deals & discounts</div>
                   </div>
                 </Link>
 
