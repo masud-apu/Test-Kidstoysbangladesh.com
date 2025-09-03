@@ -30,13 +30,11 @@ export function Header() {
             <Link href="/" className="flex items-center group">
               <div className="relative w-40 h-40 transition-transform group-hover:scale-105">
                 <Image
-                  src="/main-logo.png"
+                  src="/main-logo.svg"
                   alt="Kids Toys Bangladesh"
                   fill
                   className="object-contain"
                   priority
-                  unoptimized
-                  sizes="160px"
                 />
               </div>
             </Link>

@@ -18,10 +18,15 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Skip if commit is from bot
+      - name: Skip if commit is from bot or me
         run: |
           if git log -1 --pretty=%B | grep -q "[auto-readme]"; then
             echo "Commit from bot detected, skipping."
+            exit 0
+          fi
+
+          if [ "${{ github.actor }}" = "masud-apu" ]; then
+            echo "Commit by masud-apu detected, skipping."
             exit 0
           fi
 
