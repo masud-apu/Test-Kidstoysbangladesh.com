@@ -4,8 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Product } from '@/lib/schema'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { useCartStore } from '@/lib/store'
 import { ShoppingCart } from 'lucide-react'
 
@@ -28,64 +26,71 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <Link href={`/product/${product.handle}`} className="block">
-      <Card className="group overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer">
-        <div className="relative aspect-square overflow-hidden">
-          {product.images && product.images.length > 0 ? (
-            <Image
-              src={product.images[0]}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-muted">
-              <span className="text-muted-foreground">No image</span>
+    <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer border border-gray-100 overflow-hidden">
+      {/* Product Image */}
+      <div className="relative bg-gray-50 h-48 flex items-center justify-center">
+        {/* Discount Badge */}
+        {hasDiscount && (
+          <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold z-10">
+            -{discountPercentage}%
+          </div>
+        )}
+        
+        {product.images && product.images.length > 0 ? (
+          <Image
+            src={product.images[0]}
+            alt={product.name}
+            width={200}
+            height={200}
+            className="object-contain group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <span className="text-gray-400 text-sm">No image</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Card Content */}
+      <div className="p-6">
+        {/* Product Name */}
+        <h3 className="text-gray-800 text-lg font-semibold mb-3 line-clamp-2 min-h-[3.5rem]">
+          {product.name}
+        </h3>
+        
+        {/* Price Section */}
+        <div className="mb-6">
+          {hasDiscount ? (
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-green-600">৳{product.price}</span>
+              <span className="text-lg text-gray-400 line-through">৳{product.comparePrice}</span>
             </div>
-          )}
-          {hasDiscount && (
-            <Badge className="absolute right-2 top-2 bg-destructive text-destructive-foreground">
-              -{discountPercentage}%
-            </Badge>
+          ) : (
+            <span className="text-2xl font-bold text-green-600">৳{product.price}</span>
           )}
         </div>
         
-        <CardContent className="p-4">
-          <h3 className="font-medium line-clamp-2 font-bengali group-hover:text-primary transition-colors">
-            {product.name}
-          </h3>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <Link href={`/product/${product.handle}`} className="flex-1">
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium py-2.5 transition-colors"
+              size="sm"
+            >
+              Buy Now
+            </Button>
+          </Link>
           
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-lg font-bold">৳{product.price}</span>
-            {hasDiscount && (
-              <span className="text-sm text-muted-foreground line-through">
-                ৳{product.comparePrice}
-              </span>
-            )}
-          </div>
-          
-          {product.tags && product.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {product.tags.slice(0, 2).map((tag, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </CardContent>
-        
-        <CardFooter className="p-4 pt-0">
-          <Button 
+          <Button
             onClick={handleAddToCart}
-            className="w-full"
             size="sm"
+            variant="outline"
+            className="border-gray-300 hover:bg-gray-50 text-gray-600 rounded-lg p-2.5 w-12 h-12 flex items-center justify-center transition-colors"
           >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Add to Cart
+            <ShoppingCart className="h-5 w-5" />
           </Button>
-        </CardFooter>
-      </Card>
-    </Link>
+        </div>
+      </div>
+    </div>
   )
 }

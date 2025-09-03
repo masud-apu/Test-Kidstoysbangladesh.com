@@ -28,7 +28,7 @@ export function Header() {
           <div className="flex h-24 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center group">
-              <div className="relative w-24 h-24 transition-transform group-hover:scale-105">
+              <div className="relative w-40 h-40 transition-transform group-hover:scale-105">
                 <Image
                   src="/main-logo.png"
                   alt="Kids Toys Bangladesh"
@@ -41,11 +41,11 @@ export function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/new-arrivals" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors font-medium">
+              <Link href="/new-arrivals" className="flex items-center space-x-2 text-gray-700 hover:text-teal-600 transition-colors font-medium">
                 <Sparkles className="h-5 w-5" />
                 <span>New Arrival</span>
               </Link>
-              <Link href="/sale" className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors font-medium">
+              <Link href="/sale" className="flex items-center space-x-2 text-orange-600 hover:text-orange-700 transition-colors font-medium">
                 <Flame className="h-5 w-5" />
                 <span>Sale</span>
               </Link>
@@ -54,11 +54,11 @@ export function Header() {
             {/* Search Bar - Hidden on mobile */}
             <div className="hidden lg:flex flex-1 max-w-xl mx-8">
               <div className="relative group w-full">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-teal-500 transition-colors" />
                 <Input 
                   type="search" 
                   placeholder="Search toys..." 
-                  className="pl-12 pr-6 py-3 w-full rounded-2xl border-2 border-gray-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className="pl-12 pr-6 py-3 w-full rounded-2xl border-2 border-gray-200 focus:border-teal-400 focus:ring-4 focus:ring-teal-50 transition-all duration-200 bg-gray-50 focus:bg-white"
                 />
               </div>
             </div>
@@ -67,12 +67,12 @@ export function Header() {
             <div className="flex items-center space-x-4">
               {/* Cart */}
               <Link href="/cart">
-                <Button className="relative bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 md:px-6 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all duration-200 group">
+                <Button className="relative bg-orange-500 hover:bg-orange-600 text-white px-4 md:px-6 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all duration-200 group">
                   <ShoppingCart className="h-5 w-5 md:mr-2 group-hover:scale-110 transition-transform" />
                   <span className="hidden md:inline font-medium">Cart</span>
                   {totalItems > 0 && (
                     <Badge 
-                      className="absolute -right-2 -top-2 h-6 w-6 rounded-full p-0 text-xs bg-yellow-500 hover:bg-yellow-600 text-black font-bold animate-pulse"
+                      className="absolute -right-2 -top-2 h-6 w-6 rounded-full p-0 text-xs bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold animate-pulse"
                     >
                       {totalItems}
                     </Badge>
@@ -112,7 +112,7 @@ export function Header() {
                 <Input 
                   type="search" 
                   placeholder="Search toys..." 
-                  className="pl-12 pr-6 py-4 w-full rounded-2xl border-2 border-gray-200 focus:border-blue-400 bg-gray-50 text-base"
+                  className="pl-12 pr-6 py-4 w-full rounded-2xl border-2 border-gray-200 focus:border-teal-400 bg-gray-50 text-base"
                 />
               </div>
 
@@ -120,10 +120,10 @@ export function Header() {
               <div className="space-y-4">
                 <Link 
                   href="/new-arrivals" 
-                  className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 transition-all duration-200"
+                  className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-teal-50 to-green-50 hover:from-teal-100 hover:to-green-100 transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-green-500 rounded-xl flex items-center justify-center">
                     <Sparkles className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -134,10 +134,10 @@ export function Header() {
 
                 <Link 
                   href="/sale" 
-                  className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 transition-all duration-200"
+                  className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-yellow-50 hover:from-orange-100 hover:to-yellow-100 transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center">
                     <Flame className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -148,13 +148,13 @@ export function Header() {
 
                 <Link 
                   href="/cart" 
-                  className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 transition-all duration-200 relative"
+                  className="flex items-center space-x-4 p-4 rounded-2xl bg-gradient-to-r from-green-50 to-teal-50 hover:from-green-100 hover:to-teal-100 transition-all duration-200 relative"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center relative">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center relative">
                     <ShoppingCart className="h-6 w-6 text-white" />
                     {totalItems > 0 && (
-                      <Badge className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-xs bg-yellow-500 text-black font-bold">
+                      <Badge className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-xs bg-yellow-500 text-gray-900 font-bold">
                         {totalItems}
                       </Badge>
                     )}
