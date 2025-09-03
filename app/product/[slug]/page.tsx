@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const productUrl = `https://kidstoysbangladesh.com/product/${prod.handle}`
   const imageUrl = prod.images && prod.images.length > 0 
     ? prod.images[0] 
-    : 'https://kidstoysbangladesh.com/og-image.jpg'
+    : 'https://kidstoysbangladesh.com/og-image.png'
 
   return {
     title: prod.name,
