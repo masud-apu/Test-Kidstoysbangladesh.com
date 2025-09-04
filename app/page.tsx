@@ -30,7 +30,13 @@ import {
 } from "@/components/ui/carousel"
 
 export default async function Home() {
-  const allProducts = await db.select().from(products).orderBy(desc(products.createdAt)).limit(8)
+  // Fetch up to 20 latest products for the landing page only
+  const allProducts = await db.select().from(products).orderBy(desc(products.createdAt)).limit(20)
+  const saleProducts = allProducts.filter((p) => {
+    const price = parseFloat(String(p.price))
+    const compare = p.comparePrice ? parseFloat(String(p.comparePrice)) : 0
+    return compare > price
+  })
   
   
   return (
@@ -46,7 +52,7 @@ export default async function Home() {
                 {
                   icon: Truck,
                   title: "Free Delivery",
-                  description: "Free shipping on orders over ৳500",
+                  description: "Free shipping on orders over ৳1500",
                   color: "teal"
                 },
                 {
@@ -92,8 +98,8 @@ export default async function Home() {
           </div>
         </div>
 
-      {/* New Arrivals Section */}
-      <section className="py-20 bg-white">
+  {/* New Arrivals Section */}
+  <section id="new-arrivals" className="py-20 bg-white scroll-mt-24">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="flex justify-between items-center mb-12">
             <div>
@@ -101,12 +107,6 @@ export default async function Home() {
               <h2 className="text-4xl font-bold tracking-tight text-gray-800">New Arrivals</h2>
               <p className="text-gray-600 mt-2">Discover the latest toys that kids are loving this week</p>
             </div>
-            <Link href="/new-arrivals">
-              <Button variant="outline" className="hidden md:flex items-center space-x-2 border-gray-300 hover:bg-gray-50">
-                <span>View All</span>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
           </div>
 
           <Carousel className="w-full" opts={{ align: "start", slidesToScroll: 1 }}>
@@ -123,11 +123,11 @@ export default async function Home() {
             <CarouselNext className="hidden md:flex -right-12 bg-white shadow-lg border-gray-200 hover:bg-gray-50" />
           </Carousel>
 
-          {/* Mobile View All Button */}
+          {/* Mobile anchor to all products */}
           <div className="md:hidden mt-8 text-center">
-            <Link href="/new-arrivals">
+            <Link href="#all-products">
               <Button className="bg-teal-500 hover:bg-teal-600 text-white px-8">
-                View All New Arrivals
+                Browse All Products
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -136,36 +136,24 @@ export default async function Home() {
       </section>
 
       {/* Sale Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-50 to-red-50">
+      <section id="sale" className="py-20 bg-gradient-to-br from-orange-50 to-red-50 scroll-mt-24">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="flex justify-between items-center mb-12">
             <div>
               <Badge className="mb-4 bg-red-100 text-red-800 border-red-200">🔥 Limited Time</Badge>
               <h2 className="text-4xl font-bold tracking-tight text-gray-800">
                 Sale Items
-                <span className="text-red-600 ml-3">Up to 50% Off</span>
+                <span className="text-red-600 ml-3">Up to 80% Off</span>
               </h2>
               <p className="text-gray-600 mt-2">Amazing deals on premium toys - grab them before they&apos;re gone!</p>
             </div>
-            <Link href="/sale">
-              <Button variant="outline" className="hidden md:flex items-center space-x-2 border-red-300 text-red-600 hover:bg-red-50">
-                <span>View All Deals</span>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
           </div>
 
           <Carousel className="w-full" opts={{ align: "start", slidesToScroll: 1 }}>
             <CarouselContent className="-ml-2 md:-ml-4">
-              {allProducts.slice(0, 6).map((product) => (
+              {(saleProducts.length ? saleProducts : allProducts).slice(0, 4).map((product) => (
                 <CarouselItem key={`sale-${product.id}`} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                   <div className="h-full relative">
-                    {/* Sale Badge */}
-                    <div className="absolute top-2 left-2 z-10">
-                      <Badge className="bg-red-500 text-white font-bold px-2 py-1 text-xs">
-                        SALE
-                      </Badge>
-                    </div>
                     <ProductCard product={product} />
                   </div>
                 </CarouselItem>
@@ -175,11 +163,11 @@ export default async function Home() {
             <CarouselNext className="hidden md:flex -right-12 bg-white shadow-lg border-gray-200 hover:bg-gray-50" />
           </Carousel>
 
-          {/* Mobile View All Button */}
+          {/* Mobile anchor to all products */}
           <div className="md:hidden mt-8 text-center">
-            <Link href="/sale">
+            <Link href="#all-products">
               <Button className="bg-red-500 hover:bg-red-600 text-white px-8">
-                View All Sale Items
+                Browse All Products
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -187,20 +175,18 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Featured Products Section */}
-      <section className="py-20 bg-white">
+      {/* All Products Section */}
+      <section id="all-products" className="py-20 bg-white scroll-mt-24">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-green-100 text-green-800 border-green-200">⭐ Hand-Picked</Badge>
-            <h2 className="text-4xl font-bold tracking-tight text-gray-800">Featured Products</h2>
-            <p className="text-gray-600 mt-2 max-w-2xl mx-auto">
-              Carefully selected toys that provide the best value, safety, and fun for your children
-            </p>
+            <Badge className="mb-4 bg-green-100 text-green-800 border-green-200">⭐ All Products</Badge>
+            <h2 className="text-4xl font-bold tracking-tight text-gray-800">Browse Our Collection</h2>
+            <p className="text-gray-600 mt-2 max-w-2xl mx-auto">Up to 20 latest items, right here on the homepage.</p>
           </div>
           
           {allProducts.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {allProducts.slice(0, 8).map((product) => (
+              {allProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -212,17 +198,6 @@ export default async function Home() {
               <h3 className="text-2xl font-bold mb-4 text-gray-900">No products found</h3>
               <p className="text-gray-600 mb-8">Add some products to your database to get started.</p>
               <Button className="bg-teal-500 hover:bg-teal-600 text-white">Add Products</Button>
-            </div>
-          )}
-
-          {allProducts.length > 8 && (
-            <div className="text-center mt-12">
-              <Link href="/products">
-                <Button className="bg-gray-800 hover:bg-gray-900 text-white px-8 py-3">
-                  View All Products
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
             </div>
           )}
         </div>

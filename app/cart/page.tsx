@@ -73,7 +73,7 @@ export default function CartPage() {
   return (
     <div className="container mx-auto max-w-6xl py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold font-bengali">শপিং কার্ট</h1>
+        <h1 className="text-3xl font-bold">Shopping Cart</h1>
         <div className="flex items-center space-x-2">
           <Checkbox
             id="select-all"
@@ -115,7 +115,7 @@ export default function CartPage() {
 
                   <div className="flex-1 min-w-0">
                     <Link href={`/product/${item.handle}`}>
-                      <h3 className="font-medium font-bengali line-clamp-2 hover:underline">
+                      <h3 className="font-medium line-clamp-2 hover:underline">
                         {item.name}
                       </h3>
                     </Link>
@@ -175,7 +175,7 @@ export default function CartPage() {
         <div className="lg:col-span-1">
           <Card className="sticky top-24">
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4 font-bengali">অর্ডার সামারি</h3>
+              <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
               
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">

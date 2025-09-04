@@ -5,11 +5,9 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export interface OrderData {
   customerName: string
-  customerEmail: string
+  customerEmail?: string | null
   customerPhone: string
   customerAddress: string
-  customerCity: string
-  customerPostalCode: string
   items: CartItemType[]
   totalAmount: number
   orderId: string
@@ -20,25 +18,28 @@ export async function sendOrderConfirmationEmails(orderData: OrderData) {
   
   try {
     // Email to customer
-    const customerEmailResult = await resend.emails.send({
-      from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
-      to: customerEmail,
-      subject: `অর্ডার নিশ্চিতকরণ - #${orderId}`,
-      html: generateCustomerEmailTemplate(customerName, items, totalAmount, orderId),
-    })
+    let customerEmailResult: any = { data: undefined }
+    if (customerEmail) {
+      customerEmailResult = await resend.emails.send({
+        from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
+        to: customerEmail,
+        subject: `Order Confirmation - #${orderId}`,
+        html: generateCustomerEmailTemplate(customerName, items, totalAmount, orderId),
+      })
+    }
 
     // Email to owner
     const ownerEmailResult = await resend.emails.send({
       from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
       to: 'soyeb.jim@gmail.com',
-      subject: `নতুন অর্ডার - #${orderId}`,
+      subject: `New Order - #${orderId}`,
       html: generateOwnerEmailTemplate(orderData),
     })
 
     return {
       success: true,
       customerEmailId: customerEmailResult.data?.id,
-      ownerEmailId: ownerEmailResult.data?.id,
+  ownerEmailId: ownerEmailResult.data?.id,
     }
   } catch (error) {
     console.error('Email sending failed:', error)
@@ -60,7 +61,7 @@ function generateCustomerEmailTemplate(
       (item) => `
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-          <strong class="font-bengali">${item.name}</strong>
+          <strong>${item.name}</strong>
         </td>
         <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">
           ${item.quantity}
@@ -85,21 +86,21 @@ function generateCustomerEmailTemplate(
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #2563eb; text-align: center;">অর্ডার নিশ্চিতকরণ</h1>
+  <h1 style="color: #2563eb; text-align: center;">Order Confirmation</h1>
         
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>প্রিয় ${customerName},</strong></p>
-          <p>আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। আপনার অর্ডার নম্বর: <strong>#${orderId}</strong></p>
+          <p><strong>Dear ${customerName},</strong></p>
+          <p>Your order has been received successfully. Your order number is <strong>#${orderId}</strong>.</p>
         </div>
 
-        <h3>অর্ডারের বিবরণ:</h3>
+  <h3>Order Details:</h3>
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
           <thead>
             <tr style="background-color: #f1f5f9;">
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">পণ্য</th>
-              <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">পরিমাণ</th>
-              <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">দাম</th>
-              <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">মোট</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">Product</th>
+              <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Quantity</th>
+              <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Price</th>
+              <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -108,19 +109,19 @@ function generateCustomerEmailTemplate(
         </table>
 
         <div style="text-align: right; margin: 20px 0;">
-          <h3 style="color: #2563eb;">মোট পরিমাণ: ৳${totalAmount.toFixed(2)}</h3>
+          <h3 style="color: #2563eb;">Total Amount: ৳${totalAmount.toFixed(2)}</h3>
         </div>
 
         <div style="background-color: #dbeafe; padding: 15px; border-radius: 6px; margin: 20px 0;">
-          <p><strong>ডেলিভারি তথ্য:</strong></p>
+          <p><strong>Delivery Information:</strong></p>
           <ul>
-            <li>ঢাকার মধ্যে ২-৩ কার্যদিবস</li>
-            <li>ঢাকার বাইরে ৩-৫ কার্যদিবস</li>
-            <li>ক্যাশ অন ডেলিভারি সুবিধা উপলব্ধ</li>
+            <li>Inside Dhaka: 2–3 business days</li>
+            <li>Outside Dhaka: 3–5 business days</li>
+            <li>Cash on delivery available</li>
           </ul>
         </div>
 
-        <p>আপনার অর্ডারের জন্য ধন্যবাদ!</p>
+  <p>Thank you for your order!</p>
         
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
           <p style="color: #6b7280; font-size: 14px;">KidsToysBangladesh - Your Kids Toy Destination</p>
@@ -179,7 +180,6 @@ function generateOwnerEmailTemplate(orderData: OrderData): string {
           <div>
             <h3>ঠিকানা:</h3>
             <p>${orderData.customerAddress}</p>
-            <p>${orderData.customerCity}, ${orderData.customerPostalCode}</p>
           </div>
         </div>
 

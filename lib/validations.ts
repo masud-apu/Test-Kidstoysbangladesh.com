@@ -21,11 +21,11 @@ export const cartItemSchema = productSchema.extend({
 
 export const checkoutSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  // Email is optional; allow empty string
+  email: z.string().email('Invalid email address').optional().or(z.literal('')).optional(),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   address: z.string().min(10, 'Address must be at least 10 characters'),
-  city: z.string().min(2, 'City is required'),
-  postalCode: z.string().min(4, 'Postal code is required'),
+  // City and postal code removed per requirements
 })
 
 export type ProductType = z.infer<typeof productSchema>

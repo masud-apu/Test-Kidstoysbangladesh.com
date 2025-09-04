@@ -43,7 +43,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
 
   const handleWhatsApp = () => {
     const productUrl = `https://kidstoysbangladesh.com/product/${product.handle}`
-    const message = `Hi! I'm interested in this product: ${product.name} - ৳${product.price}\n\nProduct link: ${productUrl}`
+  const message = `Hi! I'm interested in this product: ${product.name} - ৳${product.price}\n\nProduct link: ${productUrl}`
     const whatsappUrl = `https://wa.me/8801718007639?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
@@ -98,7 +98,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
         <div className="space-y-6">
           {/* Product Name */}
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold font-bengali leading-tight">
+            <h1 className="text-3xl lg:text-4xl font-bold leading-tight">
               {product.name}
             </h1>
           </div>
@@ -185,8 +185,8 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
       <div className="mt-16">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="description" className="font-bengali">বিবরণ</TabsTrigger>
-            <TabsTrigger value="shipping" className="font-bengali">ডেলিভারি ও শিপিং</TabsTrigger>
+            <TabsTrigger value="description">Description</TabsTrigger>
+            <TabsTrigger value="shipping">Delivery & Shipping</TabsTrigger>
           </TabsList>
           
           <TabsContent value="description" className="mt-6">
@@ -194,8 +194,8 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
               {product.description ? (
                 <Markdown content={product.description} />
               ) : (
-                <p className="text-muted-foreground font-bengali">
-                  এই পণ্যের কোনো বিবরণ নেই।
+                <p className="text-muted-foreground">
+                  No description for this product.
                 </p>
               )}
             </div>
@@ -203,23 +203,23 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
           
           <TabsContent value="shipping" className="mt-6">
             <div className="bg-muted/50 rounded-lg p-6">
-              <div className="space-y-4 font-bengali">
+              <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">ডেলিভারি তথ্য:</h3>
+                  <h3 className="font-semibold text-lg mb-2">Delivery Information:</h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li>• ঢাকার মধ্যে ২-৩ কার্যদিবস</li>
-                    <li>• ঢাকার বাইরে ৩-৫ কার্যদিবস</li>
-                    <li>• ফ্রি ডেলিভারি ১০০০ টাকার উপরে</li>
-                    <li>• ক্যাশ অন ডেলিভারি সুবিধা</li>
+                    <li>• Inside Dhaka: 2–3 business days</li>
+                    <li>• Outside Dhaka: 3–5 business days</li>
+                    <li>• Free delivery on orders over ৳1000</li>
+                    <li>• Cash on delivery available</li>
                   </ul>
                 </div>
                 
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">রিটার্ন পলিসি:</h3>
+                  <h3 className="font-semibold text-lg mb-2">Return Policy:</h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li>• ৭ দিনের রিটার্ন গ্যারান্টি</li>
-                    <li>• পণ্যে কোনো ত্রুটি থাকলে ফ্রি রিপ্লেসমেন্ট</li>
-                    <li>• অরিজিনাল প্যাকেজিং এ রিটার্ন করতে হবে</li>
+                    <li>• 7-day return guarantee</li>
+                    <li>• Free replacement for defective items</li>
+                    <li>• Return must be in original packaging</li>
                   </ul>
                 </div>
               </div>

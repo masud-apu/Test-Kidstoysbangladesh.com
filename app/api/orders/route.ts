@@ -10,8 +10,7 @@ export async function POST(request: NextRequest) {
       customerEmail: body.customerEmail,
       customerPhone: body.customerPhone,
       customerAddress: body.customerAddress,
-      customerCity: body.customerCity,
-      customerPostalCode: body.customerPostalCode,
+      // city/postal removed
       items: body.items,
       totalAmount: body.totalAmount,
       orderId: body.orderId,

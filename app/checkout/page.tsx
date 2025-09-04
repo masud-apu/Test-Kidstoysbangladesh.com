@@ -66,11 +66,10 @@ function CheckoutContent() {
       
       const orderData = {
         customerName: data.name,
-        customerEmail: data.email,
+        customerEmail: data.email ?? null,
         customerPhone: data.phone,
         customerAddress: data.address,
-        customerCity: data.city,
-        customerPostalCode: data.postalCode,
+        // city and postalCode removed
         items: checkoutItems,
         totalAmount: totalPrice,
         orderId: newOrderId,
@@ -95,11 +94,11 @@ function CheckoutContent() {
           clearCart()
         }
       } else {
-        alert('অর্ডার প্রক্রিয়াকরণে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।')
+  alert('There was a problem processing your order. Please try again.')
       }
     } catch (error) {
-      console.error('Checkout error:', error)
-      alert('অর্ডার প্রক্রিয়াকরণে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।')
+  console.error('Checkout error:', error)
+  alert('There was a problem processing your order. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -130,7 +129,7 @@ function CheckoutContent() {
     <>
   <div className="container mx-auto max-w-6xl py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold font-bengali">চেকআউট</h1>
+          <h1 className="text-3xl font-bold">Checkout</h1>
           <div className="text-sm text-muted-foreground">
             {checkoutType === 'direct' ? 'Direct Purchase' : 'From Cart'}
           </div>
@@ -162,7 +161,7 @@ function CheckoutContent() {
                     </div>
                     
                     <div className="flex-1 space-y-2">
-                      <h3 className="font-medium font-bengali line-clamp-2">{item.name}</h3>
+                      <h3 className="font-medium line-clamp-2">{item.name}</h3>
                       <p className="font-bold">৳{item.price}</p>
                       
                       {checkoutType === 'cart' && (
@@ -216,40 +215,21 @@ function CheckoutContent() {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle className="font-bengali">শিপিং তথ্য</CardTitle>
+                <CardTitle>Shipping Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div>
                     <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      {...register('name')}
-                      className="font-bengali"
-                    />
+                    <Input id="name" {...register('name')} />
                     {errors.name && (
                       <p className="text-sm text-destructive">{errors.name.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      {...register('email')}
-                    />
-                    {errors.email && (
-                      <p className="text-sm text-destructive">{errors.email.message}</p>
-                    )}
-                  </div>
-
-                  <div>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      {...register('phone')}
-                    />
+                    <Input id="phone" {...register('phone')} />
                     {errors.phone && (
                       <p className="text-sm text-destructive">{errors.phone.message}</p>
                     )}
@@ -257,45 +237,25 @@ function CheckoutContent() {
 
                   <div>
                     <Label htmlFor="address">Address</Label>
-                    <Input
-                      id="address"
-                      {...register('address')}
-                      className="font-bengali"
-                    />
+                    <Input id="address" {...register('address')} />
                     {errors.address && (
                       <p className="text-sm text-destructive">{errors.address.message}</p>
                     )}
                   </div>
 
+                  <Separator />
+                  <p className="text-sm text-muted-foreground">You can get invoice on your email (optional)</p>
+
                   <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      {...register('city')}
-                      className="font-bengali"
-                    />
-                    {errors.city && (
-                      <p className="text-sm text-destructive">{errors.city.message}</p>
+                    <Label htmlFor="email">Email (optional)</Label>
+                    <Input id="email" type="email" placeholder="example@email.com" {...register('email')} />
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email.message}</p>
                     )}
                   </div>
 
-                  <div>
-                    <Label htmlFor="postalCode">Postal Code</Label>
-                    <Input
-                      id="postalCode"
-                      {...register('postalCode')}
-                    />
-                    {errors.postalCode && (
-                      <p className="text-sm text-destructive">{errors.postalCode.message}</p>
-                    )}
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Processing...' : 'অর্ডার করুন'}
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Processing...' : 'Place Order'}
                   </Button>
                 </form>
               </CardContent>
@@ -311,19 +271,14 @@ function CheckoutContent() {
             <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
-            <DialogTitle className="text-xl font-bold font-bengali">
-              অর্ডার নিশ্চিত হয়েছে!
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold">Order Confirmed!</DialogTitle>
             <DialogDescription className="text-center space-y-2">
-              <p className="font-bengali">
-                আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে।
-              </p>
+              <p>Your order has been received successfully.</p>
               <p className="font-mono text-sm">
                 <strong>Order ID: #{orderId}</strong>
               </p>
-              <p className="text-sm text-muted-foreground font-bengali">
-                শীঘ্রই আমরা আপনার সাথে যোগাযোগ করব।
-                একটি নিশ্চিতকরণ ইমেইলও পাঠানো হয়েছে।
+              <p className="text-sm text-muted-foreground">
+                We will contact you soon. A confirmation email has also been sent.
               </p>
             </DialogDescription>
           </DialogHeader>
