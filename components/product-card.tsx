@@ -38,7 +38,19 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className="block">
-      <article className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 group border border-gray-100 overflow-hidden">
+      <article
+        className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 group border border-gray-100 overflow-hidden cursor-pointer"
+        role="link"
+        aria-label={`View product ${product.name}`}
+        tabIndex={0}
+        onClick={() => router.push(`/product/${product.handle}`)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            router.push(`/product/${product.handle}`)
+          }
+        }}
+      >
         {/* Product Image */}
         <div className="p-3">
           <div className="relative rounded-xl overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">
