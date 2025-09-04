@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/store'
 import { ShoppingCart } from 'lucide-react'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
+import Link from 'next/link'
 
 interface ProductCardProps {
   product: Product
@@ -39,69 +40,64 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="block">
       <article
-        className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 group border border-gray-100 overflow-hidden cursor-pointer"
-        role="link"
+  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 overflow-hidden cursor-pointer"
         aria-label={`View product ${product.name}`}
-        tabIndex={0}
-        onClick={() => router.push(`/product/${product.handle}`)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            router.push(`/product/${product.handle}`)
-          }
-        }}
       >
-        {/* Product Image */}
-        <div className="p-3">
-          <div className="relative rounded-xl overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">
-            <AspectRatio ratio={1}>
-              {/* Red discount badge: show when the product has a discount */}
-              {hasDiscount && (
-                <div className="absolute top-3 right-3 z-10 bg-red-500 text-white px-2.5 py-1 rounded-full text-[11px] font-bold shadow">-{discountPercentage}%</div>
-              )}
-              {product.images && product.images.length > 0 ? (
-                <Image
-                  src={product.images[0]}
-                  alt={product.name}
-                  fill
-                  sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-                  loading="lazy"
-                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm bg-gray-100">No image</div>
-              )}
-              {/* Subtle gradient overlay for depth */}
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_80%_0%,rgba(255,255,255,0.35),rgba(255,255,255,0))]" />
-            </AspectRatio>
+        <Link href={`/product/${product.handle}`} className="block focus:outline-none focus:ring-2 focus:ring-orange-200/70">
+          {/* Product Image */}
+          <div className="p-2">
+            <div className="relative rounded-xl overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">
+              <AspectRatio ratio={1}>
+                {/* Red discount badge: show when the product has a discount */}
+                {hasDiscount && (
+                  <div className="absolute top-3 right-3 z-10 bg-red-500 text-white px-2.5 py-1 rounded-full text-[11px] font-bold shadow">-{discountPercentage}%</div>
+                )}
+                {product.images && product.images.length > 0 ? (
+                  <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    fill
+                    sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                    loading="lazy"
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm bg-gray-100">No image</div>
+                )}
+                {/* Subtle gradient overlay for depth */}
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_80%_0%,rgba(255,255,255,0.35),rgba(255,255,255,0))]" />
+              </AspectRatio>
+            </div>
           </div>
-        </div>
 
-        {/* Card Content */}
-        <div className="px-6 pb-6 pt-1">
-          {/* Product Name */}
-          <h3 className="text-gray-800 text-base md:text-lg font-semibold mb-2 line-clamp-2 min-h-[3rem] md:min-h-[3.5rem]">
-            {product.name}
-          </h3>
-          
-          {/* Price Section */}
-          <div className="mb-4">
-            {hasDiscount ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xl md:text-2xl font-bold text-green-600">৳{product.price}</span>
-                <span className="text-sm md:text-base text-gray-400 line-through">৳{product.comparePrice}</span>
-              </div>
-            ) : (
-              <span className="text-xl md:text-2xl font-bold text-green-600">৳{product.price}</span>
-            )}
+          {/* Card Content (Title + Price) */}
+          <div className="px-4 pb-3 pt-0">
+            {/* Product Name */}
+            <h3 className="text-gray-800 text-sm md:text-base font-semibold mb-1 line-clamp-2 min-h-[2.5rem] md:min-h-[3rem]">
+              {product.name}
+            </h3>
+            
+            {/* Price Section */}
+            <div className="mb-0 min-h-[1.75rem]">
+              {hasDiscount ? (
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <span className="text-lg md:text-xl font-bold text-green-600">৳{product.price}</span>
+                  <span className="text-xs md:text-sm text-gray-400 line-through">৳{product.comparePrice}</span>
+                </div>
+              ) : (
+                <span className="text-lg md:text-xl font-bold text-green-600">৳{product.price}</span>
+              )}
+            </div>
           </div>
-          
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+        </Link>
+
+        {/* Action Buttons */}
+        <div className="px-4 pb-4 pt-0">
+          <div className="flex items-center gap-2">
             <div className="flex-1">
               <Button 
                 onClick={handleBuyNow}
-                className="w-full h-11 md:h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-colors"
+                className="w-full h-9 md:h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold text-sm transition-colors"
                 size="sm"
               >
                 Buy Now
@@ -113,9 +109,9 @@ export function ProductCard({ product }: ProductCardProps) {
                 onClick={handleAddToCart}
                 size="sm"
                 aria-label="Add to cart"
-                className="w-11 h-11 md:w-12 md:h-12 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-colors"
+                className="w-9 h-9 md:w-10 md:h-10 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-colors"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-4 w-4" />
               </Button>
             </div>
           </div>

@@ -63,7 +63,7 @@ export function OrganizationStructuredData() {
     ],
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": "+8801718007639",
+      "telephone": "+8801735547173",
       "contactType": "customer service",
       "availableLanguage": ["Bengali", "English"]
     },

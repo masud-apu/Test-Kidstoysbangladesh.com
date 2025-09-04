@@ -32,7 +32,7 @@ export async function sendOrderConfirmationEmails(orderData: OrderData) {
     // Email to owner
     const ownerRes = await resend.emails.send({
       from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
-      to: 'soyeb.jim@gmail.com',
+      to: 'apu.sns@gmail.com',
       subject: `New Order - #${orderId}`,
       html: generateOwnerEmailTemplate(orderData),
     })

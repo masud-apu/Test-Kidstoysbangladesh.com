@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Markdown } from '@/components/markdown'
@@ -27,6 +26,50 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   const discountPercentage = hasDiscount 
     ? Math.round(((parseFloat(product.comparePrice!) - parseFloat(product.price)) / parseFloat(product.comparePrice!)) * 100)
     : 0
+
+  // Helpers: currency formatting and title/subtitle derivation
+  const formatCurrency = (value: string | number) => {
+    const num = typeof value === 'string' ? parseFloat(value) : value
+    if (Number.isNaN(num)) return '৳0.00'
+    return `৳${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
+
+  const prettify = (s: string) => s
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+
+  const { mainTitle, subTitle } = useMemo(() => {
+    const name = product.name || ''
+    let main = name.trim()
+    let sub = ''
+
+    // Prefer parentheses content as subtitle if present
+    const parenMatch = name.match(/^(.*?)[\s]*\((.+)\)[\s]*$/)
+    if (parenMatch) {
+      main = parenMatch[1].trim()
+      sub = parenMatch[2].replace(/[|,]/g, ' | ').replace(/\s+\|\s+/g, ' | ').trim()
+    } else if (name.includes(' - ')) {
+      const [m, ...rest] = name.split(' - ')
+      main = m.trim()
+      sub = rest.join(' - ').replace(/[|,]/g, ' | ').trim()
+    } else if (name.includes(' | ')) {
+      const [m, ...rest] = name.split(' | ')
+      main = m.trim()
+      sub = rest.join(' | ').trim()
+    } else if (product.tags && product.tags.length) {
+      // Derive a clean, human subtitle from tags (avoid raw system tags)
+      const nice = Array.from(new Set(product.tags
+        .map((t) => prettify(t))
+        .filter(Boolean)))
+        .slice(0, 3)
+      sub = nice.join(' | ')
+    }
+
+    return { mainTitle: main, subTitle: sub }
+  }, [product.name, product.tags])
 
   const handleAddToCart = () => {
     addToCart(product)
@@ -92,79 +135,75 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
 
         {/* Right Column - Product Details */}
         <div className="space-y-6">
-          {/* Product Name */}
+          {/* Product Title + Subtitle */}
           <div>
             <h1 className="text-3xl lg:text-4xl font-bold leading-tight">
-              {product.name}
+              {mainTitle}
             </h1>
+            {subTitle && (
+              <p className="mt-1 text-base lg:text-lg text-muted-foreground">
+                {subTitle}
+              </p>
+            )}
           </div>
 
-          {/* Price */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-3xl lg:text-4xl font-bold text-primary">
-              ৳{product.price}
-            </span>
-            {hasDiscount && (
-              <>
+          {/* Price Block */}
+          <div className="space-y-1">
+            <div className="flex items-end gap-3 flex-wrap">
+              {hasDiscount && (
                 <span className="text-xl text-muted-foreground line-through">
-                  ৳{product.comparePrice}
+                  {formatCurrency(product.comparePrice!)}
                 </span>
-                <Badge variant="destructive" className="text-sm">
-                  -{discountPercentage}% OFF
-                </Badge>
-              </>
-            )}
+              )}
+              <span className="text-3xl lg:text-4xl font-extrabold text-green-600">
+                {formatCurrency(product.price)}
+              </span>
+              {hasDiscount && (
+                <span className="text-sm font-medium text-green-700">
+                  (Save {discountPercentage}%)
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">VAT/Tax included</p>
           </div>
 
           {/* Action Buttons */}
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row gap-3">
               <Button 
-                onClick={handleBuyNow}
-                className="flex-1 h-12 text-base font-semibold bg-orange-600 hover:bg-orange-700"
-                size="lg"
-              >
-                <Zap className="mr-2 h-5 w-5" />
-                Buy Now
-              </Button>
-              
-              <Button 
                 onClick={handleAddToCart}
-                variant="outline"
                 className="flex-1 h-12 text-base font-semibold"
                 size="lg"
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Add to Cart
               </Button>
+              
+              <Button 
+                onClick={handleBuyNow}
+                variant="outline"
+                className="flex-1 h-12 text-base font-semibold"
+                size="lg"
+              >
+                <Zap className="mr-2 h-5 w-5" />
+                Buy Now
+              </Button>
             </div>
             
             <div className="flex gap-3">
               <Button 
                 onClick={handleWhatsApp}
-                variant="outline" 
+                variant="secondary" 
                 size="lg" 
-                className="flex-1 h-12 text-green-600 border-green-600 hover:bg-green-50"
+                className="flex-1 h-12 text-green-700 bg-green-50 hover:bg-green-100"
               >
                 <MessageCircle className="mr-2 h-5 w-5" />
-                WhatsApp
+                Need Help? Chat on WhatsApp
               </Button>
             </div>
           </div>
 
-          {/* Tags */}
-          {product.tags && product.tags.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Tags:</h3>
-              <div className="flex flex-wrap gap-2">
-                {product.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* No raw tags shown to users */}
         </div>
       </div>
 

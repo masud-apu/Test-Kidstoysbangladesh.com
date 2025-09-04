@@ -158,19 +158,19 @@ function CheckoutContent() {
                     onValueChange={(val) => setDeliveryType(val as DeliveryType)}
                     className="grid gap-2"
                   >
-                    <label htmlFor="checkout-inside" className="flex items-center justify-between rounded-lg border p-3 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <RadioGroupItem value="inside" id="checkout-inside" />
-                        <span className="text-sm">Inside Dhaka</span>
-                      </div>
-                      <span className="text-sm font-medium">৳60</span>
-                    </label>
                     <label htmlFor="checkout-outside" className="flex items-center justify-between rounded-lg border p-3 cursor-pointer">
                       <div className="flex items-center gap-3">
                         <RadioGroupItem value="outside" id="checkout-outside" />
                         <span className="text-sm">Outside Dhaka</span>
                       </div>
                       <span className="text-sm font-medium">৳120</span>
+                    </label>
+                    <label htmlFor="checkout-inside" className="flex items-center justify-between rounded-lg border p-3 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="inside" id="checkout-inside" />
+                        <span className="text-sm">Inside Dhaka</span>
+                      </div>
+                      <span className="text-sm font-medium">৳60</span>
                     </label>
                   </RadioGroup>
                 </div>

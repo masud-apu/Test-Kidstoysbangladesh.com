@@ -37,7 +37,7 @@ export const useCartStore = create<CartStore>()(
   items: [],
   selectedItems: [],
   directBuyItem: null,
-  deliveryType: 'inside',
+  deliveryType: 'outside',
       
       addToCart: (product) =>
         set((state) => {
