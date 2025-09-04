@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Raleway, Amatic_SC, Noto_Sans_Bengali } from "next/font/google";
 import { Header } from '@/components/header'
+import { MobileBottomNav } from '@/components/mobile-bottom-nav'
 import { OrganizationStructuredData, WebsiteStructuredData } from '@/components/structured-data'
 import "./globals.css";
 
@@ -88,10 +89,11 @@ export default function RootLayout({
       <body
   className={`${raleway.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
       >
-        <Header />
-        <main className="pt-16 px-4 sm:px-6 lg:px-8">
+  <Header />
+  <main className="pt-16 pb-20 md:pb-0 px-4 sm:px-6 lg:px-8">
           {children}
         </main>
+  <MobileBottomNav />
       </body>
     </html>
   );

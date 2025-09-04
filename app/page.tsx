@@ -13,13 +13,7 @@ import {
   Clock, 
   Star,
   Gift,
-  Gamepad2,
-  Baby,
-  GraduationCap,
-  Car,
-  Puzzle,
-  ArrowRight,
-  Sparkles
+  ArrowRight
 } from 'lucide-react'
 import {
   Carousel,

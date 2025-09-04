@@ -132,13 +132,10 @@ export function HeroCarousel() {
                       <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                         <Link href={slide.buttonLink}>
                           <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 px-6 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
-                            {slide.buttonText}
+                            Buy now
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
                         </Link>
-                        <Button variant="outline" size="lg" className="px-6 py-3 text-base border-white/30 text-white hover:bg-white/10 backdrop-blur-sm">
-                          Learn More
-                        </Button>
                       </div>
                     </div>
                     
