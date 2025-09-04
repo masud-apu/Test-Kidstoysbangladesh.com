@@ -18,18 +18,19 @@ export async function sendOrderConfirmationEmails(orderData: OrderData) {
   
   try {
     // Email to customer
-    let customerEmailResult: any = { data: undefined }
+    let customerEmailId: string | undefined
     if (customerEmail) {
-      customerEmailResult = await resend.emails.send({
+      const customerRes = await resend.emails.send({
         from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
         to: customerEmail,
         subject: `Order Confirmation - #${orderId}`,
         html: generateCustomerEmailTemplate(customerName, items, totalAmount, orderId),
       })
+      customerEmailId = customerRes.data?.id
     }
 
     // Email to owner
-    const ownerEmailResult = await resend.emails.send({
+    const ownerRes = await resend.emails.send({
       from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
       to: 'soyeb.jim@gmail.com',
       subject: `New Order - #${orderId}`,
@@ -38,8 +39,8 @@ export async function sendOrderConfirmationEmails(orderData: OrderData) {
 
     return {
       success: true,
-      customerEmailId: customerEmailResult.data?.id,
-  ownerEmailId: ownerEmailResult.data?.id,
+      customerEmailId,
+      ownerEmailId: ownerRes.data?.id,
     }
   } catch (error) {
     console.error('Email sending failed:', error)

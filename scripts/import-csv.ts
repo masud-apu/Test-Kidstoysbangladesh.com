@@ -48,11 +48,11 @@ async function main() {
   }
 
   const raw = fs.readFileSync(csvPath, 'utf8')
-  const rows: any[] = parse(raw, {
+  const rows = parse(raw, {
     columns: true,
     skip_empty_lines: true,
     trim: true,
-  })
+  }) as Array<Record<string, string>>
 
   if (!rows.length) {
     console.log('No rows found in CSV.')
@@ -72,8 +72,8 @@ async function main() {
       name,
       price, // drizzle numeric accepts string
       comparePrice,
-      tags: parseMaybeJsonArray(r.tags),
-      images: parseImagesField(r.images),
+  tags: parseMaybeJsonArray(r.tags),
+  images: parseImagesField(r.images),
       description,
       // createdAt/updatedAt default to now() if omitted
     }
