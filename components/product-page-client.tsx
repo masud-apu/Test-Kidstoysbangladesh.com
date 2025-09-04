@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Markdown } from '@/components/markdown'
 import { useCartStore } from '@/lib/store'
-import { ShoppingCart, Phone, MessageCircle, Zap } from 'lucide-react'
+import { ShoppingCart, MessageCircle, Zap } from 'lucide-react'
 import { Product } from '@/lib/schema'
 import { ProductStructuredData } from './structured-data'
 
@@ -35,10 +35,6 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   const handleBuyNow = () => {
     setDirectBuy(product)
     router.push('/checkout?type=direct')
-  }
-
-  const handleCall = () => {
-    window.open('tel:+8801718007639', '_self')
   }
 
   const handleWhatsApp = () => {
@@ -144,15 +140,6 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
             </div>
             
             <div className="flex gap-3">
-              <Button 
-                onClick={handleCall}
-                variant="outline" 
-                size="lg" 
-                className="flex-1 h-12"
-              >
-                <Phone className="mr-2 h-5 w-5" />
-                Call
-              </Button>
               <Button 
                 onClick={handleWhatsApp}
                 variant="outline" 

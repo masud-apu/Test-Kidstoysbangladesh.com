@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Product } from './schema'
 
+export type DeliveryType = 'inside' | 'outside'
+
 export interface CartItem extends Product {
   quantity: number
 }
@@ -10,6 +12,7 @@ interface CartStore {
   items: CartItem[]
   selectedItems: number[]
   directBuyItem: CartItem | null
+  deliveryType: DeliveryType
   addToCart: (product: Product) => void
   removeFromCart: (productId: number) => void
   updateQuantity: (productId: number, quantity: number) => void
@@ -23,14 +26,18 @@ interface CartStore {
   clearSelection: () => void
   getSelectedItems: () => CartItem[]
   getSelectedTotal: () => number
+  setDeliveryType: (type: DeliveryType) => void
+  getShippingCost: () => number
+  getSelectedTotalWithShipping: () => number
 }
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
-      items: [],
-      selectedItems: [],
-      directBuyItem: null,
+  items: [],
+  selectedItems: [],
+  directBuyItem: null,
+  deliveryType: 'inside',
       
       addToCart: (product) =>
         set((state) => {
@@ -113,6 +120,19 @@ export const useCartStore = create<CartStore>()(
       getSelectedTotal: () => {
         const selectedItems = get().getSelectedItems()
         return selectedItems.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
+      },
+
+      setDeliveryType: (type) => set({ deliveryType: type }),
+
+      getShippingCost: () => {
+        const { deliveryType } = get()
+        return deliveryType === 'inside' ? 60 : 120
+      },
+
+      getSelectedTotalWithShipping: () => {
+        const itemTotal = get().getSelectedTotal()
+        const shipping = get().getShippingCost()
+        return itemTotal + shipping
       },
     }),
     {

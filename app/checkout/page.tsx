@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { useCartStore } from '@/lib/store'
+import { useCartStore, type DeliveryType } from '@/lib/store'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { checkoutSchema, type CheckoutType } from '@/lib/validations'
 import { Minus, Plus, Trash2, ShoppingBag, CheckCircle } from 'lucide-react'
 
@@ -27,7 +28,10 @@ function CheckoutContent() {
     updateQuantity, 
     removeFromCart, 
     clearCart,
-    clearDirectBuy 
+  clearDirectBuy,
+  deliveryType,
+  setDeliveryType,
+  getShippingCost,
   } = useCartStore()
   
   const [isLoading, setIsLoading] = useState(false)
@@ -46,9 +50,11 @@ function CheckoutContent() {
     ? getSelectedItems() 
     : []
     
-  const totalPrice = checkoutType === 'direct' && directBuyItem
+  const itemsTotal = checkoutType === 'direct' && directBuyItem
     ? parseFloat(directBuyItem.price) * directBuyItem.quantity
     : getSelectedTotal()
+  const shippingCost = checkoutItems.length > 0 ? getShippingCost() : 0
+  const totalPrice = itemsTotal + shippingCost
   
   const {
     register,
@@ -72,6 +78,8 @@ function CheckoutContent() {
         // city and postalCode removed
         items: checkoutItems,
         totalAmount: totalPrice,
+        shippingCost,
+        deliveryType,
         orderId: newOrderId,
       }
       
@@ -143,6 +151,30 @@ function CheckoutContent() {
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-2">Delivery Location</p>
+                  <RadioGroup
+                    value={deliveryType}
+                    onValueChange={(val) => setDeliveryType(val as DeliveryType)}
+                    className="grid gap-2"
+                  >
+                    <label htmlFor="checkout-inside" className="flex items-center justify-between rounded-lg border p-3 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="inside" id="checkout-inside" />
+                        <span className="text-sm">Inside Dhaka</span>
+                      </div>
+                      <span className="text-sm font-medium">৳60</span>
+                    </label>
+                    <label htmlFor="checkout-outside" className="flex items-center justify-between rounded-lg border p-3 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="outside" id="checkout-outside" />
+                        <span className="text-sm">Outside Dhaka</span>
+                      </div>
+                      <span className="text-sm font-medium">৳120</span>
+                    </label>
+                  </RadioGroup>
+                </div>
+
                 {checkoutItems.map((item) => (
                   <div key={item.id} className="flex gap-4">
                     <div className="relative h-20 w-20 overflow-hidden rounded">
@@ -202,10 +234,19 @@ function CheckoutContent() {
                 ))}
                 
                 <Separator />
-                
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total:</span>
-                  <span>৳{totalPrice.toFixed(2)}</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Items Total:</span>
+                    <span>৳{itemsTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Shipping:</span>
+                    <span>৳{shippingCost.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Grand Total:</span>
+                    <span>৳{totalPrice.toFixed(2)}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

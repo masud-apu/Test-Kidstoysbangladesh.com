@@ -22,7 +22,7 @@ export default function CartPage() {
     selectAllItems,
     clearSelection,
     getSelectedItems,
-    getSelectedTotal 
+  getSelectedTotal,
   } = useCartStore()
   
   const [mounted, setMounted] = useState(false)
