@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_Bengali } from "next/font/google";
+import { Raleway, Amatic_SC, Noto_Sans_Bengali } from "next/font/google";
 import { Header } from '@/components/header'
 import { OrganizationStructuredData, WebsiteStructuredData } from '@/components/structured-data'
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const raleway = Raleway({
+  variable: "--font-raleway",
   subsets: ["latin"],
+  display: 'swap',
+});
+
+const amatic = Amatic_SC({
+  variable: "--font-amatic",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: 'swap',
 });
 
 const notoSansBengali = Noto_Sans_Bengali({
@@ -78,7 +86,7 @@ export default function RootLayout({
         <WebsiteStructuredData />
       </head>
       <body
-        className={`${inter.variable} ${notoSansBengali.variable} font-sans antialiased`}
+  className={`${raleway.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
       >
         <Header />
         <main className="pt-16 px-4 sm:px-6 lg:px-8">
