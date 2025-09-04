@@ -2,8 +2,14 @@
 
 import Link from 'next/link'
 import { Sparkles, Flame, Star } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 
 export function MobileBottomNav() {
+  const pathname = usePathname()
+  // Hide the global bottom nav on product detail pages to avoid overlapping
+  if (pathname && pathname.startsWith('/product/')) {
+    return null
+  }
   return (
     <nav
       role="navigation"

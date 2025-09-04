@@ -21,6 +21,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   const router = useRouter()
   const addToCart = useCartStore((state) => state.addToCart)
   const setDirectBuy = useCartStore((state) => state.setDirectBuy)
+  const [isAdding, setIsAdding] = useState(false)
 
   const hasDiscount = product.comparePrice && parseFloat(product.comparePrice) > parseFloat(product.price)
   const discountPercentage = hasDiscount 
@@ -72,7 +73,9 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   }, [product.name, product.tags])
 
   const handleAddToCart = () => {
-    addToCart(product)
+  setIsAdding(true)
+  addToCart(product)
+  setTimeout(() => setIsAdding(false), 800)
   }
 
   const handleBuyNow = () => {
@@ -92,7 +95,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   return (
     <>
       <ProductStructuredData product={product} />
-      <div className="container mx-auto max-w-6xl py-8">
+  <div className="container mx-auto max-w-6xl py-8 pb-28 md:pb-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Left Column - Images */}
         <div className="space-y-4">
@@ -167,9 +170,9 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
             <p className="text-xs text-muted-foreground">VAT/Tax included</p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row gap-3">
+          {/* Action Buttons (desktop/tablet) */}
+          <div className="hidden md:block space-y-3">
+            <div className="flex gap-3">
               <Button 
                 onClick={handleAddToCart}
                 className="flex-1 h-12 text-base font-semibold"
@@ -189,7 +192,6 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
                 Buy Now
               </Button>
             </div>
-            
             <div className="flex gap-3">
               <Button 
                 onClick={handleWhatsApp}
@@ -253,6 +255,45 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
           </TabsContent>
         </Tabs>
       </div>
+      </div>
+
+      {/* Sticky Mobile Action Bar */}
+      <div className="fixed md:hidden bottom-0 inset-x-0 z-50 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90">
+        <div className="container mx-auto max-w-6xl px-4 py-3">
+          <div className="grid grid-cols-2 gap-3 items-stretch">
+            <Button 
+              onClick={handleAddToCart}
+              className="h-12 text-base font-semibold"
+              size="lg"
+              disabled={isAdding}
+            >
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              {isAdding ? 'Added' : 'Add to Cart'}
+            </Button>
+            <Button 
+              onClick={handleBuyNow}
+              variant="default"
+              className="h-12 text-base font-semibold bg-yellow-500 hover:bg-yellow-600 text-gray-900"
+              size="lg"
+            >
+              <Zap className="mr-2 h-5 w-5" />
+              Buy Now
+            </Button>
+          </div>
+          <div className="mt-3">
+            <Button 
+              onClick={handleWhatsApp}
+              variant="secondary" 
+              size="lg" 
+              className="w-full h-11 text-green-700 bg-green-50 hover:bg-green-100"
+            >
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Need Help? WhatsApp
+            </Button>
+          </div>
+          {/* iOS safe area inset */}
+          <div className="h-[env(safe-area-inset-bottom)]" />
+        </div>
       </div>
     </>
   )

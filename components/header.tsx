@@ -21,10 +21,10 @@ export function Header() {
       <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 border-b border-gray-100 shadow-sm">
         <div className="container mx-auto max-w-7xl px-4">
           {/* Main Header */}
-          <div className="flex h-24 items-center justify-between">
+          <div className="relative flex h-24 items-center justify-end md:justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center group">
-              <div className="relative w-40 h-40 transition-transform group-hover:scale-105">
+            <Link href="/" className="flex items-center group absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
+              <div className="relative w-28 h-28 md:w-40 md:h-40 transition-transform group-hover:scale-105">
                 <Image
                   src="/main-logo.svg"
                   alt="Kids Toys Bangladesh"
@@ -54,7 +54,7 @@ export function Header() {
             {/* Search removed */}
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 relative z-10">
               {/* Cart */}
               <Link href="/cart">
                 <Button
