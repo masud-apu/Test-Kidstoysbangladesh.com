@@ -97,7 +97,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex-1">
               <Button 
                 onClick={handleBuyNow}
-                className="w-full h-9 md:h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold text-sm transition-colors"
+                className="w-full h-9 md:h-10 font-semibold text-sm"
                 size="sm"
               >
                 Buy Now
@@ -107,9 +107,10 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex-shrink-0">
               <Button
                 onClick={handleAddToCart}
+                variant="outline"
                 size="sm"
                 aria-label="Add to cart"
-                className="w-9 h-9 md:w-10 md:h-10 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-colors"
+                className="w-9 h-9 md:w-10 md:h-10"
               >
                 <ShoppingCart className="h-4 w-4" />
               </Button>

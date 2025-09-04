@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       'children toy',
       'toy Bangladesh',
       'buy online',
-      ...(prod.tags || [])
+      ...((Array.isArray(prod.tags) ? prod.tags : []) as string[])
     ],
     openGraph: {
       title: prod.name,

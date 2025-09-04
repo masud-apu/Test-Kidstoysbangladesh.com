@@ -120,7 +120,7 @@ export default async function Home() {
           {/* Mobile anchor to all products */}
           <div className="md:hidden mt-8 text-center">
             <Link href="#all-products">
-              <Button className="bg-teal-500 hover:bg-teal-600 text-white px-8">
+              <Button className="px-8 h-12 text-base font-semibold">
                 Browse All Products
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -160,7 +160,7 @@ export default async function Home() {
           {/* Mobile anchor to all products */}
           <div className="md:hidden mt-8 text-center">
             <Link href="#all-products">
-              <Button className="bg-red-500 hover:bg-red-600 text-white px-8">
+              <Button className="px-8 h-12 text-base font-semibold">
                 Browse All Products
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -191,7 +191,7 @@ export default async function Home() {
               </div>
               <h3 className="text-2xl font-bold mb-4 text-gray-900">No products found</h3>
               <p className="text-gray-600 mb-8">Add some products to your database to get started.</p>
-              <Button className="bg-teal-500 hover:bg-teal-600 text-white">Add Products</Button>
+              <Button className="h-12 text-base font-semibold">Add Products</Button>
             </div>
           )}
         </div>
@@ -211,7 +211,7 @@ export default async function Home() {
                 placeholder="Enter your email" 
                 className="flex-1 px-4 py-3 rounded-lg text-gray-900 border-0 focus:ring-2 focus:ring-white/50"
               />
-              <Button className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-3 font-semibold">
+              <Button variant="outline" className="px-8 py-3 font-semibold">
                 Subscribe
               </Button>
             </div>

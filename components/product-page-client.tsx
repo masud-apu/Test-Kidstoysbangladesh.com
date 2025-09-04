@@ -46,6 +46,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
     const name = product.name || ''
     let main = name.trim()
     let sub = ''
+    const tagsArr = Array.isArray(product.tags) ? product.tags : []
 
     // Prefer parentheses content as subtitle if present
     const parenMatch = name.match(/^(.*?)[\s]*\((.+)\)[\s]*$/)
@@ -60,9 +61,9 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
       const [m, ...rest] = name.split(' | ')
       main = m.trim()
       sub = rest.join(' | ').trim()
-    } else if (product.tags && product.tags.length) {
+    } else if (tagsArr.length) {
       // Derive a clean, human subtitle from tags (avoid raw system tags)
-      const nice = Array.from(new Set(product.tags
+      const nice = Array.from(new Set(tagsArr
         .map((t) => prettify(t))
         .filter(Boolean)))
         .slice(0, 3)
@@ -90,7 +91,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
     window.open(whatsappUrl, '_blank')
   }
 
-  const images = product.images && product.images.length > 0 ? product.images : ['/placeholder.jpg']
+  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/placeholder.jpg']
 
   return (
     <>
