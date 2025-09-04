@@ -86,7 +86,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   const handleWhatsApp = () => {
     const productUrl = `https://kidstoysbangladesh.com/product/${product.handle}`
   const message = `Hi! I'm interested in this product: ${product.name} - ৳${product.price}\n\nProduct link: ${productUrl}`
-    const whatsappUrl = `https://wa.me/8801718007639?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/88001735547173?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 
