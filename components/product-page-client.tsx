@@ -86,12 +86,13 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
 
   const handleWhatsApp = () => {
     const productUrl = `https://kidstoysbangladesh.com/product/${product.handle}`
-  const message = `Hi! I'm interested in this product: ${product.name} - ৳${product.price}\n\nProduct link: ${productUrl}`
-    const whatsappUrl = `https://wa.me/88001735547173?text=${encodeURIComponent(message)}`
+    const message = `Hi! I'm interested in this product: ${product.name} - ৳${product.price}\n\nProduct link: ${productUrl}`
+    // Corrected WhatsApp phone number (BD): 8801735547173
+    const whatsappUrl = `https://wa.me/8801735547173?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 
-  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/placeholder.jpg']
+  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/og-image.png']
 
   return (
     <>

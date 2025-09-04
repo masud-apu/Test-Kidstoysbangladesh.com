@@ -24,6 +24,7 @@ const notoSansBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://kidstoysbangladesh.com'),
   title: {
     default: "KidsToysBangladesh - Best Kids Toys Online Store in Bangladesh",
     template: "%s | KidsToysBangladesh"
