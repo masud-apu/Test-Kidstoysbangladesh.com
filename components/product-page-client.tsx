@@ -20,7 +20,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   const [activeTab, setActiveTab] = useState("description")
   const router = useRouter()
   const addToCart = useCartStore((state) => state.addToCart)
-  const setDirectBuy = useCartStore((state) => state.setDirectBuy)
+  // const setDirectBuy = useCartStore((state) => state.setDirectBuy)
   const [isAdding, setIsAdding] = useState(false)
 
   const hasDiscount = product.comparePrice && parseFloat(product.comparePrice) > parseFloat(product.price)

@@ -1,4 +1,4 @@
-import { headers, cookies } from 'next/headers'
+import { cookies } from 'next/headers'
 import { getSession } from './auth'
 
 export async function getCurrentUser() {

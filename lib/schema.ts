@@ -7,6 +7,7 @@ export const products = pgTable('products', {
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
   actualPrice: decimal('actual_price', { precision: 10, scale: 2 }),
   comparePrice: decimal('compare_price', { precision: 10, scale: 2 }),
+  quantity: integer('quantity').default(1).notNull(),
   completedOrders: integer('completed_orders').default(0).notNull(),
   tags: json('tags').$type<string[]>().default([]),
   images: json('images').$type<string[]>().default([]),

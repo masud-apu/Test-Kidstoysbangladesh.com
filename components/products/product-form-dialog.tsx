@@ -1,11 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2, Plus, X } from "lucide-react"
+import { Loader2, Plus, X, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
+import { generateHandle } from "@/lib/utils/handle-generator"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -27,7 +28,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { productSchema, updateProductSchema } from "@/lib/validations/product"
+import { ImageUpload } from "@/components/ui/image-upload"
+import { productSchema } from "@/lib/validations/product"
 import { z } from "zod"
 import { Product } from "./products-table"
 
@@ -46,7 +48,8 @@ export function ProductFormDialog({
 }: ProductFormDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [tagInput, setTagInput] = useState("")
-  const [imageInput, setImageInput] = useState("")
+  const [isCheckingHandle, setIsCheckingHandle] = useState(false)
+  const [handleError, setHandleError] = useState<string | null>(null)
 
   const isEdit = !!product
 
@@ -58,6 +61,7 @@ export function ProductFormDialog({
       price: product?.price || "",
       actualPrice: product?.actualPrice || "",
       comparePrice: product?.comparePrice || "",
+      quantity: product?.quantity?.toString() || "1",
       description: product?.description || "",
       tags: product?.tags || [],
       images: product?.images || [],
@@ -68,6 +72,14 @@ export function ProductFormDialog({
   const watchedImages = form.watch("images") ?? []
 
   const handleSubmit = async (data: Record<string, unknown>) => {
+    // Check for handle error before submitting
+    if (handleError) {
+      toast.error('Cannot save product', {
+        description: 'Please resolve the handle conflict first.',
+      })
+      return
+    }
+    
     setIsLoading(true)
     try {
       // Include product ID for updates
@@ -99,19 +111,82 @@ export function ProductFormDialog({
     )
   }
 
-  const addImage = () => {
-    if (imageInput.trim() && !watchedImages.includes(imageInput.trim())) {
-      form.setValue("images", [...watchedImages, imageInput.trim()])
-      setImageInput("")
-    }
+  const handleImageChange = (urls: string[]) => {
+    form.setValue("images", urls)
   }
 
-  const removeImage = (imageToRemove: string) => {
-    form.setValue(
-      "images",
-      watchedImages.filter((image) => image !== imageToRemove)
-    )
-  }
+  const checkHandleUniqueness = useCallback(async (handle: string) => {
+    if (!handle || handle.length < 1) return
+    
+    setIsCheckingHandle(true)
+    setHandleError(null)
+    
+    try {
+      const response = await fetch('/api/admin/products/check-handle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          handle, 
+          excludeId: isEdit ? product?.id : null 
+        }),
+      })
+      
+      const data = await response.json()
+      
+      if (!data.isUnique) {
+        setHandleError('This handle already exists. Please choose a different one.')
+        form.setError('handle', { 
+          type: 'manual', 
+          message: 'This handle already exists. Please choose a different one.' 
+        })
+      } else {
+        setHandleError(null)
+        form.clearErrors('handle')
+      }
+    } catch (error) {
+      console.error('Error checking handle:', error)
+      setHandleError('Error checking handle availability')
+    } finally {
+      setIsCheckingHandle(false)
+    }
+  }, [form, isEdit, product?.id])
+
+  const generateHandleFromName = useCallback((name: string) => {
+    const generatedHandle = generateHandle(name)
+    form.setValue('handle', generatedHandle)
+    
+    if (generatedHandle) {
+      checkHandleUniqueness(generatedHandle)
+    }
+  }, [form, checkHandleUniqueness])
+
+  // Watch name field to auto-generate handle for new products
+  const watchedName = form.watch('name')
+  const watchedHandle = form.watch('handle')
+  
+  useEffect(() => {
+    if (!isEdit && watchedName && (!watchedHandle || watchedHandle === generateHandle(watchedName))) {
+      const timeoutId = setTimeout(() => {
+        generateHandleFromName(watchedName)
+      }, 300) // Debounce
+      
+      return () => clearTimeout(timeoutId)
+    }
+  }, [watchedName, watchedHandle, isEdit, generateHandleFromName])
+  
+  // Check handle uniqueness when manually typed
+  useEffect(() => {
+    if (watchedHandle && watchedHandle.length >= 1) {
+      const timeoutId = setTimeout(() => {
+        checkHandleUniqueness(watchedHandle)
+      }, 500) // Debounce
+      
+      return () => clearTimeout(timeoutId)
+    } else {
+      setHandleError(null)
+      form.clearErrors('handle')
+    }
+  }, [watchedHandle, checkHandleUniqueness, form])
 
   React.useEffect(() => {
     if (product && open) {
@@ -121,6 +196,7 @@ export function ProductFormDialog({
         price: product.price.toString(),
         actualPrice: product.actualPrice?.toString() || "",
         comparePrice: product.comparePrice?.toString() || "",
+        quantity: product.quantity?.toString() || "1",
         description: product.description || "",
         tags: product.tags,
         images: product.images,
@@ -132,6 +208,7 @@ export function ProductFormDialog({
         price: "",
         actualPrice: "",
         comparePrice: "",
+        quantity: "1",
         description: "",
         tags: [],
         images: [],
@@ -176,8 +253,32 @@ export function ProductFormDialog({
                   <FormItem>
                     <FormLabel>Handle</FormLabel>
                     <FormControl>
-                      <Input placeholder="product-handle" {...field} />
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="product-handle" 
+                          {...field} 
+                          className={handleError ? 'border-red-500' : ''}
+                        />
+                        {!isEdit && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => generateHandleFromName(watchedName || '')}
+                            disabled={!watchedName || isCheckingHandle}
+                          >
+                            {isCheckingHandle ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </FormControl>
+                    {handleError && (
+                      <p className="text-sm text-red-600 mt-1">{handleError}</p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -243,6 +344,26 @@ export function ProductFormDialog({
 
             <FormField
               control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity (Inventory Stock)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="1"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
@@ -299,50 +420,11 @@ export function ProductFormDialog({
 
             <div className="space-y-2">
               <FormLabel>Images</FormLabel>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Image URL"
-                  value={imageInput}
-                  onChange={(e) => setImageInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      addImage()
-                    }
-                  }}
-                />
-                <Button type="button" size="sm" onClick={addImage}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              {watchedImages.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {watchedImages.map((image, index) => (
-                    <div
-                      key={index}
-                      className="relative group border rounded-lg overflow-hidden"
-                    >
-                      <img // eslint-disable-line @next/next/no-img-element
-                        src={image}
-                        alt={`Product ${index + 1}`}
-                        className="w-full h-24 object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = "/placeholder.svg"
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeImage(image)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <ImageUpload
+                value={watchedImages}
+                onChange={handleImageChange}
+                multiple={true}
+              />
             </div>
 
             <DialogFooter>

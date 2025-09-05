@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { orders, orderItems } from '@/lib/schema'
+import { orders, orderItems, products } from '@/lib/schema'
 import { createOrderSchema } from '@/lib/validations/order'
 import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
+import { eq, sql } from 'drizzle-orm'
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,10 +49,21 @@ export async function POST(request: NextRequest) {
 
       await tx.insert(orderItems).values(orderItemsData)
 
+      // 3. Update product quantities (subtract ordered quantities)
+      for (const item of validatedData.items) {
+        await tx
+          .update(products)
+          .set({
+            quantity: sql`${products.quantity} - ${item.quantity}`,
+            updatedAt: sql`now()`
+          })
+          .where(eq(products.id, item.id))
+      }
+
       return newOrder
     })
 
-    // 3. Prepare data for email service (items are already in the correct CartItemType format)
+    // 4. Prepare data for email service (items are already in the correct CartItemType format)
     // Normalize items to CartItemType shape (ensure Date types)
     const normalizedItems = validatedData.items.map((item) => ({
       ...item,
@@ -71,7 +83,7 @@ export async function POST(request: NextRequest) {
       orderId: validatedData.orderId,
     }
 
-    // 4. Send confirmation emails
+    // 5. Send confirmation emails
     const emailResult = await sendOrderConfirmationEmails(emailOrderData)
 
     return NextResponse.json({

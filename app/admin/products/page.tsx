@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { usePersistentState, usePersistentObject } from "@/hooks/use-persistent-state"
 import { Plus, Upload, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -38,7 +38,7 @@ export default function ProductsPage() {
   // Prevent duplicate calls during React Strict Mode or rapid state changes
   const fetchingRef = useRef(false)
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     // Prevent duplicate calls
     if (fetchingRef.current) {
       return
@@ -68,7 +68,7 @@ export default function ProductsPage() {
       setIsLoading(false)
       fetchingRef.current = false
     }
-  }
+  }, [pagination.page, pagination.limit, search, sortBy, sortOrder])
 
   // Update pagination limit when preferences change
   useEffect(() => {
@@ -91,12 +91,12 @@ export default function ProductsPage() {
     }, 500) // 500ms debounce
 
     return () => clearTimeout(timeoutId)
-  }, [search])
+  }, [search, fetchProducts, pagination.page])
 
   // Fetch products when pagination, sortBy, or sortOrder changes
   useEffect(() => {
     fetchProducts()
-  }, [pagination.page, pagination.limit, sortBy, sortOrder])
+  }, [fetchProducts])
 
   const handleCreateProduct = async (data: Record<string, unknown>) => {
     try {

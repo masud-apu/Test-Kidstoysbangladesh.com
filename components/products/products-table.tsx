@@ -59,6 +59,7 @@ export type Product = {
   price: string
   actualPrice: string | null
   comparePrice: string | null
+  quantity: number
   completedOrders: number
   description: string | null
   tags: string[]
@@ -240,6 +241,47 @@ export function ProductsTable({
         const amount = row.getValue("actualPrice") as string | null
         if (!amount) return <div className="text-right text-muted-foreground">-</div>
         return <div className="text-right font-medium">৳{parseFloat(amount)}</div>
+      },
+    },
+    {
+      accessorKey: "quantity",
+      header: ({ column }) => {
+        const sorted = column.getIsSorted()
+        return (
+          <Button
+            variant="ghost"
+            className="justify-end w-full"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <span className="mr-2">Stock</span>
+            {sorted === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : sorted === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        )
+      },
+      cell: ({ row }) => {
+        const quantity = row.getValue("quantity") as number
+        const isLowStock = quantity <= 5
+        const isOutOfStock = quantity <= 0
+        
+        return (
+          <div className={`text-right font-medium ${
+            isOutOfStock 
+              ? 'text-red-600' 
+              : isLowStock 
+                ? 'text-yellow-600' 
+                : 'text-green-600'
+          }`}>
+            {quantity}
+            {isOutOfStock && ' (Out of stock)'}
+            {!isOutOfStock && isLowStock && ' (Low stock)'}
+          </div>
+        )
       },
     },
     {
