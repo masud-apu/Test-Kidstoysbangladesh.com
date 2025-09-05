@@ -16,6 +16,7 @@ import { useCartStore, type DeliveryType } from '@/lib/store'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { checkoutSchema, type CheckoutType } from '@/lib/validations'
 import { Minus, Plus, Trash2, ShoppingBag, CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
@@ -95,6 +96,12 @@ function CheckoutContent() {
         setOrderId(newOrderId)
         setShowSuccessDialog(true)
         
+        // Show success toast
+        toast.success('Order placed successfully!', {
+          description: `Your order #${newOrderId} has been placed. You will receive a confirmation email shortly.`,
+          duration: 5000,
+        })
+        
         // Clear cart or direct buy item
         if (checkoutType === 'direct') {
           clearDirectBuy()
@@ -102,11 +109,15 @@ function CheckoutContent() {
           clearCart()
         }
       } else {
-  alert('There was a problem processing your order. Please try again.')
+        toast.error('Order failed', {
+          description: result.message || 'There was a problem processing your order. Please try again.',
+        })
       }
     } catch (error) {
-  console.error('Checkout error:', error)
-  alert('There was a problem processing your order. Please try again.')
+      console.error('Checkout error:', error)
+      toast.error('Order failed', {
+        description: 'There was a problem processing your order. Please try again.',
+      })
     } finally {
       setIsLoading(false)
     }

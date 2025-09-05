@@ -89,8 +89,11 @@ kid/
 4. **Database Setup**
    ```bash
    # Generate and run migrations
-   pnpm drizzle-kit generate
-   pnpm drizzle-kit migrate
+   pnpm db:generate
+   pnpm db:migrate
+   
+   # Seed initial admin user
+   pnpm seed:admin
    
    # Optional: Seed with sample data
    # Use the sample-products.sql file to populate products
@@ -166,6 +169,31 @@ The app is optimized for deployment on Vercel, Netlify, or any Node.js hosting p
 - `tags` - JSON array of tags
 - `images` - JSON array of image URLs
 - `description` - Markdown-supported description
+
+### Users Table (Admin Authentication)
+- `id` - Primary key
+- `username` - Admin username
+- `hashedPassword` - Encrypted password
+- `role` - User role (default: admin)
+- `createdAt` - Account creation timestamp
+
+### Sessions Table
+- `id` - Session identifier
+- `userId` - Reference to users table
+- `expiresAt` - Session expiration
+- `createdAt` - Session creation timestamp
+
+## 🔐 Admin Access
+
+**Default Admin Credentials:**
+- **Username:** `admin`
+- **Password:** `Admin12345&`
+
+**Important Security Notes:**
+- Change the default admin password immediately after first login
+- Admin credentials are automatically seeded when running `pnpm seed:admin`
+- Admin dashboard available at `/admin` (barebone layout)
+- Admin login available at `/admin/login`
 
 ## 🤝 Contributing
 

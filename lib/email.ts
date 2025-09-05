@@ -9,12 +9,14 @@ export interface OrderData {
   customerPhone: string
   customerAddress: string
   items: CartItemType[]
+  itemsTotal: number
+  shippingCost: number
   totalAmount: number
   orderId: string
 }
 
 export async function sendOrderConfirmationEmails(orderData: OrderData) {
-  const { customerEmail, customerName, items, totalAmount, orderId } = orderData
+  const { customerEmail, customerName, items, itemsTotal, shippingCost, totalAmount, orderId } = orderData
   
   try {
     // Email to customer
@@ -24,7 +26,7 @@ export async function sendOrderConfirmationEmails(orderData: OrderData) {
         from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
         to: customerEmail,
         subject: `Order Confirmation - #${orderId}`,
-        html: generateCustomerEmailTemplate(customerName, items, totalAmount, orderId),
+        html: generateCustomerEmailTemplate(customerName, items, itemsTotal, shippingCost, totalAmount, orderId),
       })
       customerEmailId = customerRes.data?.id
     }
@@ -54,6 +56,8 @@ export async function sendOrderConfirmationEmails(orderData: OrderData) {
 function generateCustomerEmailTemplate(
   customerName: string,
   items: CartItemType[],
+  itemsTotal: number,
+  shippingCost: number,
   totalAmount: number,
   orderId: string
 ): string {
@@ -110,7 +114,12 @@ function generateCustomerEmailTemplate(
         </table>
 
         <div style="text-align: right; margin: 20px 0;">
-          <h3 style="color: #2563eb;">Total Amount: ৳${totalAmount.toFixed(2)}</h3>
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <p style="margin: 5px 0;"><strong>Items Total: ৳${itemsTotal.toFixed(2)}</strong></p>
+            <p style="margin: 5px 0;"><strong>Shipping Cost: ৳${shippingCost.toFixed(2)}</strong></p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 10px 0;">
+            <h3 style="color: #2563eb; margin: 5px 0;">Total Amount: ৳${totalAmount.toFixed(2)}</h3>
+          </div>
         </div>
 
         <div style="background-color: #dbeafe; padding: 15px; border-radius: 6px; margin: 20px 0;">
@@ -168,6 +177,9 @@ function generateOwnerEmailTemplate(orderData: OrderData): string {
         
         <div style="background-color: #fee2e2; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <h3>অর্ডার #${orderData.orderId}</h3>
+          <p><strong>পণ্যের মূল্য: ৳${orderData.itemsTotal.toFixed(2)}</strong></p>
+          <p><strong>ডেলিভারি চার্জ: ৳${orderData.shippingCost.toFixed(2)}</strong></p>
+          <hr style="border: none; border-top: 1px solid #dc2626; margin: 10px 0;">
           <p><strong>মোট পরিমাণ: ৳${orderData.totalAmount.toFixed(2)}</strong></p>
         </div>
 

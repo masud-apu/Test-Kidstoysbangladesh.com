@@ -80,8 +80,8 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   }
 
   const handleBuyNow = () => {
-    setDirectBuy(product)
-    router.push('/checkout?type=direct')
+    addToCart(product)
+    router.push('/checkout')
   }
 
   const handleWhatsApp = () => {

@@ -15,6 +15,20 @@
       "when": 1756908234765,
       "tag": "0001_elite_winter_soldier",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757012513435,
+      "tag": "0002_goofy_king_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1757028023652,
+      "tag": "0003_neat_yellow_claw",
+      "breakpoints": true
     }
   ]
 }
