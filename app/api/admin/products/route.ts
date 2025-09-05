@@ -15,27 +15,45 @@ export async function GET(request: NextRequest) {
     
     const offset = (page - 1) * limit
 
-    // Build query with search
-    let query = db.select().from(products)
-    let countQuery = db.select({ count: count() }).from(products)
+    // Build queries (avoid mutating builder to keep types sound)
+    const sortableColumns = {
+      createdAt: products.createdAt,
+      updatedAt: products.updatedAt,
+      name: products.name,
+      price: products.price,
+      completedOrders: products.completedOrders,
+    } as const
 
-    if (search) {
-      query = query.where(ilike(products.name, `%${search}%`))
-      countQuery = countQuery.where(ilike(products.name, `%${search}%`))
-    }
+    const sortColumn = sortableColumns[(sortBy as keyof typeof sortableColumns) || 'createdAt'] || products.createdAt
+    const orderExpr = sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn)
 
-    // Add sorting
-    const sortColumn = products[sortBy as keyof typeof products] || products.createdAt
-    query = sortOrder === 'asc' 
-      ? query.orderBy(asc(sortColumn))
-      : query.orderBy(desc(sortColumn))
+    const productListPromise = search
+      ? db
+          .select()
+          .from(products)
+          .where(ilike(products.name, `%${search}%`))
+          .orderBy(orderExpr)
+          .limit(limit)
+          .offset(offset)
+      : db
+          .select()
+          .from(products)
+          .orderBy(orderExpr)
+          .limit(limit)
+          .offset(offset)
 
-    // Add pagination
-    query = query.limit(limit).offset(offset)
+    const countPromise = search
+      ? db
+          .select({ count: count() })
+          .from(products)
+          .where(ilike(products.name, `%${search}%`))
+      : db
+          .select({ count: count() })
+          .from(products)
 
     const [productList, totalCount] = await Promise.all([
-      query,
-      countQuery
+      productListPromise,
+      countPromise,
     ])
 
     const total = totalCount[0]?.count || 0

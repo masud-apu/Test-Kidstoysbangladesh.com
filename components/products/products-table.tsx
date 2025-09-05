@@ -10,12 +10,9 @@ import {
   VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Trash2, Edit } from "lucide-react"
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, MoreHorizontal, Trash2, Edit } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -168,15 +165,24 @@ export function ProductsTable({
     },
     {
       accessorKey: "name",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
+      header: ({ column }) => {
+        const sorted = column.getIsSorted()
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Name
+            {sorted === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : sorted === "desc" ? (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        )
+      },
       cell: ({ row }) => (
         <div className="max-w-[200px] truncate" title={row.getValue("name") as string}>
           {row.getValue("name")}
@@ -185,15 +191,25 @@ export function ProductsTable({
     },
     {
       accessorKey: "price",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Price
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
+      header: ({ column }) => {
+        const sorted = column.getIsSorted()
+        return (
+          <Button
+            variant="ghost"
+            className="justify-end w-full"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <span className="mr-2">Price</span>
+            {sorted === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : sorted === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        )
+      },
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("price"))
         return <div className="text-right font-medium">৳{amount}</div>
@@ -201,15 +217,25 @@ export function ProductsTable({
     },
     {
       accessorKey: "actualPrice",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Actual Price
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
+      header: ({ column }) => {
+        const sorted = column.getIsSorted()
+        return (
+          <Button
+            variant="ghost"
+            className="justify-end w-full"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <span className="mr-2">Actual Price</span>
+            {sorted === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : sorted === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        )
+      },
       cell: ({ row }) => {
         const amount = row.getValue("actualPrice") as string | null
         if (!amount) return <div className="text-right text-muted-foreground">-</div>
@@ -218,15 +244,25 @@ export function ProductsTable({
     },
     {
       accessorKey: "completedOrders",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Orders
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
+      header: ({ column }) => {
+        const sorted = column.getIsSorted()
+        return (
+          <Button
+            variant="ghost"
+            className="justify-end w-full"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <span className="mr-2">Orders</span>
+            {sorted === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : sorted === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        )
+      },
       cell: ({ row }) => (
         <div className="text-right">{row.getValue("completedOrders")}</div>
       ),
@@ -269,7 +305,7 @@ export function ProductsTable({
   ]
 
   // Handle sorting changes and convert to server-side format
-  const handleSortingChange = (updater: any) => {
+  const handleSortingChange = (updater: ((prev: SortingState) => SortingState) | SortingState) => {
     if (typeof updater === "function") {
       const newSorting = updater(tableSorting)
       if (newSorting.length > 0 && onSortingChange) {
@@ -378,8 +414,16 @@ export function ProductsTable({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
+                  // Align headers to match their column cells
+                  const headerId = header.column.id
+                  const headerClassName =
+                    headerId === 'price' || headerId === 'actualPrice' || headerId === 'completedOrders'
+                      ? 'text-right'
+                      : headerId === 'images'
+                        ? 'text-center w-[64px]'
+                        : undefined
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className={headerClassName}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -399,14 +443,23 @@ export function ProductsTable({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const cellId = cell.column.id
+                    const cellClassName =
+                      cellId === 'price' || cellId === 'actualPrice' || cellId === 'completedOrders'
+                        ? 'text-right'
+                        : cellId === 'images'
+                          ? 'text-center w-[64px]'
+                          : undefined
+                    return (
+                      <TableCell key={cell.id} className={cellClassName}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
               ))
             ) : (

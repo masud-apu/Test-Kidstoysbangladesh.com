@@ -44,10 +44,7 @@ export async function POST(request: NextRequest) {
       const rowNumber = i + 2 // +2 because CSV is 1-indexed and we have headers
       
       try {
-        // Parse tags and images from comma-separated strings
-        const tags = record.tags ? record.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : []
-        const images = record.images ? record.images.split(',').map((img: string) => img.trim()).filter(Boolean) : []
-
+        // Build raw record data (tags/images as strings) and validate
         const productData = {
           name: record.name,
           handle: record.handle,
@@ -55,8 +52,8 @@ export async function POST(request: NextRequest) {
           actualPrice: record.actualPrice || null,
           comparePrice: record.comparePrice || null,
           description: record.description || null,
-          tags,
-          images,
+          tags: record.tags ?? undefined,
+          images: record.images ?? undefined,
         }
 
         // Validate the data
@@ -74,16 +71,23 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        // Insert the product
+        // Transform tags/images to arrays and insert the product
+        const tags = validatedData.tags
+          ? String(validatedData.tags).split(',').map((tag: string) => tag.trim()).filter(Boolean)
+          : []
+        const images = validatedData.images
+          ? String(validatedData.images).split(',').map((img: string) => img.trim()).filter(Boolean)
+          : []
+
         await db.insert(products).values({
           name: validatedData.name,
           handle: validatedData.handle,
           price: validatedData.price,
-          actualPrice: validatedData.actualPrice,
-          comparePrice: validatedData.comparePrice,
-          description: validatedData.description,
-          tags: validatedData.tags,
-          images: validatedData.images,
+          actualPrice: validatedData.actualPrice ?? null,
+          comparePrice: validatedData.comparePrice ?? null,
+          description: validatedData.description ?? null,
+          tags,
+          images,
         })
 
         results.success++

@@ -5,7 +5,13 @@ interface OrderStatusBadgeProps {
   status: OrderStatus
 }
 
-const statusConfig = {
+type StatusConfig = {
+  label: string
+  variant: "secondary" | "default" | "outline" | "destructive"
+  className?: string
+}
+
+const statusConfig: Record<OrderStatus, StatusConfig> = {
   order_placed: {
     label: "Order Placed",
     variant: "secondary" as const,
@@ -21,7 +27,7 @@ const statusConfig = {
   delivered: {
     label: "Delivered",
     variant: "default" as const,
-    className: "bg-green-100 text-green-800 hover:bg-green-100/80"
+    className: "bg-green-100 text-green-800 hover:bg-green-100/80",
   },
   returned: {
     label: "Returned",
@@ -30,7 +36,7 @@ const statusConfig = {
   canceled: {
     label: "Canceled",
     variant: "destructive" as const,
-    className: "bg-gray-100 text-gray-800 hover:bg-gray-100/80"
+    className: "bg-gray-100 text-gray-800 hover:bg-gray-100/80",
   },
 }
 

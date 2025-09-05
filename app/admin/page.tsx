@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getCurrentUser } from '@/lib/get-user'
 import { db } from '@/lib/db'
 import { orders, products } from '@/lib/schema'
-import { and, desc, eq, gt, sql, count } from 'drizzle-orm'
+import { desc, sql, count } from 'drizzle-orm'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -10,15 +10,6 @@ import { Button } from '@/components/ui/button'
 import { OrderStatusBadge } from '@/components/orders/order-status-badge'
 import { Package, ShoppingCart, TrendingUp, ArrowUpRight } from 'lucide-react'
 
-type DashboardOrder = {
-  id: number
-  orderId: string
-  customerName: string
-  customerPhone: string
-  totalAmount: string
-  status: string
-  createdAt: string
-}
 
 export default async function AdminDashboard() {
   const user = await getCurrentUser()
@@ -61,7 +52,7 @@ export default async function AdminDashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, {user.username}! Here's an overview of your store.
+            Welcome back, {user.username}! Here&apos;s an overview of your store.
           </p>
         </div>
       </div>
@@ -167,7 +158,7 @@ export default async function AdminDashboard() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <OrderStatusBadge status={order.status as any} />
+                        <OrderStatusBadge status={order.status as "order_placed" | "confirmed" | "shipped" | "delivered" | "returned" | "canceled"} />
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         ৳{parseFloat(order.totalAmount).toFixed(2)}

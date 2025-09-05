@@ -52,12 +52,19 @@ export async function POST(request: NextRequest) {
     })
 
     // 3. Prepare data for email service (items are already in the correct CartItemType format)
+    // Normalize items to CartItemType shape (ensure Date types)
+    const normalizedItems = validatedData.items.map((item) => ({
+      ...item,
+      createdAt: typeof item.createdAt === 'string' ? new Date(item.createdAt) : item.createdAt,
+      updatedAt: typeof item.updatedAt === 'string' ? new Date(item.updatedAt) : item.updatedAt,
+    }))
+
     const emailOrderData: OrderData = {
       customerName: validatedData.customerName,
       customerEmail: validatedData.customerEmail,
       customerPhone: validatedData.customerPhone,
       customerAddress: validatedData.customerAddress,
-      items: validatedData.items, // Items are already in CartItemType format
+      items: normalizedItems, // Ensure correct types for email service
       itemsTotal: itemsTotal,
       shippingCost: validatedData.shippingCost,
       totalAmount: validatedData.totalAmount,

@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { productSchema, updateProductSchema } from "@/lib/validations/product"
+import { z } from "zod"
 import { Product } from "./products-table"
 
 interface ProductFormDialogProps {
@@ -49,7 +50,7 @@ export function ProductFormDialog({
 
   const isEdit = !!product
 
-  const form = useForm({
+  const form = useForm<z.input<typeof productSchema>>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name || "",
@@ -63,8 +64,8 @@ export function ProductFormDialog({
     },
   })
 
-  const watchedTags = form.watch("tags")
-  const watchedImages = form.watch("images")
+  const watchedTags = form.watch("tags") ?? []
+  const watchedImages = form.watch("images") ?? []
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     setIsLoading(true)

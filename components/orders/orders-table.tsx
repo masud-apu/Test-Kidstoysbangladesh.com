@@ -12,7 +12,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react"
+import { ArrowUpDown, ChevronDown, MoreHorizontal, Eye, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -288,7 +288,7 @@ export function OrdersTable({
   ]
 
   // Handle sorting changes and convert to server-side format
-  const handleSortingChange = (updater: any) => {
+  const handleSortingChange = (updater: ((prev: SortingState) => SortingState) | SortingState) => {
     if (typeof updater === "function") {
       const newSorting = updater(tableSorting)
       if (newSorting.length > 0 && onSortingChange) {

@@ -111,7 +111,12 @@ export function OrderDetailsDialog({
 
   const onSubmitCustomerInfo = async (data: UpdateOrderCustomerInfoData) => {
     if (order) {
-      await onUpdateCustomerInfo(order.id, data)
+      await onUpdateCustomerInfo(order.id, {
+        customerName: data.customerName,
+        customerEmail: data.customerEmail ?? null,
+        customerPhone: data.customerPhone,
+        customerAddress: data.customerAddress,
+      })
       setIsEditingCustomer(false)
     }
   }

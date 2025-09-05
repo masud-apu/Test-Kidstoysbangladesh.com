@@ -40,9 +40,19 @@ export async function GET(request: NextRequest) {
     
     const [{ count: total }] = await totalQuery
 
-    // Build order by clause
-    const orderByColumn = orders[sortBy as keyof typeof orders] || orders.createdAt
-    const orderByClause = sortOrder === 'asc' ? asc(orderByColumn) : desc(orderByColumn)
+    // Build order by clause  
+    let orderByClause
+    if (sortBy === 'orderId') {
+      orderByClause = sortOrder === 'asc' ? asc(orders.orderId) : desc(orders.orderId)
+    } else if (sortBy === 'customerName') {
+      orderByClause = sortOrder === 'asc' ? asc(orders.customerName) : desc(orders.customerName)
+    } else if (sortBy === 'totalAmount') {
+      orderByClause = sortOrder === 'asc' ? asc(orders.totalAmount) : desc(orders.totalAmount)
+    } else if (sortBy === 'status') {
+      orderByClause = sortOrder === 'asc' ? asc(orders.status) : desc(orders.status)
+    } else {
+      orderByClause = sortOrder === 'asc' ? asc(orders.createdAt) : desc(orders.createdAt)
+    }
 
     // Get orders with pagination
     const ordersQuery = db.select().from(orders)

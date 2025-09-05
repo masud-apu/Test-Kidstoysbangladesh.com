@@ -230,7 +230,7 @@ export default function OrdersPage() {
           search={search}
           onSearchChange={handleSearchChange}
           onSearchSubmit={handleSearchSubmit}
-          sorting={{ field: sortBy, order: sortOrder }}
+          sorting={{ field: sortBy, order: sortOrder as "asc" | "desc" }}
           onSortingChange={handleSortingChange}
           statusFilter={statusFilter}
           onStatusFilterChange={handleStatusFilterChange}

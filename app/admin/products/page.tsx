@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { usePersistentState, usePersistentObject } from "@/hooks/use-persistent-state"
 import { Plus, Upload, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -268,7 +268,7 @@ export default function ProductsPage() {
           search={search}
           onSearchChange={handleSearchChange}
           onSearchSubmit={handleSearchSubmit}
-          sorting={{ field: sortBy, order: sortOrder }}
+          sorting={{ field: sortBy, order: sortOrder as "asc" | "desc" }}
           onSortingChange={handleSortingChange}
         />
       )}
