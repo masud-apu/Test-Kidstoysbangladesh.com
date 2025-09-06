@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { 
-  Truck, 
-  Shield, 
-  Clock, 
-  Star,
+  Truck,
+  Banknote,
+  Headset,
+  ShieldCheck,
   Gift,
   ArrowRight
 } from 'lucide-react'
@@ -45,52 +45,64 @@ export default async function Home() {
       <HeroCarousel />
 
         {/* Integrated Features Section */}
-        <div className="relative -mt-16 z-20">
+    <div className="relative mt-2 md:mt-4 z-10">
           <div className="container mx-auto max-w-7xl px-4">
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
               {[
                 {
                   icon: Truck,
-                  title: "Free Delivery",
-                  description: "Free shipping on orders over ৳1500",
+                  title: "Fast & Reliable Delivery",
+                  description: "24–48 hour delivery within Dhaka city.",
                   color: "teal"
                 },
                 {
-                  icon: Shield,
-                  title: "Safe & Secure",
-                  description: "100% safe and tested toys",
-                  color: "green"
+                  icon: Banknote,
+                  title: "Easy Cash on Delivery",
+                  description: "No advance payment needed. Pay upon delivery.",
+                  color: "blue"
                 },
                 {
-                  icon: Clock,
-                  title: "Quick Service",
-                  description: "24/7 customer support",
+                  icon: Headset,
+                  title: "Friendly Support",
+                  description: "Have a question? Our friendly team is here to help.",
                   color: "orange"
                 },
                 {
-                  icon: Star,
-                  title: "Quality Guaranteed",
-                  description: "Premium quality assured",
-                  color: "yellow"
+                  icon: ShieldCheck,
+                  title: "Authentic & Child‑Safe",
+                  description: "Every toy is quality-checked for your child’s safety.",
+                  color: "green"
                 }
               ].map((feature, index) => (
-                <Card key={index} className="bg-white/95 backdrop-blur-md border border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <CardContent className="p-4 md:p-6 text-center">
-                    <div className={`w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full flex items-center justify-center ${
-                      feature.color === 'teal' ? 'bg-teal-100' :
-                      feature.color === 'green' ? 'bg-green-100' :
-                      feature.color === 'orange' ? 'bg-orange-100' :
-                      'bg-yellow-100'
-                    }`}>
-                      <feature.icon className={`h-6 w-6 md:h-8 md:w-8 ${
-                        feature.color === 'teal' ? 'text-teal-600' :
-                        feature.color === 'green' ? 'text-green-600' :
-                        feature.color === 'orange' ? 'text-orange-600' :
-                        'text-yellow-600'
-                      }`} />
+                <Card
+                  key={index}
+                  className="rounded-xl bg-white/90 backdrop-blur border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <CardContent className="p-2.5 md:p-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center ring-1 ring-black/5 ${
+                          feature.color === 'teal' ? 'bg-teal-50' :
+                          feature.color === 'blue' ? 'bg-blue-50' :
+                          feature.color === 'orange' ? 'bg-orange-50' :
+                          'bg-green-50'
+                        }`}
+                      >
+                        <feature.icon
+                          className={`h-5 w-5 ${
+                            feature.color === 'teal' ? 'text-teal-600' :
+                            feature.color === 'blue' ? 'text-blue-600' :
+                            feature.color === 'orange' ? 'text-orange-600' :
+                            'text-green-600'
+                          }`}
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-[13px] md:text-sm leading-tight text-gray-900 truncate">{feature.title}</h3>
+                        <p className="text-gray-600 text-[10px] md:text-xs leading-snug hidden sm:block">{feature.description}</p>
+                      </div>
                     </div>
-                    <h3 className="font-semibold text-sm md:text-lg mb-1 md:mb-2 text-gray-800">{feature.title}</h3>
-                    <p className="text-gray-600 text-xs md:text-sm">{feature.description}</p>
                   </CardContent>
                 </Card>
               ))}

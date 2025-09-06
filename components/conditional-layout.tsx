@@ -19,7 +19,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      <main className="pt-16 pb-20 md:pb-0 px-4 sm:px-6 lg:px-8">
+      <main>
         {children}
       </main>
       <MobileBottomNav />
