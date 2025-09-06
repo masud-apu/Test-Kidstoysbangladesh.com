@@ -10,9 +10,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useCartStore } from '@/lib/store'
 import { Minus, Plus, Trash2, ShoppingBag, ShoppingCart } from 'lucide-react'
+import { useOverlayStore } from '@/lib/ui-store'
 
 export default function CartPage() {
   const router = useRouter()
+  const openCheckout = useOverlayStore((s) => s.openCheckout)
   const { 
     items, 
     selectedItems,
@@ -49,7 +51,7 @@ export default function CartPage() {
 
   const handleCheckout = () => {
     if (selectedItemsData.length > 0) {
-      router.push('/checkout?type=cart')
+      openCheckout('cart')
     }
   }
 
@@ -62,10 +64,7 @@ export default function CartPage() {
       <div className="container py-16 text-center">
         <ShoppingBag className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
         <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
-        <p className="text-muted-foreground mb-6">Add some products to get started</p>
-        <Button asChild>
-          <Link href="/">Continue Shopping</Link>
-        </Button>
+        <p className="text-muted-foreground">Add some products to get started</p>
       </div>
     )
   }
@@ -203,9 +202,7 @@ export default function CartPage() {
                 Proceed to Checkout ({selectedItemsData.length})
               </Button>
 
-              <Button variant="outline" asChild className="w-full mt-3">
-                <Link href="/">Continue Shopping</Link>
-              </Button>
+              {/* Continue Shopping removed as requested */}
             </CardContent>
           </Card>
         </div>

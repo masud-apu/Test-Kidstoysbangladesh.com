@@ -8,6 +8,7 @@ export interface OrderData {
   customerEmail?: string | null
   customerPhone: string
   customerAddress: string
+  specialNote?: string
   items: CartItemType[]
   itemsTotal: number
   shippingCost: number
@@ -122,6 +123,12 @@ function generateCustomerEmailTemplate(
           </div>
         </div>
 
+        <div style="background-color: #f8fafc; padding: 12px 16px; border-left: 3px solid #93c5fd; border-radius: 4px; margin: 10px 0;">
+          <p style="margin: 0; color: #374151; font-size: 14px;">
+            If you provided any special delivery note, our team will follow it.
+          </p>
+        </div>
+
         <div style="background-color: #dbeafe; padding: 15px; border-radius: 6px; margin: 20px 0;">
           <p><strong>Delivery Information:</strong></p>
           <ul>
@@ -195,6 +202,12 @@ function generateOwnerEmailTemplate(orderData: OrderData): string {
             <p>${orderData.customerAddress}</p>
           </div>
         </div>
+
+        ${orderData.specialNote && orderData.specialNote.trim().length > 0 ? `
+        <div style="background-color: #fff7ed; padding: 12px 16px; border-left: 4px solid #fb923c; border-radius: 6px; margin: 10px 0 20px 0;">
+          <p style="margin: 0;"><strong>Special Note:</strong> ${orderData.specialNote}</p>
+        </div>
+        ` : ''}
 
         <h3>অর্ডারের পণ্যসমূহ:</h3>
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">

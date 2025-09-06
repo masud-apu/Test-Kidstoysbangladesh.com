@@ -8,11 +8,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCartStore, type DeliveryType } from '@/lib/store'
+import { useOverlayStore } from '@/lib/ui-store'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { checkoutSchema, type CheckoutType } from '@/lib/validations'
 import { Minus, Plus, Trash2, ShoppingBag, CheckCircle } from 'lucide-react'
@@ -20,7 +22,9 @@ import { toast } from 'sonner'
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
-  const checkoutType = searchParams.get('type') || 'cart'
+  const overlayCheckoutOpen = useOverlayStore((s) => s.checkoutOpen)
+  const overlayCheckoutMode = useOverlayStore((s) => s.checkoutMode)
+  const checkoutType = overlayCheckoutOpen ? overlayCheckoutMode : (searchParams.get('type') || 'cart')
   
   const { 
     directBuyItem,
@@ -76,6 +80,7 @@ function CheckoutContent() {
         customerEmail: data.email ?? null,
         customerPhone: data.phone,
         customerAddress: data.address,
+  specialNote: data.specialNote ?? undefined,
         // city and postalCode removed
         items: checkoutItems,
         totalAmount: totalPrice,
@@ -289,9 +294,30 @@ function CheckoutContent() {
 
                   <div>
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" {...register('address')} />
+                    <Textarea
+                      id="address"
+                      rows={3}
+                      placeholder="House/Flat, Road, Area, City (e.g., House 12, Road 5, Dhanmondi, Dhaka)"
+                      className="resize-y min-h-[96px]"
+                      {...register('address')}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Provide full delivery address so the courier can find you.</p>
                     {errors.address && (
                       <p className="text-sm text-destructive">{errors.address.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="specialNote">Special Note (optional)</Label>
+                    <Textarea
+                      id="specialNote"
+                      rows={2}
+                      placeholder="Any delivery instruction (e.g., call before delivery, landmark, preferred time)"
+                      className="resize-y min-h-[72px]"
+                      {...register('specialNote')}
+                    />
+                    {errors.specialNote && (
+                      <p className="text-sm text-destructive">{errors.specialNote.message}</p>
                     )}
                   </div>
 
@@ -337,9 +363,6 @@ function CheckoutContent() {
           <div className="flex flex-col gap-2">
             <Button onClick={() => setShowSuccessDialog(false)}>
               Continue Shopping
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/cart">View Cart</Link>
             </Button>
           </div>
         </DialogContent>

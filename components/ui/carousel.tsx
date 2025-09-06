@@ -119,8 +119,8 @@ function Carousel({
       }}
     >
       <div
-        onKeyDownCapture={handleKeyDown}
-        className={cn("relative", className)}
+  onKeyDownCapture={handleKeyDown}
+  className={cn("relative group", className)}
         role="region"
         aria-roledescription="carousel"
         data-slot="carousel"
@@ -185,9 +185,10 @@ function CarouselPrevious({
       variant={variant}
       size={size}
       className={cn(
-        "absolute size-8 rounded-full",
+        // Modern glassy button inside the carousel edge
+        "absolute size-9 md:size-10 rounded-full bg-white/90 backdrop-blur-md border border-gray-200/60 text-gray-700 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
         orientation === "horizontal"
-          ? "top-1/2 -left-12 -translate-y-1/2"
+          ? "top-1/2 left-3 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
         className
       )}
@@ -215,9 +216,10 @@ function CarouselNext({
       variant={variant}
       size={size}
       className={cn(
-        "absolute size-8 rounded-full",
+        // Modern glassy button inside the carousel edge
+        "absolute size-9 md:size-10 rounded-full bg-white/90 backdrop-blur-md border border-gray-200/60 text-gray-700 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
         orientation === "horizontal"
-          ? "top-1/2 -right-12 -translate-y-1/2"
+          ? "top-1/2 right-3 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
         className
       )}

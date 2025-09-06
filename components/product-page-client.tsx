@@ -1,12 +1,12 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Markdown } from '@/components/markdown'
 import { useCartStore } from '@/lib/store'
+import { useOverlayStore } from '@/lib/ui-store'
 import { ShoppingCart, MessageCircle, Zap } from 'lucide-react'
 import { Product } from '@/lib/schema'
 import { ProductStructuredData } from './structured-data'
@@ -18,9 +18,10 @@ interface ProductPageClientProps {
 export function ProductPageClient({ product }: ProductPageClientProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState("description")
-  const router = useRouter()
   const addToCart = useCartStore((state) => state.addToCart)
-  // const setDirectBuy = useCartStore((state) => state.setDirectBuy)
+  const setDirectBuy = useCartStore((state) => state.setDirectBuy)
+  const openCart = useOverlayStore((s) => s.openCart)
+  const openCheckout = useOverlayStore((s) => s.openCheckout)
   const [isAdding, setIsAdding] = useState(false)
 
   const hasDiscount = product.comparePrice && parseFloat(product.comparePrice) > parseFloat(product.price)
@@ -77,11 +78,12 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   setIsAdding(true)
   addToCart(product)
   setTimeout(() => setIsAdding(false), 800)
+  openCart()
   }
 
   const handleBuyNow = () => {
-    addToCart(product)
-    router.push('/checkout')
+    setDirectBuy(product)
+    openCheckout('direct')
   }
 
   const handleWhatsApp = () => {
@@ -177,6 +179,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
             <div className="flex gap-3">
               <Button 
                 onClick={handleAddToCart}
+                variant="outline"
                 className="flex-1 h-12 text-base font-semibold"
                 size="lg"
               >
@@ -186,8 +189,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
               
               <Button 
                 onClick={handleBuyNow}
-                variant="outline"
-                className="flex-1 h-12 text-base font-semibold"
+                className="flex-1 h-12 text-base font-semibold bg-black text-white hover:bg-black/90"
                 size="lg"
               >
                 <Zap className="mr-2 h-5 w-5" />
@@ -195,14 +197,16 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
               </Button>
             </div>
             <div className="flex gap-3">
-              <Button 
+              <Button
                 onClick={handleWhatsApp}
-                variant="secondary" 
-                size="lg" 
-                className="flex-1 h-12 text-green-700 bg-green-50 hover:bg-green-100"
+                variant="default"
+                size="lg"
+                className="flex-1 h-12 text-base font-semibold bg-[#25D366] hover:bg-[#1ebe57] text-white"
+                aria-label="Chat on WhatsApp (+880 1735-547173)"
+                title="Chat on WhatsApp (+880 1735-547173)"
               >
                 <MessageCircle className="mr-2 h-5 w-5" />
-                Need Help? Chat on WhatsApp
+                Chat on WhatsApp • +880 1735-547173
               </Button>
             </div>
           </div>
@@ -214,9 +218,21 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
       {/* Tabs Section */}
       <div className="mt-16">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="description">Description</TabsTrigger>
-            <TabsTrigger value="shipping">Delivery & Shipping</TabsTrigger>
+          <TabsList
+            className="grid w-full grid-cols-2 max-w-md mx-auto sticky top-16 md:top-20 z-30 bg-background/95 supports-[backdrop-filter]:bg-background/90 backdrop-blur rounded-full shadow-sm p-1.5 h-11"
+          >
+            <TabsTrigger
+              value="description"
+              className="rounded-full px-4 py-2 text-[15px]"
+            >
+              Description
+            </TabsTrigger>
+            <TabsTrigger
+              value="shipping"
+              className="rounded-full px-4 py-2 text-[15px]"
+            >
+              Delivery & Shipping
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="description" className="mt-6">
@@ -265,6 +281,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
           <div className="grid grid-cols-2 gap-3 items-stretch">
             <Button 
               onClick={handleAddToCart}
+              variant="outline"
               className="h-12 text-base font-semibold"
               size="lg"
               disabled={isAdding}
@@ -275,7 +292,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
             <Button 
               onClick={handleBuyNow}
               variant="default"
-              className="h-12 text-base font-semibold bg-yellow-500 hover:bg-yellow-600 text-gray-900"
+              className="h-12 text-base font-semibold bg-black hover:bg-black/90 text-white"
               size="lg"
             >
               <Zap className="mr-2 h-5 w-5" />
@@ -283,14 +300,16 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
             </Button>
           </div>
           <div className="mt-3">
-            <Button 
+            <Button
               onClick={handleWhatsApp}
-              variant="secondary" 
-              size="lg" 
-              className="w-full h-11 text-green-700 bg-green-50 hover:bg-green-100"
+              variant="default"
+              size="lg"
+              className="w-full h-11 text-base font-semibold bg-[#25D366] hover:bg-[#1ebe57] text-white"
+              aria-label="Chat on WhatsApp (+880 1735-547173)"
+              title="Chat on WhatsApp (+880 1735-547173)"
             >
               <MessageCircle className="mr-2 h-5 w-5" />
-              Need Help? WhatsApp
+              Chat on WhatsApp
             </Button>
           </div>
           {/* iOS safe area inset */}

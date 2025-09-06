@@ -31,6 +31,12 @@ export default async function Home() {
     const compare = p.comparePrice ? parseFloat(String(p.comparePrice)) : 0
     return compare > price
   })
+  // Always keep 5 items in the Sale list by filling with non-sale items if needed
+  const saleList = (() => {
+    const ids = new Set(saleProducts.map((p) => p.id))
+    const filler = allProducts.filter((p) => !ids.has(p.id))
+    return [...saleProducts, ...filler].slice(0, 5)
+  })()
   
   
   return (
@@ -104,17 +110,17 @@ export default async function Home() {
           </div>
 
           <Carousel className="w-full" opts={{ align: "start", slidesToScroll: 1 }}>
-            <CarouselContent className="-ml-2 md:-ml-4">
+      <CarouselContent className="-ml-2 md:-ml-4">
               {allProducts.slice(0, 6).map((product) => (
-                <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+        <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/5">
                   <div className="h-full">
                     <ProductCard product={product} />
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden md:flex -left-12 bg-white shadow-lg border-gray-200 hover:bg-gray-50" />
-            <CarouselNext className="hidden md:flex -right-12 bg-white shadow-lg border-gray-200 hover:bg-gray-50" />
+            <CarouselPrevious className="hidden md:flex" />
+            <CarouselNext className="hidden md:flex" />
           </Carousel>
 
           {/* Mobile anchor to all products */}
@@ -145,16 +151,16 @@ export default async function Home() {
 
           <Carousel className="w-full" opts={{ align: "start", slidesToScroll: 1 }}>
             <CarouselContent className="-ml-2 md:-ml-4">
-              {(saleProducts.length ? saleProducts : allProducts).slice(0, 4).map((product) => (
-                <CarouselItem key={`sale-${product.id}`} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+              {saleList.map((product) => (
+                <CarouselItem key={`sale-${product.id}`} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/5">
                   <div className="h-full relative">
                     <ProductCard product={product} />
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden md:flex -left-12 bg-white shadow-lg border-gray-200 hover:bg-gray-50" />
-            <CarouselNext className="hidden md:flex -right-12 bg-white shadow-lg border-gray-200 hover:bg-gray-50" />
+            <CarouselPrevious className="hidden md:flex" />
+            <CarouselNext className="hidden md:flex" />
           </Carousel>
 
           {/* Mobile anchor to all products */}
@@ -179,7 +185,7 @@ export default async function Home() {
           </div>
           
           {allProducts.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {allProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

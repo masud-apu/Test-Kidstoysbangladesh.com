@@ -8,6 +8,7 @@ import { useCartStore } from '@/lib/store'
 import { ShoppingCart } from 'lucide-react'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import Link from 'next/link'
+import { useOverlayStore } from '@/lib/ui-store'
 
 interface ProductCardProps {
   product: Product
@@ -15,6 +16,9 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const addToCart = useCartStore((state) => state.addToCart)
+  const setDirectBuy = useCartStore((state) => state.setDirectBuy)
+  const openCart = useOverlayStore((s) => s.openCart)
+  const openCheckout = useOverlayStore((s) => s.openCheckout)
   const router = useRouter()
   
   const hasDiscount = product.comparePrice && parseFloat(product.comparePrice) > parseFloat(product.price)
@@ -25,32 +29,33 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    addToCart(product)
+  addToCart(product)
+  openCart()
   }
 
   const handleBuyNow = (e: React.MouseEvent) => {
     // prevent the card's link from firing
     e.preventDefault()
     e.stopPropagation()
-    addToCart(product)
-    // navigate to checkout where the cart will contain this product
-    router.push('/checkout')
+  // set direct buy item and open checkout bottom sheet
+  setDirectBuy(product)
+  openCheckout('direct')
   }
 
   return (
     <div className="block">
       <article
-  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 overflow-hidden cursor-pointer"
+  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 overflow-hidden cursor-pointer"
         aria-label={`View product ${product.name}`}
       >
         <Link href={`/product/${product.handle}`} className="block focus:outline-none focus:ring-2 focus:ring-orange-200/70">
           {/* Product Image */}
-          <div className="p-2">
-            <div className="relative rounded-xl overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">
+          <div className="p-1.5">
+            <div className="relative rounded-lg overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">
               <AspectRatio ratio={1}>
                 {/* Red discount badge: show when the product has a discount */}
                 {hasDiscount && (
-                  <div className="absolute top-3 right-3 z-10 bg-red-500 text-white px-2.5 py-1 rounded-full text-[11px] font-bold shadow">-{discountPercentage}%</div>
+                  <div className="absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow">-{discountPercentage}%</div>
                 )}
                 {product.images && product.images.length > 0 ? (
                   <Image
@@ -71,33 +76,33 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Card Content (Title + Price) */}
-          <div className="px-4 pb-3 pt-0">
+          <div className="px-3 pb-2 pt-0">
             {/* Product Name */}
-            <h3 className="text-gray-800 text-sm md:text-base font-semibold mb-1 line-clamp-2 min-h-[2.5rem] md:min-h-[3rem]">
+            <h3 className="text-gray-800 text-[13px] md:text-sm font-semibold mb-0.5 line-clamp-2 min-h-[2.1rem] md:min-h-[2.5rem]">
               {product.name}
             </h3>
             
             {/* Price Section */}
-            <div className="mb-0 min-h-[1.75rem]">
+            <div className="mb-0 min-h-[1.5rem]">
               {hasDiscount ? (
                 <div className="flex items-center gap-2 whitespace-nowrap">
-                  <span className="text-lg md:text-xl font-bold text-green-600">৳{product.price}</span>
-                  <span className="text-xs md:text-sm text-gray-400 line-through">৳{product.comparePrice}</span>
+                  <span className="text-base md:text-lg font-bold text-green-600">৳{product.price}</span>
+                  <span className="text-[11px] md:text-xs text-gray-400 line-through">৳{product.comparePrice}</span>
                 </div>
               ) : (
-                <span className="text-lg md:text-xl font-bold text-green-600">৳{product.price}</span>
+                <span className="text-base md:text-lg font-bold text-green-600">৳{product.price}</span>
               )}
             </div>
           </div>
         </Link>
 
         {/* Action Buttons */}
-        <div className="px-4 pb-4 pt-0">
+        <div className="px-3 pb-3 pt-0">
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <Button 
                 onClick={handleBuyNow}
-                className="w-full h-9 md:h-10 font-semibold text-sm"
+                className="w-full h-8 md:h-9 font-semibold text-[13px]"
                 size="sm"
               >
                 Buy Now
@@ -110,9 +115,9 @@ export function ProductCard({ product }: ProductCardProps) {
                 variant="outline"
                 size="sm"
                 aria-label="Add to cart"
-                className="w-9 h-9 md:w-10 md:h-10"
+                className="w-8 h-8 md:w-9 md:h-9"
               >
-                <ShoppingCart className="h-4 w-4" />
+                <ShoppingCart className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>

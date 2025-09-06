@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Raleway, Amatic_SC, Noto_Sans_Bengali } from "next/font/google";
 import { ConditionalLayout } from '@/components/conditional-layout'
+import { GlobalOverlays } from '@/components/global-overlays'
 import { OrganizationStructuredData, WebsiteStructuredData } from '@/components/structured-data'
 import { Toaster } from '@/components/ui/sonner'
 import "./globals.css";
@@ -92,8 +93,10 @@ export default function RootLayout({
       >
         <ConditionalLayout>
           {children}
-        </ConditionalLayout>
-        <Toaster />
+  </ConditionalLayout>
+  {/* Overlays rendered at the end of body to avoid stacking issues */}
+  <GlobalOverlays />
+  <Toaster />
       </body>
     </html>
   );

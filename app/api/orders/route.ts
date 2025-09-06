@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     // Validate the incoming data with our schema
     const validatedData = createOrderSchema.parse(body)
 
+
     // Calculate items total from cart items
     const itemsTotal = validatedData.items.reduce((total, item) => {
       return total + (parseFloat(item.price) * item.quantity)

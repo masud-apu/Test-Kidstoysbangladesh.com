@@ -25,6 +25,13 @@ export const checkoutSchema = z.object({
   email: z.string().email('Invalid email address').optional().or(z.literal('')).optional(),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   address: z.string().min(10, 'Address must be at least 10 characters'),
+  // Special note is optional; allow empty string
+  specialNote: z
+    .string()
+    .max(500, 'Special Note must be at most 500 characters')
+    .optional()
+    .or(z.literal(''))
+    .optional(),
   // City and postal code removed per requirements
 })
 
