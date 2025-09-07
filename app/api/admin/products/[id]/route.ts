@@ -57,6 +57,9 @@ export async function PUT(
     if (validatedData.comparePrice !== undefined) {
       updateData.comparePrice = validatedData.comparePrice === "" ? null : validatedData.comparePrice
     }
+    if (validatedData.quantity !== undefined) {
+      updateData.quantity = parseInt(validatedData.quantity)
+    }
     
     if (validatedData.description !== undefined) updateData.description = validatedData.description
     if (validatedData.tags) updateData.tags = validatedData.tags

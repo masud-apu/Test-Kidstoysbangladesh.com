@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       price: validatedData.price,
       actualPrice: validatedData.actualPrice === "" ? null : validatedData.actualPrice || null,
       comparePrice: validatedData.comparePrice === "" ? null : validatedData.comparePrice || null,
+      quantity: parseInt(validatedData.quantity),
       description: validatedData.description || null,
       tags: validatedData.tags,
       images: validatedData.images,
