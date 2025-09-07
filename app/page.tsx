@@ -2,7 +2,7 @@ import { ProductCard } from '@/components/product-card'
 import { HeroCarousel } from '@/components/hero-carousel'
 import { db } from '@/lib/db'
 import { products } from '@/lib/schema'
-import { desc } from 'drizzle-orm'
+// import { desc } from 'drizzle-orm'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -24,8 +24,11 @@ import {
 } from "@/components/ui/carousel"
 
 export default async function Home() {
-  // Fetch up to 20 latest products for the landing page only
-  const allProducts = await db.select().from(products).orderBy(desc(products.createdAt)).limit(20)
+  // Fetch products then sort by latest in JS to avoid DB-specific orderBy typing issues
+  const fetched = await db.select().from(products).limit(100)
+  const allProducts = [...fetched]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 20)
   const saleProducts = allProducts.filter((p) => {
     const price = parseFloat(String(p.price))
     const compare = p.comparePrice ? parseFloat(String(p.comparePrice)) : 0
@@ -37,6 +40,21 @@ export default async function Home() {
     const filler = allProducts.filter((p) => !ids.has(p.id))
     return [...saleProducts, ...filler].slice(0, 5)
   })()
+  
+  // Educational Toys: pick up to 10 items marked by tags or name
+  // We fetch a larger recent set then filter in JS to avoid DB-specific JSON queries
+  const educationalCandidates = await db
+    .select()
+    .from(products)
+    .limit(100)
+  const educationalProducts = educationalCandidates
+    .filter((p) => {
+      const tagsArr = Array.isArray(p.tags) ? p.tags : []
+      const name = (p.name || '').toLowerCase()
+      const tagMatch = tagsArr.some((t) => String(t).toLowerCase().includes('educational') || String(t).toLowerCase().includes('learning'))
+      return tagMatch || name.includes('educational') || name.includes('learning')
+    })
+    .slice(0, 10)
   
   
   return (
@@ -215,27 +233,41 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="py-20 bg-gradient-to-r from-orange-500 to-yellow-500">
-        <div className="container mx-auto max-w-4xl px-4 text-center">
-          <div className="text-white">
-            <h2 className="text-4xl font-bold mb-4">Stay Updated with Latest Toys</h2>
-            <p className="text-xl opacity-90 mb-8">
-              Get exclusive deals, new arrivals, and parenting tips delivered to your inbox
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
-                className="flex-1 px-4 py-3 rounded-lg text-gray-900 border-0 focus:ring-2 focus:ring-white/50"
-              />
-              <Button variant="outline" className="px-8 py-3 font-semibold">
-                Subscribe
-              </Button>
+      {/* Educational Toys Collection Section */}
+      <section id="educational-toys" className="py-20 bg-gradient-to-br from-teal-50 to-emerald-50 scroll-mt-24">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <Badge className="mb-4 bg-teal-100 text-teal-800 border-teal-200">🧠 Educational</Badge>
+              <h2 className="text-4xl font-bold tracking-tight text-gray-800">Educational Toys Collection</h2>
+              <p className="text-gray-600 mt-2">Learn through play with our curated learning toys</p>
             </div>
           </div>
+
+          {educationalProducts.length > 0 ? (
+            <Carousel className="w-full" opts={{ align: "start", slidesToScroll: 1 }}>
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {educationalProducts.map((product) => (
+                  <CarouselItem key={`edu-${product.id}`} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/5">
+                    <div className="h-full relative">
+                      <ProductCard product={product} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
+          ) : (
+            <div className="text-center py-16">
+              <h3 className="text-2xl font-bold mb-2 text-gray-900">No educational toys yet</h3>
+              <p className="text-gray-600">Tag products with “educational” or “learning” to feature them here.</p>
+            </div>
+          )}
         </div>
       </section>
+
+  {/* Footer appears globally via ConditionalLayout */}
     </div>
   )
 }

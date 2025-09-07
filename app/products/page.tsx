@@ -1,7 +1,7 @@
 import { ProductCard } from '@/components/product-card'
 import { db } from '@/lib/db'
 import { products } from '@/lib/schema'
-import { desc } from 'drizzle-orm'
+// import { desc } from 'drizzle-orm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/select"
 
 export default async function ProductsPage() {
-  const allProducts = await db.select().from(products).orderBy(desc(products.createdAt))
+  const fetched = await db.select().from(products)
+  const allProducts = [...fetched].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -54,9 +55,9 @@ export default async function ProductsPage() {
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     <SelectItem value="educational">Educational</SelectItem>
-                    <SelectItem value="baby">Baby Toys</SelectItem>
                     <SelectItem value="vehicles">Vehicles</SelectItem>
                     <SelectItem value="puzzles">Puzzles</SelectItem>
+                    <SelectItem value="baby">Blogs</SelectItem>
                   </SelectContent>
                 </Select>
 

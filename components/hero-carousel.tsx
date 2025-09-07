@@ -22,10 +22,10 @@ const heroSlides = [
     subtitle: "Up to 50% Off",
     description: "Discover amazing toys that spark imagination and create lasting memories for your little ones.",
     buttonText: "Shop Sale Now",
-    buttonLink: "/sale",
+    buttonLink: "#sale",
     badge: "🎉 Limited Time",
     badgeColor: "bg-red-100 text-red-800",
-    imageSrc: "/slide-1.svg",
+    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1757205088/slide-2_2_cgtvla.svg",
     imageAlt: "Kids toys new year sale"
   },
   {
@@ -34,10 +34,10 @@ const heroSlides = [
     subtitle: "Learn Through Play",
     description: "Premium educational toys designed to boost creativity, problem-solving skills and cognitive development.",
     buttonText: "Explore Learning",
-    buttonLink: "/educational",
+    buttonLink: "/#educational-toys",
     badge: "🧠 Smart Play",
     badgeColor: "bg-teal-100 text-teal-800",
-    imageSrc: "slide-1.svg",
+    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1757205090/silde-3_lhh1jv.svg",
     imageAlt: "Educational toys collection"
   },
   {
@@ -46,10 +46,10 @@ const heroSlides = [
     subtitle: "Fresh & Exciting",
     description: "Check out the latest toy arrivals that kids are loving. From trendy games to classic favorites.",
     buttonText: "See New Toys",
-    buttonLink: "/new-arrivals",
+    buttonLink: "/#new-arrivals",
     badge: "✨ Just Arrived",
     badgeColor: "bg-purple-100 text-purple-800",
-    imageSrc: "slide-1.svg",
+    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1757205432/Untitled_2880_x_800_px_vmrh51.svg",
     imageAlt: "New arrivals toys"
   }
 ]
@@ -98,9 +98,9 @@ export function HeroCarousel() {
         <CarouselContent>
           {heroSlides.map((slide) => (
             <CarouselItem key={slide.id}>
-              <div className="relative py-6 md:py-8 overflow-hidden min-h-[240px] md:min-h-[300px]">
-                {/* Background image (replaces gradient) */}
-                <div className="absolute inset-0 -z-10">
+              <div className="relative z-0 py-6 md:py-8 overflow-hidden min-h-[240px] md:min-h-[300px]">
+                {/* Background image */}
+                <div className="absolute inset-0 z-0">
                   <Image
                     src={slide.imageSrc}
                     alt={slide.imageAlt}
@@ -112,13 +112,11 @@ export function HeroCarousel() {
                 </div>
 
                 {/* Overlay for text readability */}
-                <div className="absolute inset-0 -z-10 bg-black/30" />
+                <div className="absolute inset-0 z-0 bg-black/30" />
 
                 {/* Optional subtle pattern */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <div
-                    className="w-full h-full bg-repeat"
-                  />
+                <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
+                  <div className="w-full h-full bg-repeat" />
                 </div>
 
                 <div className="container mx-auto max-w-7xl px-4 relative z-10">
