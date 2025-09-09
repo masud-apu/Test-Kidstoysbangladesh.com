@@ -62,71 +62,7 @@ export default async function Home() {
       {/* Hero Carousel Section */}
       <HeroCarousel />
 
-        {/* Integrated Features Section */}
-    <div className="relative mt-2 md:mt-4 z-10">
-          <div className="container mx-auto max-w-7xl px-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-              {[
-                {
-                  icon: Truck,
-                  title: "Fast & Reliable Delivery",
-                  description: "24–48 hour delivery within Dhaka city.",
-                  color: "teal"
-                },
-                {
-                  icon: Banknote,
-                  title: "Easy Cash on Delivery",
-                  description: "No advance payment needed. Pay upon delivery.",
-                  color: "blue"
-                },
-                {
-                  icon: Headset,
-                  title: "Friendly Support",
-                  description: "Have a question? Our friendly team is here to help.",
-                  color: "orange"
-                },
-                {
-                  icon: ShieldCheck,
-                  title: "Authentic & Child‑Safe",
-                  description: "Every toy is quality-checked for your child’s safety.",
-                  color: "green"
-                }
-              ].map((feature, index) => (
-                <Card
-                  key={index}
-                  className="rounded-xl bg-white/90 backdrop-blur border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-                >
-                  <CardContent className="p-2.5 md:p-3.5">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center ring-1 ring-black/5 ${
-                          feature.color === 'teal' ? 'bg-teal-50' :
-                          feature.color === 'blue' ? 'bg-blue-50' :
-                          feature.color === 'orange' ? 'bg-orange-50' :
-                          'bg-green-50'
-                        }`}
-                      >
-                        <feature.icon
-                          className={`h-5 w-5 ${
-                            feature.color === 'teal' ? 'text-teal-600' :
-                            feature.color === 'blue' ? 'text-blue-600' :
-                            feature.color === 'orange' ? 'text-orange-600' :
-                            'text-green-600'
-                          }`}
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-[13px] md:text-sm leading-tight text-gray-900 truncate">{feature.title}</h3>
-                        <p className="text-gray-600 text-[10px] md:text-xs leading-snug hidden sm:block">{feature.description}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
+        
 
   {/* New Arrivals Section */}
   <section id="new-arrivals" className="py-20 bg-white scroll-mt-24">
@@ -266,6 +202,72 @@ export default async function Home() {
           )}
         </div>
       </section>
+
+      {/* Integrated Features Section */}
+    <div className="relative mt-2 md:mt-4 z-10">
+          <div className="container mx-auto max-w-7xl px-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+              {[
+                {
+                  icon: Truck,
+                  title: "Fast & Reliable Delivery",
+                  description: "24–48 hour delivery within Dhaka city.",
+                  color: "teal"
+                },
+                {
+                  icon: Banknote,
+                  title: "Easy Cash on Delivery",
+                  description: "No advance payment needed. Pay upon delivery.",
+                  color: "blue"
+                },
+                {
+                  icon: Headset,
+                  title: "Friendly Support",
+                  description: "Have a question? Our friendly team is here to help.",
+                  color: "orange"
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "Authentic & Child‑Safe",
+                  description: "Every toy is quality-checked for your child’s safety.",
+                  color: "green"
+                }
+              ].map((feature, index) => (
+                <Card
+                  key={index}
+                  className="rounded-xl bg-white/90 backdrop-blur border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <CardContent className="p-2.5 md:p-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center ring-1 ring-black/5 ${
+                          feature.color === 'teal' ? 'bg-teal-50' :
+                          feature.color === 'blue' ? 'bg-blue-50' :
+                          feature.color === 'orange' ? 'bg-orange-50' :
+                          'bg-green-50'
+                        }`}
+                      >
+                        <feature.icon
+                          className={`h-5 w-5 ${
+                            feature.color === 'teal' ? 'text-teal-600' :
+                            feature.color === 'blue' ? 'text-blue-600' :
+                            feature.color === 'orange' ? 'text-orange-600' :
+                            'text-green-600'
+                          }`}
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-[13px] md:text-sm leading-tight text-gray-900 truncate">{feature.title}</h3>
+                        <p className="text-gray-600 text-[10px] md:text-xs leading-snug hidden sm:block">{feature.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
 
   {/* Footer appears globally via ConditionalLayout */}
     </div>
