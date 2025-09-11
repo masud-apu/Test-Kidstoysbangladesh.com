@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Raleway, Amatic_SC, Noto_Sans_Bengali } from "next/font/google";
+import { Suspense } from "react";
 import { ConditionalLayout } from '@/components/conditional-layout'
 import { GlobalOverlays } from '@/components/global-overlays'
 import { OrganizationStructuredData, WebsiteStructuredData } from '@/components/structured-data'
 import { Toaster } from '@/components/ui/sonner'
+import { FacebookPixel } from '@/components/FacebookPixel'
 import "./globals.css";
 
 const raleway = Raleway({
@@ -87,33 +89,6 @@ export default function RootLayout({
       <head>
         <OrganizationStructuredData />
         <WebsiteStructuredData />
-        {/* Meta Pixel Code */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              !function(f,b,e,v,n,t,s)
-              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-              n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];
-              s.parentNode.insertBefore(t,s)}(window, document,'script',
-              'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '1214423220455445');
-              fbq('track', 'PageView');
-            `,
-          }}
-        />
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: 'none' }}
-            src="https://www.facebook.com/tr?id=1214423220455445&ev=PageView&noscript=1"
-            alt=""
-          />
-        </noscript>
-        {/* End Meta Pixel Code */}
       </head>
       <body
         className={`${raleway.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
@@ -124,6 +99,9 @@ export default function RootLayout({
   {/* Overlays rendered at the end of body to avoid stacking issues */}
   <GlobalOverlays />
   <Toaster />
+  <Suspense fallback={null}>
+    <FacebookPixel />
+  </Suspense>
       </body>
     </html>
   );
