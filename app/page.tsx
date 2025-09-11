@@ -65,7 +65,7 @@ export default async function Home() {
         
 
   {/* New Arrivals Section */}
-  <section id="new-arrivals" className="py-20 bg-white scroll-mt-24">
+  <section id="new-arrivals" className="py-5 bg-white scroll-mt-24">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="flex justify-between items-center mb-12">
             <div>
