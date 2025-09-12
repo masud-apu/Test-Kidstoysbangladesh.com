@@ -26,27 +26,32 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   const openCheckout = useOverlayStore((s) => s.openCheckout)
   const [isAdding, setIsAdding] = useState(false)
 
-  // Track product view on mount
+  // Track product view on mount - only once per product
   useEffect(() => {
-    // Track Facebook Pixel ViewContent event
-    fbPixelEvents.viewContent({
-      content_name: product.name,
-      content_ids: [product.id.toString()],
-      content_type: 'product',
-      value: parseFloat(product.price),
-      currency: 'BDT',
-      content_category: Array.isArray(product.tags) && product.tags.length > 0 ? product.tags[0] : undefined
-    })
+    // Use a timeout to ensure the pixel is fully loaded before tracking
+    const timer = setTimeout(() => {
+      // Track Facebook Pixel ViewContent event
+      fbPixelEvents.viewContent({
+        content_name: product.name,
+        content_ids: [product.id.toString()],
+        content_type: 'product',
+        value: parseFloat(product.price),
+        currency: 'BDT',
+        content_category: Array.isArray(product.tags) && product.tags.length > 0 ? product.tags[0] : undefined
+      })
 
-    // Track PostHog Analytics
-    Analytics.trackProductView({
-      product_id: product.id.toString(),
-      product_name: product.name,
-      price: parseFloat(product.price),
-      compare_price: product.comparePrice ? parseFloat(product.comparePrice) : undefined,
-      tags: Array.isArray(product.tags) ? product.tags : []
-    })
-  }, [product])
+      // Track PostHog Analytics
+      Analytics.trackProductView({
+        product_id: product.id.toString(),
+        product_name: product.name,
+        price: parseFloat(product.price),
+        compare_price: product.comparePrice ? parseFloat(product.comparePrice) : undefined,
+        tags: Array.isArray(product.tags) ? product.tags : []
+      })
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [product.id]) // Only re-run if product ID changes, not on every render
 
   const hasDiscount = product.comparePrice && parseFloat(product.comparePrice) > parseFloat(product.price)
   const discountPercentage = hasDiscount 

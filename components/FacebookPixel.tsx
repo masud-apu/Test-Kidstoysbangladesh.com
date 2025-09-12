@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const PIXEL_ID = "754735414125478";
 
@@ -20,10 +20,22 @@ declare global {
 export function FacebookPixel() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isInitialized = useRef(false);
+  const lastTrackedPath = useRef<string>("");
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.fbq) {
-      window.fbq("track", "PageView");
+    // Create a unique path identifier including search params
+    const currentPath = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "");
+    
+    // Only track PageView if:
+    // 1. The pixel is loaded (window.fbq exists)
+    // 2. We haven't tracked this exact path yet
+    // 3. The pixel has been initialized
+    if (typeof window !== "undefined" && window.fbq && isInitialized.current) {
+      if (lastTrackedPath.current !== currentPath) {
+        window.fbq("track", "PageView");
+        lastTrackedPath.current = currentPath;
+      }
     }
   }, [pathname, searchParams]);
 
@@ -32,6 +44,12 @@ export function FacebookPixel() {
       <Script
         id="fb-pixel"
         strategy="afterInteractive"
+        onLoad={() => {
+          isInitialized.current = true;
+          // Store the initial path as tracked
+          const currentPath = window.location.pathname + window.location.search;
+          lastTrackedPath.current = currentPath;
+        }}
         dangerouslySetInnerHTML={{
           __html: `
             !function(f,b,e,v,n,t,s)
