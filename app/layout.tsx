@@ -95,9 +95,12 @@ export default function RootLayout({
         className={`${raleway.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
       >
         <PHProvider>
-          <ConditionalLayout>
-            {children}
-          </ConditionalLayout>
+          {/* Wrap components using navigation hooks in Suspense */}
+          <Suspense fallback={null}>
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+          </Suspense>
           {/* Overlays rendered at the end of body to avoid stacking issues */}
           <GlobalOverlays />
           <Toaster />

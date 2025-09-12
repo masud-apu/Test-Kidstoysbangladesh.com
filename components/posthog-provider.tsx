@@ -2,7 +2,7 @@
 
 import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { usePageTracking, usePagePerformance, useErrorTracking, useInteractionTracking, useScrollTracking } from '@/hooks/use-analytics'
 
 if (typeof window !== 'undefined') {
@@ -34,7 +34,10 @@ function AnalyticsHooks() {
 export function PHProvider({ children }: { children: React.ReactNode }) {
   return (
     <PostHogProvider client={posthog}>
-      <AnalyticsHooks />
+      {/* Wrap hooks that use usePathname/useSearchParams in Suspense */}
+      <Suspense fallback={null}>
+        <AnalyticsHooks />
+      </Suspense>
       {children}
     </PostHogProvider>
   )
