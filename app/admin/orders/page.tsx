@@ -111,6 +111,24 @@ export default function OrdersPage() {
     }
   }
 
+  const handleUpdatePaymentStatus = async (id: number, paymentStatus: string) => {
+    try {
+      const response = await fetch(`/api/admin/orders/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentStatus }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update payment status")
+
+      toast.success("Payment status updated successfully")
+      fetchOrders()
+    } catch (error) {
+      console.error("Error updating payment status:", error)
+      toast.error("Failed to update payment status")
+    }
+  }
+
   const handleUpdateCustomerInfo = async (id: number, customerInfo: { customerName: string; customerEmail: string | null; customerPhone: string; customerAddress: string }) => {
     try {
       const response = await fetch(`/api/admin/orders/${id}`, {
@@ -221,6 +239,7 @@ export default function OrdersPage() {
         <OrdersTable
           data={orders}
           onUpdateStatus={handleUpdateOrderStatus}
+          onUpdatePaymentStatus={handleUpdatePaymentStatus}
           onUpdateCustomerInfo={handleUpdateCustomerInfo}
           onDelete={handleDeleteOrder}
           onBulkDelete={handleBulkDeleteOrders}

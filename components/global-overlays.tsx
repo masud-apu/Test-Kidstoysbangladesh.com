@@ -5,11 +5,13 @@ import { useOverlayStore } from '@/lib/ui-store'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import CheckoutPage from '@/app/checkout/page'
 import CartOverlay from '@/components/cart-overlay'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store'
+import { CheckCircle2, Package, Phone, Mail } from 'lucide-react'
 
 // Wrapper to render either Drawer (mobile) or Sheet (desktop) with a unified API
 function ResponsiveOverlay(props: {
@@ -49,7 +51,7 @@ function ResponsiveOverlay(props: {
 }
 
 export function GlobalOverlays() {
-  const { cartOpen, checkoutOpen, checkoutMode, closeCart, closeCheckout } = useOverlayStore()
+  const { cartOpen, checkoutOpen, checkoutMode, successDialogOpen, orderId, closeCart, closeCheckout, hideSuccessDialog } = useOverlayStore()
   const totalItems = useCartStore((s) => s.getTotalItems())
 
   // Close cart when checkout opens to prevent stacking
@@ -97,6 +99,96 @@ export function GlobalOverlays() {
       >
         <CheckoutPage />
       </ResponsiveOverlay>
+
+      {/* Order Success Dialog */}
+      <Dialog open={successDialogOpen} onOpenChange={hideSuccessDialog}>
+        <DialogContent className="sm:max-w-md">
+          <div className="relative">
+            {/* Success Icon Animation */}
+            <div className="mx-auto mb-6 relative">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full w-20 h-20 mx-auto flex items-center justify-center shadow-lg animate-in zoom-in-50 duration-500">
+                <svg 
+                  className="w-10 h-10" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth={3}
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" className="opacity-20" />
+                  <path 
+                    d="m9 12 2 2 4-4" 
+                    className="animate-in draw-in duration-700 delay-300"
+                    style={{
+                      strokeDasharray: '12',
+                      strokeDashoffset: '12',
+                      animation: 'draw-check 0.7s ease-in-out 0.3s forwards'
+                    }}
+                  />
+                </svg>
+              </div>
+            </div>
+            
+            {/* Content */}
+            <DialogHeader className="space-y-3">
+              <DialogTitle className="text-2xl font-bold text-center">
+                Order Placed Successfully!
+              </DialogTitle>
+              <DialogDescription className="text-center space-y-4">
+                <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                  <p className="text-lg font-semibold text-foreground">
+                    Order ID: {orderId}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Please save this ID for your reference
+                  </p>
+                </div>
+                
+                <div className="grid gap-3 text-left">
+                  <div className="flex items-start gap-3">
+                    <Package className="w-5 h-5 text-green-600 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">Order Placed</p>
+                      <p className="text-xs text-muted-foreground">Your order has been received and confirmed</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <Mail className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">Invoice Sent</p>
+                      <p className="text-xs text-muted-foreground">We&apos;ve sent you an email with your invoice</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <Phone className="w-5 h-5 text-orange-600 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">Confirmation Call</p>
+                      <p className="text-xs text-muted-foreground">We will call you to confirm your order details</p>
+                    </div>
+                  </div>
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            
+            {/* Actions */}
+            <div className="mt-6 flex flex-col gap-2">
+              <Button 
+                onClick={() => {
+                  hideSuccessDialog()
+                  window.location.href = '/'
+                }}
+                className="w-full"
+                size="lg"
+              >
+                Continue Shopping
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

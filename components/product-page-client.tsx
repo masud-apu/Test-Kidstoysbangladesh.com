@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,6 +10,8 @@ import { useOverlayStore } from '@/lib/ui-store'
 import { ShoppingCart, MessageCircle, Zap } from 'lucide-react'
 import { Product } from '@/lib/schema'
 import { ProductStructuredData } from './structured-data'
+import { fbPixelEvents } from '@/lib/facebook-pixel-events'
+import { Analytics } from '@/lib/analytics'
 
 interface ProductPageClientProps {
   product: Product
@@ -23,6 +25,28 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   const openCart = useOverlayStore((s) => s.openCart)
   const openCheckout = useOverlayStore((s) => s.openCheckout)
   const [isAdding, setIsAdding] = useState(false)
+
+  // Track product view on mount
+  useEffect(() => {
+    // Track Facebook Pixel ViewContent event
+    fbPixelEvents.viewContent({
+      content_name: product.name,
+      content_ids: [product.id.toString()],
+      content_type: 'product',
+      value: parseFloat(product.price),
+      currency: 'BDT',
+      content_category: Array.isArray(product.tags) && product.tags.length > 0 ? product.tags[0] : undefined
+    })
+
+    // Track PostHog Analytics
+    Analytics.trackProductView({
+      product_id: product.id.toString(),
+      product_name: product.name,
+      price: parseFloat(product.price),
+      compare_price: product.comparePrice ? parseFloat(product.comparePrice) : undefined,
+      tags: Array.isArray(product.tags) ? product.tags : []
+    })
+  }, [product])
 
   const hasDiscount = product.comparePrice && parseFloat(product.comparePrice) > parseFloat(product.price)
   const discountPercentage = hasDiscount 
@@ -75,13 +99,51 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   }, [product.name, product.tags])
 
   const handleAddToCart = () => {
-  setIsAdding(true)
-  addToCart(product)
-  setTimeout(() => setIsAdding(false), 800)
-  openCart()
+    setIsAdding(true)
+    
+    // Track Facebook Pixel AddToCart event
+    fbPixelEvents.addToCart({
+      content_name: product.name,
+      content_ids: [product.id.toString()],
+      content_type: 'product',
+      value: parseFloat(product.price),
+      currency: 'BDT',
+      content_category: Array.isArray(product.tags) && product.tags.length > 0 ? product.tags[0] : undefined
+    })
+    
+    // Track PostHog Analytics
+    Analytics.trackAddToCart({
+      product_id: product.id.toString(),
+      product_name: product.name,
+      price: parseFloat(product.price),
+      compare_price: product.comparePrice ? parseFloat(product.comparePrice) : undefined,
+      tags: Array.isArray(product.tags) ? product.tags : [],
+      quantity: 1
+    })
+    
+    addToCart(product)
+    setTimeout(() => setIsAdding(false), 800)
+    openCart()
   }
 
   const handleBuyNow = () => {
+    // Track Facebook Pixel AddToCart event for Buy Now
+    fbPixelEvents.addToCart({
+      content_name: product.name,
+      content_ids: [product.id.toString()],
+      content_type: 'product',
+      value: parseFloat(product.price),
+      currency: 'BDT',
+      content_category: Array.isArray(product.tags) && product.tags.length > 0 ? product.tags[0] : undefined
+    })
+    
+    // Track PostHog Analytics
+    Analytics.trackButtonClick('buy_now', 'product_page', {
+      product_id: product.id,
+      product_name: product.name,
+      price: parseFloat(product.price)
+    })
+    
     setDirectBuy(product)
     openCheckout('direct')
   }

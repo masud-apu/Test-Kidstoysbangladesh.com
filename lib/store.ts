@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Product } from './schema'
+import { Analytics } from './analytics'
 
 export type DeliveryType = 'inside' | 'outside'
 
@@ -64,10 +65,20 @@ export const useCartStore = create<CartStore>()(
         }),
 
       removeFromCart: (productId) =>
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== productId),
-          selectedItems: state.selectedItems.filter(id => id !== productId),
-        })),
+        set((state) => {
+          const itemToRemove = state.items.find(item => item.id === productId)
+          if (itemToRemove) {
+            Analytics.trackRemoveFromCart({
+              product_id: itemToRemove.id.toString(),
+              product_name: itemToRemove.name,
+              quantity: itemToRemove.quantity
+            })
+          }
+          return {
+            items: state.items.filter((item) => item.id !== productId),
+            selectedItems: state.selectedItems.filter(id => id !== productId),
+          }
+        }),
 
       updateQuantity: (productId, quantity) =>
         set((state) => ({

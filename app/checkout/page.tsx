@@ -12,18 +12,21 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCartStore, type DeliveryType } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { checkoutSchema, type CheckoutType } from '@/lib/validations'
-import { Minus, Plus, Trash2, ShoppingBag, CheckCircle } from 'lucide-react'
+import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
+import { Analytics } from '@/lib/analytics'
+import { fbPixelEvents } from '@/lib/facebook-pixel-events'
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
   const overlayCheckoutOpen = useOverlayStore((s) => s.checkoutOpen)
   const overlayCheckoutMode = useOverlayStore((s) => s.checkoutMode)
+  const closeCheckout = useOverlayStore((s) => s.closeCheckout)
+  const showSuccessDialog = useOverlayStore((s) => s.showSuccessDialog)
   const checkoutType = overlayCheckoutOpen ? overlayCheckoutMode : (searchParams.get('type') || 'cart')
   
   const { 
@@ -40,13 +43,7 @@ function CheckoutContent() {
   } = useCartStore()
   
   const [isLoading, setIsLoading] = useState(false)
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
-  const [orderId, setOrderId] = useState('')
   const [mounted, setMounted] = useState(false)
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
   
   // Determine which items to show based on checkout type
   const checkoutItems = checkoutType === 'direct' && directBuyItem 
@@ -60,6 +57,40 @@ function CheckoutContent() {
     : getSelectedTotal()
   const shippingCost = checkoutItems.length > 0 ? getShippingCost() : 0
   const totalPrice = itemsTotal + shippingCost
+  
+  useEffect(() => {
+    setMounted(true)
+    
+    // Track checkout started
+    if (checkoutItems.length > 0) {
+      // Track Facebook Pixel InitiateCheckout event
+      fbPixelEvents.initiateCheckout({
+        content_ids: checkoutItems.map(item => item.id.toString()),
+        contents: checkoutItems.map(item => ({
+          id: item.id.toString(),
+          quantity: item.quantity,
+          price: parseFloat(item.price)
+        })),
+        currency: 'BDT',
+        num_items: checkoutItems.reduce((sum, item) => sum + item.quantity, 0),
+        value: totalPrice,
+        content_category: checkoutItems.length > 0 && Array.isArray(checkoutItems[0].tags) && checkoutItems[0].tags.length > 0 ? checkoutItems[0].tags[0] : undefined
+      })
+      
+      // Track PostHog Analytics
+      Analytics.trackCheckoutStart({
+        items: checkoutItems.map(item => ({
+          product_id: item.id.toString(),
+          product_name: item.name,
+          price: parseFloat(item.price),
+          quantity: item.quantity
+        })),
+        total_amount: totalPrice,
+        currency: 'BDT',
+        item_count: checkoutItems.reduce((sum, item) => sum + item.quantity, 0)
+      })
+    }
+  }, [checkoutItems, totalPrice])
   
   const {
     register,
@@ -98,13 +129,48 @@ function CheckoutContent() {
       const result = await response.json()
       
       if (result.success) {
-        setOrderId(newOrderId)
-        setShowSuccessDialog(true)
+        // Close the checkout overlay immediately
+        if (overlayCheckoutOpen) {
+          closeCheckout()
+        }
         
-        // Show success toast
-        toast.success('Order placed successfully!', {
-          description: `Your order #${newOrderId} has been placed. You will receive a confirmation email shortly.`,
-          duration: 5000,
+        // Track Facebook Pixel Purchase event
+        fbPixelEvents.purchase({
+          content_ids: checkoutItems.map(item => item.id.toString()),
+          content_name: checkoutItems.map(item => item.name).join(', '),
+          content_type: 'product',
+          contents: checkoutItems.map(item => ({
+            id: item.id.toString(),
+            quantity: item.quantity,
+            price: parseFloat(item.price)
+          })),
+          currency: 'BDT',
+          num_items: checkoutItems.reduce((sum, item) => sum + item.quantity, 0),
+          value: totalPrice
+        })
+        
+        // Track PostHog Analytics
+        Analytics.trackPurchase({
+          items: checkoutItems.map(item => ({
+            product_id: item.id.toString(),
+            product_name: item.name,
+            price: parseFloat(item.price),
+            quantity: item.quantity
+          })),
+          total_amount: totalPrice,
+          currency: 'BDT',
+          item_count: checkoutItems.reduce((sum, item) => sum + item.quantity, 0)
+        }, newOrderId)
+        
+        // Track user identification
+        Analytics.identifyUser(`customer_${data.phone}`, {
+          name: data.name,
+          phone: data.phone,
+          email: data.email || undefined,
+          address: data.address,
+          total_orders: 1,
+          last_order_id: newOrderId,
+          delivery_type: deliveryType
         })
         
         // Clear cart or direct buy item
@@ -113,6 +179,17 @@ function CheckoutContent() {
         } else {
           clearCart()
         }
+        
+        // Show simple success toast
+        toast.success('Order placed successfully!', {
+          description: `Order #${newOrderId} confirmed`,
+          duration: 3000,
+        })
+        
+        // Show success dialog after a brief delay to ensure overlay is closed
+        setTimeout(() => {
+          showSuccessDialog(newOrderId)
+        }, 300)
       } else {
         toast.error('Order failed', {
           description: result.message || 'There was a problem processing your order. Please try again.',
@@ -342,31 +419,6 @@ function CheckoutContent() {
         </div>
       </div>
 
-      {/* Success Dialog */}
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            </div>
-            <DialogTitle className="text-xl font-bold">Order Confirmed!</DialogTitle>
-            <DialogDescription className="text-center space-y-2">
-              <p>Your order has been received successfully.</p>
-              <p className="font-mono text-sm">
-                <strong>Order ID: #{orderId}</strong>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                We will contact you soon. A confirmation email has also been sent.
-              </p>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-2">
-            <Button onClick={() => setShowSuccessDialog(false)}>
-              Continue Shopping
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }

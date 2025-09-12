@@ -6,6 +6,7 @@ import { GlobalOverlays } from '@/components/global-overlays'
 import { OrganizationStructuredData, WebsiteStructuredData } from '@/components/structured-data'
 import { Toaster } from '@/components/ui/sonner'
 import { FacebookPixel } from '@/components/FacebookPixel'
+import { PHProvider } from '@/components/posthog-provider'
 import "./globals.css";
 
 const raleway = Raleway({
@@ -93,15 +94,17 @@ export default function RootLayout({
       <body
         className={`${raleway.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
       >
-        <ConditionalLayout>
-          {children}
-  </ConditionalLayout>
-  {/* Overlays rendered at the end of body to avoid stacking issues */}
-  <GlobalOverlays />
-  <Toaster />
-  <Suspense fallback={null}>
-    <FacebookPixel />
-  </Suspense>
+        <PHProvider>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
+          {/* Overlays rendered at the end of body to avoid stacking issues */}
+          <GlobalOverlays />
+          <Toaster />
+          <Suspense fallback={null}>
+            <FacebookPixel />
+          </Suspense>
+        </PHProvider>
       </body>
     </html>
   );

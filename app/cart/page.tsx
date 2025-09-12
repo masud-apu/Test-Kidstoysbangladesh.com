@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator'
 import { useCartStore } from '@/lib/store'
 import { Minus, Plus, Trash2, ShoppingBag, ShoppingCart } from 'lucide-react'
 import { useOverlayStore } from '@/lib/ui-store'
+import { Analytics } from '@/lib/analytics'
+import { fbPixelEvents } from '@/lib/facebook-pixel-events'
 
 export default function CartPage() {
   const router = useRouter()
@@ -35,7 +37,28 @@ export default function CartPage() {
     if (items.length > 0 && selectedItems.length === 0) {
       selectAllItems()
     }
-  }, [items.length, selectedItems.length, selectAllItems])
+    
+    // Track cart view
+    if (items.length > 0) {
+      const totalValue = items.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
+      
+      // Track Facebook Pixel custom ViewCart event  
+      fbPixelEvents.customEvent('ViewCart', {
+        content_ids: items.map(item => item.id.toString()),
+        contents: items.map(item => ({
+          id: item.id.toString(),
+          quantity: item.quantity,
+          price: parseFloat(item.price)
+        })),
+        currency: 'BDT',
+        value: totalValue,
+        num_items: items.reduce((sum, item) => sum + item.quantity, 0)
+      })
+      
+      // Track PostHog Analytics
+      Analytics.trackCartView(items, totalValue)
+    }
+  }, [items.length, selectedItems.length, selectAllItems, items])
 
   const selectedItemsData = getSelectedItems()
   const selectedTotal = getSelectedTotal()

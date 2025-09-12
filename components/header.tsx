@@ -9,6 +9,7 @@ import { ShoppingCart, Sparkles, Flame, Star } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 import { cn } from '@/lib/utils'
+import { Analytics } from '@/lib/analytics'
 
 export function Header() {
   const totalItems = useCartStore((s) => s.getTotalItems())
@@ -132,6 +133,7 @@ export function Header() {
                 <Link
                   key={id}
                   href={href}
+                  onClick={() => Analytics.trackCategoryView(label.toLowerCase().replace(' ', '_'))}
                   className={cn(
                     'group/link relative flex items-center gap-2 px-3 py-1.5 rounded-full font-medium transition-all duration-300',
                     active ? 'text-gray-900' : 'text-gray-700 hover:text-gray-900'
@@ -163,7 +165,10 @@ export function Header() {
                 'relative rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-all duration-500 ease-out',
                 isScrolled ? 'w-11 h-11 md:w-12 md:h-12' : 'w-11 h-11 md:w-12 md:h-12'
               )}
-              onClick={openCart}
+              onClick={() => {
+                Analytics.trackButtonClick('cart_icon', 'header')
+                openCart()
+              }}
             >
               <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (

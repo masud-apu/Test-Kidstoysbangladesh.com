@@ -12,7 +12,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Eye, Trash2 } from "lucide-react"
+import { ArrowUpDown, ChevronDown, MoreHorizontal, Eye, Trash2, Download } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { OrderStatusBadge } from "./order-status-badge"
+import { PaymentStatusBadge } from "./payment-status-badge"
 import { OrderDetailsDialog } from "./order-details-dialog"
 import { OrderStatus } from "@/lib/validations/order"
 
@@ -63,10 +64,14 @@ export type Order = {
   customerEmail: string | null
   customerPhone: string
   customerAddress: string
+  specialNote: string | null
   itemsTotal: string
   shippingCost: string
   totalAmount: string
   deliveryType: string
+  paymentStatus: string
+  invoiceUrl: string | null
+  paidReceiptUrl: string | null
   createdAt: string
   updatedAt: string
 }
@@ -74,6 +79,7 @@ export type Order = {
 interface OrdersTableProps {
   data: Order[]
   onUpdateStatus: (id: number, status: string) => void
+  onUpdatePaymentStatus: (id: number, paymentStatus: string) => void
   onUpdateCustomerInfo: (id: number, customerInfo: { customerName: string; customerEmail: string | null; customerPhone: string; customerAddress: string }) => void
   onDelete: (id: number) => void
   onBulkDelete: (ids: number[]) => void
@@ -107,6 +113,7 @@ const statusOptions = [
 export function OrdersTable({ 
   data, 
   onUpdateStatus,
+  onUpdatePaymentStatus,
   onUpdateCustomerInfo,
   onDelete,
   onBulkDelete,
@@ -205,6 +212,13 @@ export function OrdersTable({
       ),
     },
     {
+      accessorKey: "paymentStatus",
+      header: "Payment",
+      cell: ({ row }) => (
+        <PaymentStatusBadge status={row.getValue("paymentStatus")} />
+      ),
+    },
+    {
       accessorKey: "totalAmount",
       header: ({ column }) => (
         <Button
@@ -237,6 +251,25 @@ export function OrdersTable({
       },
     },
     {
+      accessorKey: "invoiceUrl",
+      header: "Invoice",
+      cell: ({ row }) => {
+        const invoiceUrl = row.getValue("invoiceUrl") as string | null
+        return invoiceUrl ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(invoiceUrl, '_blank')}
+          >
+            <Download className="h-4 w-4 mr-1" />
+            PDF
+          </Button>
+        ) : (
+          <span className="text-muted-foreground text-sm">No invoice</span>
+        )
+      },
+    },
+    {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
@@ -258,6 +291,18 @@ export function OrdersTable({
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
+              {order.invoiceUrl && (
+                <DropdownMenuItem onClick={() => window.open(order.invoiceUrl!, '_blank')}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Invoice PDF
+                </DropdownMenuItem>
+              )}
+              {order.paidReceiptUrl && (
+                <DropdownMenuItem onClick={() => window.open(order.paidReceiptUrl!, '_blank')}>
+                  <Download className="mr-2 h-4 w-4 text-green-600" />
+                  <span className="text-green-600">Download Paid Receipt</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuLabel>Update Status</DropdownMenuLabel>
               {statusOptions.filter(status => status.value !== "all").map((status) => (
@@ -511,6 +556,7 @@ export function OrdersTable({
         open={detailsDialogOpen}
         onOpenChange={setDetailsDialogOpen}
         onUpdateStatus={onUpdateStatus}
+        onUpdatePaymentStatus={onUpdatePaymentStatus}
         onUpdateCustomerInfo={onUpdateCustomerInfo}
       />
 

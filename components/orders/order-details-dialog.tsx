@@ -33,13 +33,14 @@ import { Separator } from "@/components/ui/separator"
 import { OrderStatusBadge } from "./order-status-badge"
 import { Order } from "./orders-table"
 import { OrderItem } from "@/lib/schema"
-import { updateOrderCustomerInfoSchema, UpdateOrderCustomerInfoData } from "@/lib/validations/order"
+import { updateOrderCustomerInfoSchema, UpdateOrderCustomerInfoData, PaymentStatus } from "@/lib/validations/order"
 
 interface OrderDetailsDialogProps {
   order: Order | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onUpdateStatus: (id: number, status: string) => void
+  onUpdatePaymentStatus: (id: number, paymentStatus: string) => void
   onUpdateCustomerInfo: (id: number, customerInfo: { customerName: string; customerEmail: string | null; customerPhone: string; customerAddress: string }) => void
 }
 
@@ -52,16 +53,25 @@ const statusOptions = [
   { value: "canceled", label: "Canceled" },
 ]
 
+const paymentStatusOptions = [
+  { value: "pending", label: "Pending" },
+  { value: "paid", label: "Paid" },
+  { value: "failed", label: "Failed" },
+  { value: "refunded", label: "Refunded" },
+]
+
 export function OrderDetailsDialog({
   order,
   open,
   onOpenChange,
   onUpdateStatus,
+  onUpdatePaymentStatus,
   onUpdateCustomerInfo,
 }: OrderDetailsDialogProps) {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [isLoadingItems, setIsLoadingItems] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState("")
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState("")
   const [isEditingCustomer, setIsEditingCustomer] = useState(false)
 
   const {
@@ -76,6 +86,7 @@ export function OrderDetailsDialog({
   useEffect(() => {
     if (order && open) {
       setSelectedStatus(order.status)
+      setSelectedPaymentStatus(order.paymentStatus)
       setIsEditingCustomer(false)
       reset({
         customerName: order.customerName,
@@ -105,6 +116,13 @@ export function OrderDetailsDialog({
   const handleStatusUpdate = () => {
     if (order && selectedStatus !== order.status) {
       onUpdateStatus(order.id, selectedStatus)
+      onOpenChange(false)
+    }
+  }
+
+  const handlePaymentStatusUpdate = () => {
+    if (order && selectedPaymentStatus !== order.paymentStatus) {
+      onUpdatePaymentStatus(order.id, selectedPaymentStatus)
       onOpenChange(false)
     }
   }
@@ -190,6 +208,9 @@ export function OrderDetailsDialog({
                     )}
                     <div><span className="font-medium">Address:</span> {order.customerAddress}</div>
                     <div><span className="font-medium">Delivery:</span> {order.deliveryType === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}</div>
+                    {order.specialNote && (
+                      <div><span className="font-medium">Special Note:</span> {order.specialNote}</div>
+                    )}
                   </div>
                 ) : (
                   <form className="space-y-4">
@@ -282,6 +303,44 @@ export function OrderDetailsDialog({
                   >
                     Update
                   </Button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Payment Status</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Current:</span>
+                    <span className={`text-sm px-2 py-1 rounded-full ${
+                      order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                      order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                      order.paymentStatus === 'refunded' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {paymentStatusOptions.find(opt => opt.value === order.paymentStatus)?.label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select value={selectedPaymentStatus} onValueChange={setSelectedPaymentStatus}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentStatusOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button 
+                      onClick={handlePaymentStatusUpdate}
+                      disabled={selectedPaymentStatus === order.paymentStatus}
+                      size="sm"
+                    >
+                      Update
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -53,6 +53,18 @@ export const orders = pgTable('orders', {
   // Delivery information
   deliveryType: varchar('delivery_type', { length: 20 }).notNull(),
   
+  // Additional information from customer
+  specialNote: text('special_note'),
+  
+  // Payment status
+  paymentStatus: varchar('payment_status', { length: 50 }).default('pending').notNull(),
+  
+  // Invoice PDF URL
+  invoiceUrl: varchar('invoice_url', { length: 500 }),
+  
+  // Paid receipt PDF URL
+  paidReceiptUrl: varchar('paid_receipt_url', { length: 500 }),
+  
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

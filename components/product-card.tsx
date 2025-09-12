@@ -9,6 +9,8 @@ import { ShoppingCart } from 'lucide-react'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import Link from 'next/link'
 import { useOverlayStore } from '@/lib/ui-store'
+import { Analytics } from '@/lib/analytics'
+import { fbPixelEvents } from '@/lib/facebook-pixel-events'
 
 interface ProductCardProps {
   product: Product
@@ -29,17 +31,66 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-  addToCart(product)
-  openCart()
+    
+    // Track Facebook Pixel AddToCart event
+    fbPixelEvents.addToCart({
+      content_name: product.name,
+      content_ids: [product.id.toString()],
+      content_type: 'product',
+      value: parseFloat(product.price),
+      currency: 'BDT',
+      content_category: Array.isArray(product.tags) && product.tags.length > 0 ? product.tags[0] : undefined
+    })
+    
+    // Track PostHog Analytics
+    Analytics.trackAddToCart({
+      product_id: product.id.toString(),
+      product_name: product.name,
+      price: parseFloat(product.price),
+      compare_price: product.comparePrice ? parseFloat(product.comparePrice) : undefined,
+      tags: Array.isArray(product.tags) ? product.tags : [],
+      quantity: 1
+    })
+    
+    addToCart(product)
+    openCart()
   }
 
   const handleBuyNow = (e: React.MouseEvent) => {
-    // prevent the card's link from firing
     e.preventDefault()
     e.stopPropagation()
-  // set direct buy item and open checkout bottom sheet
-  setDirectBuy(product)
-  openCheckout('direct')
+    
+    // Track Facebook Pixel AddToCart event for Buy Now
+    fbPixelEvents.addToCart({
+      content_name: product.name,
+      content_ids: [product.id.toString()],
+      content_type: 'product',
+      value: parseFloat(product.price),
+      currency: 'BDT',
+      content_category: Array.isArray(product.tags) && product.tags.length > 0 ? product.tags[0] : undefined
+    })
+    
+    // Track PostHog Analytics
+    Analytics.trackButtonClick('buy_now', 'product_card', {
+      product_id: product.id,
+      product_name: product.name,
+      price: parseFloat(product.price)
+    })
+    
+    setDirectBuy(product)
+    openCheckout('direct')
+  }
+
+  const handleProductClick = () => {
+    // Note: ViewContent tracking is handled on the product page itself
+    // Track PostHog Analytics for click
+    Analytics.trackProductView({
+      product_id: product.id.toString(),
+      product_name: product.name,
+      price: parseFloat(product.price),
+      compare_price: product.comparePrice ? parseFloat(product.comparePrice) : undefined,
+      tags: Array.isArray(product.tags) ? product.tags : []
+    })
   }
 
   return (
@@ -48,7 +99,7 @@ export function ProductCard({ product }: ProductCardProps) {
   className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 overflow-hidden cursor-pointer"
         aria-label={`View product ${product.name}`}
       >
-        <Link href={`/product/${product.handle}`} className="block focus:outline-none focus:ring-2 focus:ring-orange-200/70">
+        <Link href={`/product/${product.handle}`} onClick={handleProductClick} className="block focus:outline-none focus:ring-2 focus:ring-orange-200/70">
           {/* Product Image */}
           <div className="p-1.5">
             <div className="relative rounded-lg overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">

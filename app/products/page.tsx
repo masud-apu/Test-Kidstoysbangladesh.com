@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ProductsPageClient } from '@/components/products-page-client'
 
 export default async function ProductsPage() {
   const fetched = await db.select().from(products)
@@ -26,6 +27,7 @@ export default async function ProductsPage() {
   
   return (
     <div className="min-h-screen bg-gray-50">
+      <ProductsPageClient productCount={allProducts.length} category="All Products" />
       <div className="container mx-auto max-w-7xl px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">

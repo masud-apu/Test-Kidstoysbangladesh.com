@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+export const runtime = 'nodejs'
 import { db } from '@/lib/db'
 import { orders, orderItems, products } from '@/lib/schema'
 import { createOrderSchema } from '@/lib/validations/order'
 import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
+import { generatePDFBuffer } from '@/lib/pdf-generator'
+import { R2StorageService } from '@/lib/r2-storage'
 import { eq, sql } from 'drizzle-orm'
 
 export async function POST(request: NextRequest) {
@@ -27,10 +30,12 @@ export async function POST(request: NextRequest) {
         customerEmail: validatedData.customerEmail || null,
         customerPhone: validatedData.customerPhone,
         customerAddress: validatedData.customerAddress,
+        specialNote: validatedData.specialNote || null,
         itemsTotal: itemsTotal.toString(),
         shippingCost: validatedData.shippingCost.toString(),
         totalAmount: validatedData.totalAmount.toString(),
         deliveryType: validatedData.deliveryType,
+        paymentStatus: validatedData.paymentStatus || 'pending',
         status: 'order_placed',
       }).returning()
 
@@ -77,6 +82,7 @@ export async function POST(request: NextRequest) {
       customerEmail: validatedData.customerEmail,
       customerPhone: validatedData.customerPhone,
       customerAddress: validatedData.customerAddress,
+      specialNote: validatedData.specialNote || undefined,
       items: normalizedItems, // Ensure correct types for email service
       itemsTotal: itemsTotal,
       shippingCost: validatedData.shippingCost,
@@ -84,8 +90,29 @@ export async function POST(request: NextRequest) {
       orderId: validatedData.orderId,
     }
 
-    // 5. Send confirmation emails
-    const emailResult = await sendOrderConfirmationEmails(emailOrderData)
+    // 5. Generate and upload PDF invoice
+    let invoiceUrl: string | null = null
+    try {
+      console.log('🔄 Starting PDF generation for order:', validatedData.orderId)
+      const pdfBuffer = await generatePDFBuffer(emailOrderData)
+      console.log('✅ PDF generated successfully, size:', pdfBuffer.length)
+      const fileName = R2StorageService.generateFileName(validatedData.orderId)
+      invoiceUrl = await R2StorageService.uploadPDF(pdfBuffer, fileName)
+      console.log('📤 PDF uploaded successfully, URL:', invoiceUrl)
+      
+      // Update order with invoice URL
+      await db
+        .update(orders)
+        .set({ invoiceUrl })
+        .where(eq(orders.id, result.id))
+        
+    } catch (pdfError) {
+      console.error('PDF generation/upload error:', pdfError)
+      // Continue without failing the order - PDF generation is optional
+    }
+
+    // 6. Send confirmation emails with PDF attachment
+    const emailResult = await sendOrderConfirmationEmails(emailOrderData, invoiceUrl)
 
     return NextResponse.json({
       success: true,
@@ -94,6 +121,7 @@ export async function POST(request: NextRequest) {
         ? 'Order placed successfully and confirmation emails sent!'
         : 'Order placed successfully but email sending failed',
       emailSent: emailResult.success,
+      invoiceUrl,
     })
 
   } catch (error) {

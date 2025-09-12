@@ -6,7 +6,13 @@
       "Bash(pnpm add:*)",
       "mcp__context7__get-library-docs",
       "WebSearch",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm tsx:*)",
+      "Bash(pnmp build:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(convert:*)"
     ],
     "deny": [],
     "ask": []
