@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-const PIXEL_ID = "1214423220455445";
+const PIXEL_ID = "754735414125478";
 
 export function FacebookPixel() {
   const pathname = usePathname();
@@ -17,7 +17,7 @@ export function FacebookPixel() {
           autoConfig: true,
           debug: false,
         };
-        
+
         ReactPixel.init(PIXEL_ID, undefined, options);
         ReactPixel.pageView();
       });
@@ -36,7 +36,10 @@ export function trackEvent(event: string, data?: Record<string, unknown>) {
   }
 }
 
-export function trackCustomEvent(event: string, data?: Record<string, unknown>) {
+export function trackCustomEvent(
+  event: string,
+  data?: Record<string, unknown>,
+) {
   if (typeof window !== "undefined") {
     import("react-facebook-pixel")
       .then((module) => module.default)
@@ -45,3 +48,4 @@ export function trackCustomEvent(event: string, data?: Record<string, unknown>) 
       });
   }
 }
+
