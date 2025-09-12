@@ -8,8 +8,12 @@ const PIXEL_ID = "754735414125478";
 
 declare global {
   interface Window {
-    fbq: any;
-    _fbq: any;
+    fbq: (
+      track: string,
+      event?: string,
+      data?: Record<string, unknown>
+    ) => void;
+    _fbq: unknown;
   }
 }
 
@@ -44,6 +48,7 @@ export function FacebookPixel() {
         }}
       />
       <noscript>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           height="1"
           width="1"
