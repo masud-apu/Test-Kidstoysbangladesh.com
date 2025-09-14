@@ -84,9 +84,36 @@ export function CsvImportDialog({
   }
 
   const downloadTemplate = () => {
-    const csvContent = `name,handle,price,actualPrice,comparePrice,description,tags,images
-"Sample Product","sample-product","29.99","39.99","49.99","This is a sample product description","toy,kids,educational","https://example.com/image1.jpg,https://example.com/image2.jpg"
-"Another Product","another-product","19.99","","24.99","Another product description","toy,outdoor","https://example.com/image3.jpg"`
+    const csvContent = `"id","name","price","compare_price","tags","images","description","created_at","updated_at","handle","actual_price","completed_orders","quantity"
+"1","Kids Digital ATM Piggy Bank – Password Protected Money Box","1550.00","2500.00","[""kids toys"",""educational toys"",""fun playtime"",""birthday gift"",""learning toys""]","[""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868295/products/ijfvloliay6esd6oh30c.webp"",""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868295/products/kznpa2v8upvxrtloupbp.webp"",""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868295/products/fo9tkdk2bp22ncnoxshh.webp"",""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868295/products/zeepxvaswzw6jrdnggjd.webp"",""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868296/products/coz7nul6u3u5cozaabnn.webp"",""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868296/products/ufvs1jyshcdnlu6otzzl.webp""]","<div style=""text-align:center;"">
+
+  <h2>🏦 Your Child’s First ATM Bank!</h2>
+  <p><b>Fun & Smart Saving Habit:</b> Teach your little one the value of money with this <span style=""color:blue;"">Digital Piggy Bank</span>. It’s not just a toy, it’s a fun way to build the habit of saving!</p>
+
+  <img src=""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868295/products/ijfvloliay6esd6oh30c.webp"" alt=""Kids Digital Piggy Bank Front View"" width=""300"" />
+
+  <h3>✨ Amazing Features</h3>
+  <ul style=""list-style:none; padding:0;"">
+    <li>✔️ <b>Automatic Cash Deposit:</b> Insert a note and the bank pulls it in by itself.</li>
+    <li>✔️ <b>Password Protection:</b> Kids can set their own code to keep money safe.</li>
+    <li>✔️ <b>Fun Music:</b> Plays cheerful tunes while saving or withdrawing money.</li>
+    <li>✔️ <b>Save Coins & Notes:</b> Works with both coins and paper money.</li>
+  </ul>
+
+  <img src=""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868295/products/kznpa2v8upvxrtloupbp.webp"" alt=""Digital Piggy Bank with Notes"" width=""300"" />
+
+  <h3>🎁 Why Kids Love It</h3>
+  <p>This toy is not only <i>fun and interactive</i> but also teaches <b>real-life saving habits</b>. A perfect gift that is both entertaining and educational.</p>
+
+  <img src=""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868295/products/zeepxvaswzw6jrdnggjd.webp"" alt=""Piggy Bank Open View"" width=""300"" />
+  <img src=""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868296/products/coz7nul6u3u5cozaabnn.webp"" alt=""ATM Piggy Bank Close-up"" width=""300"" />
+  <img src=""https://res.cloudinary.com/dcuwepyuz/image/upload/v1757868296/products/ufvs1jyshcdnlu6otzzl.webp"" alt=""Children Playing with Piggy Bank"" width=""300"" />
+
+  <h3>📞 Order Now</h3>
+  <p>To place your order, call or WhatsApp us at: <b>+880 1337-411948</b></p>
+
+</div>
+","2025-09-14 18:36:06.060994","2025-09-14 18:55:24.405","kids-digital-atm-piggy-bank-password-protected-money-box","1200.00","0","10""`
 
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
