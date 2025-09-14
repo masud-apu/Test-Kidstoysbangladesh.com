@@ -1,5 +1,6 @@
 import { ProductCard } from '@/components/product-card'
 import { HeroCarousel } from '@/components/hero-carousel'
+import { NewArrivalsCarousel } from '@/components/new-arrivals-carousel'
 import { db } from '@/lib/db'
 import { products } from '@/lib/schema'
 // import { desc } from 'drizzle-orm'
@@ -75,19 +76,7 @@ export default async function Home() {
             </div>
           </div>
 
-          <Carousel className="w-full" opts={{ align: "start", slidesToScroll: 1 }}>
-      <CarouselContent className="-ml-2 md:-ml-4">
-              {allProducts.slice(0, 6).map((product) => (
-        <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/5">
-                  <div className="h-full">
-                    <ProductCard product={product} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
-          </Carousel>
+          <NewArrivalsCarousel products={allProducts.slice(0, 6)} />
 
           {/* Mobile anchor to all products */}
           <div className="md:hidden mt-8 text-center">
