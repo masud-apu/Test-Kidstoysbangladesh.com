@@ -288,24 +288,6 @@ export function ProductFormDialog({
             <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price (BDT)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="actualPrice"
                 render={({ field }) => (
                   <FormItem>
@@ -327,7 +309,25 @@ export function ProductFormDialog({
                 name="comparePrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Compare Price (BDT)</FormLabel>
+                    <FormLabel>Price (BDT)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discounted Price (BDT)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
