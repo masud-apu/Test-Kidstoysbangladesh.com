@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { OrderStatusBadge } from '@/components/orders/order-status-badge'
+import { DashboardActions } from '@/components/dashboard-actions'
 import { Package, ShoppingCart, TrendingUp, ArrowUpRight } from 'lucide-react'
 
 
@@ -55,6 +56,7 @@ export default async function AdminDashboard() {
             Welcome back, {user.username}! Here&apos;s an overview of your store.
           </p>
         </div>
+        <DashboardActions />
       </div>
 
       {/* Stats Cards */}
@@ -115,98 +117,66 @@ export default async function AdminDashboard() {
       </div>
 
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Recent Orders */}
-        <Card className="col-span-full lg:col-span-4">
-          <CardHeader className="flex flex-row items-center">
-            <div className="grid gap-2">
-              <CardTitle>Recent Orders</CardTitle>
-              <CardDescription>
-                Latest orders from your customers
-              </CardDescription>
-            </div>
-            <Button asChild size="sm" className="ml-auto gap-1">
-              <Link href="/admin/orders">
-                View All
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentOrders.length > 0 ? (
-                  recentOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">
-                        {order.orderId}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{order.customerName}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.customerPhone}
-                          </div>
+      {/* Recent Orders */}
+      <Card>
+        <CardHeader className="flex flex-row items-center">
+          <div className="grid gap-2">
+            <CardTitle>Recent Orders</CardTitle>
+            <CardDescription>
+              Latest orders from your customers
+            </CardDescription>
+          </div>
+          <Button asChild size="sm" className="ml-auto gap-1">
+            <Link href="/admin/orders">
+              View All
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentOrders.length > 0 ? (
+                recentOrders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">
+                      {order.orderId}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{order.customerName}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {order.customerPhone}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <OrderStatusBadge status={order.status as "order_placed" | "confirmed" | "shipped" | "delivered" | "returned" | "canceled"} />
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        ৳{parseFloat(order.totalAmount).toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                      No orders yet
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <OrderStatusBadge status={order.status as "order_placed" | "confirmed" | "shipped" | "delivered" | "returned" | "canceled"} />
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      ৳{parseFloat(order.totalAmount).toFixed(2)}
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card className="col-span-full lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Manage your store efficiently
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button asChild className="w-full justify-start">
-              <Link href="/admin/products/new">
-                <Package className="mr-2 h-4 w-4" />
-                Add New Product
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/admin/orders?status=order_placed">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                View Pending Orders ({pendingOrders})
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/admin/products">
-                <Package className="mr-2 h-4 w-4" />
-                Manage Products
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    No orders yet
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Order Status Overview */}
       <Card>
