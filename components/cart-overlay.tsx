@@ -75,7 +75,7 @@ export default function CartOverlay() {
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-                <span className="text-sm font-semibold">৳{(parseFloat(item.price) * item.quantity).toFixed(0)}</span>
+                <span className="text-sm font-semibold">TK {(parseFloat(item.price) * item.quantity).toFixed(0)}</span>
               </div>
             </div>
             <Separator />
@@ -87,7 +87,7 @@ export default function CartOverlay() {
       <div className="pt-2">
         <div className="flex items-center justify-between text-base font-semibold">
           <span>Total</span>
-          <span>৳{total.toFixed(0)}</span>
+          <span>TK {total.toFixed(0)}</span>
         </div>
         <Button
           className="mt-3 w-full h-12 text-base font-semibold"

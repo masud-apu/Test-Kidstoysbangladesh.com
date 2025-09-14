@@ -67,7 +67,7 @@ export default async function AdminDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">৳{totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">TK {totalRevenue.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">
               From delivered orders
             </p>
@@ -162,7 +162,7 @@ export default async function AdminDashboard() {
                       <OrderStatusBadge status={order.status as "order_placed" | "confirmed" | "shipped" | "delivered" | "returned" | "canceled"} />
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      ৳{parseFloat(order.totalAmount).toFixed(2)}
+                      TK {parseFloat(order.totalAmount).toFixed(2)}
                     </TableCell>
                   </TableRow>
                 ))

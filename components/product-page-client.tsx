@@ -61,8 +61,8 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   // Helpers: currency formatting and title/subtitle derivation
   const formatCurrency = (value: string | number) => {
     const num = typeof value === 'string' ? parseFloat(value) : value
-    if (Number.isNaN(num)) return '৳0.00'
-    return `৳${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    if (Number.isNaN(num)) return 'TK 0.00'
+    return `TK ${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
   const prettify = (s: string) => s
@@ -155,7 +155,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
 
   const handleWhatsApp = () => {
     const productUrl = `https://kidstoysbangladesh.com/product/${product.handle}`
-    const message = `Hi! I'm interested in this product: ${product.name} - ৳${product.price}\n\nProduct link: ${productUrl}`
+    const message = `Hi! I'm interested in this product: ${product.name} - TK ${product.price}\n\nProduct link: ${productUrl}`
     // Corrected WhatsApp phone number (BD): 8801735547173
     const whatsappUrl = `https://wa.me/8801735547173?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
@@ -322,7 +322,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
                   <ul className="space-y-2 text-muted-foreground">
                     <li>• Inside Dhaka: 2–3 business days</li>
                     <li>• Outside Dhaka: 3–5 business days</li>
-                    <li>• Free delivery on orders over ৳1000</li>
+                    <li>• Free delivery on orders over TK 1000</li>
                     <li>• Cash on delivery available</li>
                   </ul>
                 </div>

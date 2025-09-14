@@ -384,9 +384,9 @@ export function OrderDetailsDialog({
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">৳{parseFloat(item.productPrice)}</TableCell>
+                      <TableCell className="text-right">TK {parseFloat(item.productPrice)}</TableCell>
                       <TableCell className="text-right">{item.quantity}</TableCell>
-                      <TableCell className="text-right">৳{parseFloat(item.itemTotal)}</TableCell>
+                      <TableCell className="text-right">TK {parseFloat(item.itemTotal)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -400,16 +400,16 @@ export function OrderDetailsDialog({
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Items Total:</span>
-              <span>৳{parseFloat(order.itemsTotal)}</span>
+              <span>TK {parseFloat(order.itemsTotal)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Shipping Cost:</span>
-              <span>৳{parseFloat(order.shippingCost)}</span>
+              <span>TK {parseFloat(order.shippingCost)}</span>
             </div>
             <Separator />
             <div className="flex justify-between font-semibold">
               <span>Total Amount:</span>
-              <span>৳{parseFloat(order.totalAmount)}</span>
+              <span>TK {parseFloat(order.totalAmount)}</span>
             </div>
           </div>
         </div>

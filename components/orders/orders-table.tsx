@@ -231,7 +231,7 @@ export function OrdersTable({
       ),
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("totalAmount"))
-        return <div className="text-right font-medium">৳{amount}</div>
+        return <div className="text-right font-medium">TK {amount}</div>
       },
     },
     {

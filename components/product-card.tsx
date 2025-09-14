@@ -137,11 +137,11 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="mb-0 min-h-[1.5rem]">
               {hasDiscount ? (
                 <div className="flex items-center gap-2 whitespace-nowrap">
-                  <span className="text-base md:text-lg font-bold text-green-600">৳{product.price}</span>
-                  <span className="text-[11px] md:text-xs text-gray-400 line-through">৳{product.comparePrice}</span>
+                  <span className="text-base md:text-lg font-bold text-green-600">TK {product.price}</span>
+                  <span className="text-[11px] md:text-xs text-gray-400 line-through">TK {product.comparePrice}</span>
                 </div>
               ) : (
-                <span className="text-base md:text-lg font-bold text-green-600">৳{product.price}</span>
+                <span className="text-base md:text-lg font-bold text-green-600">TK {product.price}</span>
               )}
             </div>
           </div>

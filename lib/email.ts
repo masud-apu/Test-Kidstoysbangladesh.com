@@ -122,7 +122,7 @@ function generateCustomerEmailTemplate(
   invoiceUrl?: string | null,
 ): string {
   const itemsHtml = items
-    .map(item => `<tr><td style="padding:8px;border-bottom:1px solid #ddd;"><b>${item.name}</b></td><td style="padding:8px;text-align:center;">${item.quantity}</td><td style="padding:8px;text-align:right;">৳${item.price}</td><td style="padding:8px;text-align:right;"><b>৳${(parseFloat(item.price) * item.quantity).toFixed(2)}</b></td></tr>`)
+    .map(item => `<tr><td style="padding:8px;border-bottom:1px solid #ddd;"><b>${item.name}</b></td><td style="padding:8px;text-align:center;">${item.quantity}</td><td style="padding:8px;text-align:right;">TK ${item.price}</td><td style="padding:8px;text-align:right;"><b>TK ${(parseFloat(item.price) * item.quantity).toFixed(2)}</b></td></tr>`)
     .join('')
 
   return `
@@ -217,15 +217,15 @@ function generateCustomerEmailTemplate(
                     <table style="width: 100%;">
                       <tr>
                         <td style="padding: 8px 0; color: #6b7280; font-size: 15px;">Subtotal</td>
-                        <td style="padding: 8px 0; text-align: right; color: #4b5563; font-size: 15px;">৳${itemsTotal.toFixed(2)}</td>
+                        <td style="padding: 8px 0; text-align: right; color: #4b5563; font-size: 15px;">TK ${itemsTotal.toFixed(2)}</td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #6b7280; font-size: 15px;">Shipping</td>
-                        <td style="padding: 8px 0; text-align: right; color: #4b5563; font-size: 15px;">৳${shippingCost.toFixed(2)}</td>
+                        <td style="padding: 8px 0; text-align: right; color: #4b5563; font-size: 15px;">TK ${shippingCost.toFixed(2)}</td>
                       </tr>
                       <tr style="border-top: 2px solid #e5e7eb;">
                         <td style="padding: 12px 0 8px; color: #111827; font-size: 18px; font-weight: 700;">Total</td>
-                        <td style="padding: 12px 0 8px; text-align: right; color: #7c3aed; font-size: 20px; font-weight: 700;">৳${totalAmount.toFixed(2)}</td>
+                        <td style="padding: 12px 0 8px; text-align: right; color: #7c3aed; font-size: 20px; font-weight: 700;">TK ${totalAmount.toFixed(2)}</td>
                       </tr>
                     </table>
                   </div>
@@ -356,10 +356,10 @@ function generateOwnerEmailTemplate(orderData: OrderData, invoiceUrl?: string | 
           ${item.quantity}
         </td>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-          ৳${item.price}
+          TK ${item.price}
         </td>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-          ৳${(parseFloat(item.price) * item.quantity).toFixed(2)}
+          TK ${(parseFloat(item.price) * item.quantity).toFixed(2)}
         </td>
       </tr>
     `
@@ -382,10 +382,10 @@ function generateOwnerEmailTemplate(orderData: OrderData, invoiceUrl?: string | 
         
         <div style="background-color: #fee2e2; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <h3>অর্ডার #${orderData.orderId}</h3>
-          <p><strong>পণ্যের মূল্য: ৳${orderData.itemsTotal.toFixed(2)}</strong></p>
-          <p><strong>ডেলিভারি চার্জ: ৳${orderData.shippingCost.toFixed(2)}</strong></p>
+          <p><strong>পণ্যের মূল্য: TK ${orderData.itemsTotal.toFixed(2)}</strong></p>
+          <p><strong>ডেলিভারি চার্জ: TK ${orderData.shippingCost.toFixed(2)}</strong></p>
           <hr style="border: none; border-top: 1px solid #dc2626; margin: 10px 0;">
-          <p><strong>মোট পরিমাণ: ৳${orderData.totalAmount.toFixed(2)}</strong></p>
+          <p><strong>মোট পরিমাণ: TK ${orderData.totalAmount.toFixed(2)}</strong></p>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
@@ -501,7 +501,7 @@ export async function sendPaymentConfirmationEmail(orderData: OrderData, orderId
 }
 
 function generatePaymentConfirmationTemplate(customerName: string, orderId: string, totalAmount: number, receiptUrl?: string, logoDataUrl?: string): string {
-  const formatBDT = (amount: number) => `৳${amount.toFixed(0)}`
+  const formatBDT = (amount: number) => `TK ${amount.toFixed(0)}`
   
   return `
     <!DOCTYPE html>

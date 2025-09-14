@@ -213,7 +213,7 @@ export function ProductsTable({
       },
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("price"))
-        return <div className="text-right font-medium">৳{amount}</div>
+        return <div className="text-right font-medium">TK {amount}</div>
       },
     },
     {
@@ -240,7 +240,7 @@ export function ProductsTable({
       cell: ({ row }) => {
         const amount = row.getValue("actualPrice") as string | null
         if (!amount) return <div className="text-right text-muted-foreground">-</div>
-        return <div className="text-right font-medium">৳{parseFloat(amount)}</div>
+        return <div className="text-right font-medium">TK {parseFloat(amount)}</div>
       },
     },
     {

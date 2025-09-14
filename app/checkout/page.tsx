@@ -256,14 +256,14 @@ function CheckoutContent() {
                         <RadioGroupItem value="outside" id="checkout-outside" />
                         <span className="text-sm">Outside Dhaka</span>
                       </div>
-                      <span className="text-sm font-medium">৳120</span>
+                      <span className="text-sm font-medium">TK 120</span>
                     </label>
                     <label htmlFor="checkout-inside" className="flex items-center justify-between rounded-lg border p-3 cursor-pointer">
                       <div className="flex items-center gap-3">
                         <RadioGroupItem value="inside" id="checkout-inside" />
                         <span className="text-sm">Inside Dhaka</span>
                       </div>
-                      <span className="text-sm font-medium">৳60</span>
+                      <span className="text-sm font-medium">TK 60</span>
                     </label>
                   </RadioGroup>
                 </div>
@@ -287,7 +287,7 @@ function CheckoutContent() {
                     
                     <div className="flex-1 space-y-2">
                       <h3 className="font-medium line-clamp-2">{item.name}</h3>
-                      <p className="font-bold">৳{item.price}</p>
+                      <p className="font-bold">TK {item.price}</p>
                       
                       {checkoutType === 'cart' && (
                         <div className="flex items-center gap-2">
@@ -321,7 +321,7 @@ function CheckoutContent() {
                     </div>
                     
                     <div className="text-right">
-                      <p className="font-bold">৳{(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
+                      <p className="font-bold">TK {(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
@@ -330,15 +330,15 @@ function CheckoutContent() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Items Total:</span>
-                    <span>৳{itemsTotal.toFixed(2)}</span>
+                    <span>TK {itemsTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping:</span>
-                    <span>৳{shippingCost.toFixed(2)}</span>
+                    <span>TK {shippingCost.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold">
                     <span>Grand Total:</span>
-                    <span>৳{totalPrice.toFixed(2)}</span>
+                    <span>TK {totalPrice.toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>

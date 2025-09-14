@@ -143,10 +143,10 @@ export default function CartPage() {
                     </Link>
                     
                     <div className="mt-2 flex items-center gap-2">
-                      <span className="text-lg font-bold">৳{item.price}</span>
+                      <span className="text-lg font-bold">TK {item.price}</span>
                       {item.comparePrice && parseFloat(item.comparePrice) > parseFloat(item.price) && (
                         <span className="text-sm text-muted-foreground line-through">
-                          ৳{item.comparePrice}
+                          TK {item.comparePrice}
                         </span>
                       )}
                     </div>
@@ -174,7 +174,7 @@ export default function CartPage() {
 
                       <div className="flex items-center gap-4">
                         <span className="font-bold">
-                          ৳{(parseFloat(item.price) * item.quantity).toFixed(2)}
+                          TK {(parseFloat(item.price) * item.quantity).toFixed(2)}
                         </span>
                         <Button
                           variant="outline"
@@ -211,7 +211,7 @@ export default function CartPage() {
                 
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total:</span>
-                  <span>৳{selectedTotal.toFixed(2)}</span>
+                  <span>TK {selectedTotal.toFixed(2)}</span>
                 </div>
               </div>
 
