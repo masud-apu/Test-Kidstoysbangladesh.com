@@ -291,7 +291,7 @@ export function ProductFormDialog({
                 name="actualPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Actual Price (BDT)</FormLabel>
+                    <FormLabel>Actual Price</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -309,7 +309,7 @@ export function ProductFormDialog({
                 name="comparePrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price (BDT)</FormLabel>
+                    <FormLabel> Selling Price</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -327,7 +327,7 @@ export function ProductFormDialog({
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Discounted Price (BDT)</FormLabel>
+                    <FormLabel>Discounted Price</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
