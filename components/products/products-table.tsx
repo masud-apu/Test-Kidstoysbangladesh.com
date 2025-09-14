@@ -13,6 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, MoreHorizontal, Trash2, Edit } from "lucide-react"
+import Link from 'next/link'
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -184,11 +185,21 @@ export function ProductsTable({
           </Button>
         )
       },
-      cell: ({ row }) => (
-        <div className="max-w-[200px] truncate" title={row.getValue("name") as string}>
-          {row.getValue("name")}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const product = row.original
+        return (
+          <div className="max-w-[200px] truncate" title={product.name}>
+            <Link 
+              href={`/product/${product.handle}`}
+              className="font-medium hover:underline text-blue-600 hover:text-blue-800"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {product.name}
+            </Link>
+          </div>
+        )
+      },
     },
     {
       accessorKey: "price",
