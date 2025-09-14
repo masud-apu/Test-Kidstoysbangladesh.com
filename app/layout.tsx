@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Raleway, Amatic_SC, Noto_Sans_Bengali } from "next/font/google";
+import { Nunito, Amatic_SC, Noto_Sans_Bengali } from "next/font/google";
 import { Suspense } from "react";
 import { ConditionalLayout } from '@/components/conditional-layout'
 import { GlobalOverlays } from '@/components/global-overlays'
@@ -9,8 +9,8 @@ import { FacebookPixel } from '@/components/FacebookPixel'
 import { PHProvider } from '@/components/posthog-provider'
 import "./globals.css";
 
-const raleway = Raleway({
-  variable: "--font-raleway",
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin"],
   display: 'swap',
 });
@@ -92,7 +92,7 @@ export default function RootLayout({
         <WebsiteStructuredData />
       </head>
       <body
-        className={`${raleway.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
+        className={`${nunito.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
       >
         <PHProvider>
           {/* Wrap components using navigation hooks in Suspense */}
