@@ -147,7 +147,7 @@ export function ProductsTable({
         return (
           <div className="flex items-center justify-center w-12 h-12">
             {firstImage ? (
-              <img // eslint-disable-line @next/next/no-img-element
+              <img // eslint-disable-line @next/next/no-img-element/
                 src={firstImage}
                 alt={`${row.getValue("name")} product image`}
                 className="w-10 h-10 object-cover rounded border"
