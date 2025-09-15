@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Markdown } from '@/components/markdown'
 import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
-import { ShoppingCart, MessageCircle, Zap } from 'lucide-react'
+import { ShoppingCart, MessageCircle, Zap, Truck, RotateCcw, Shield, Package } from 'lucide-react'
 import { Product } from '@/lib/schema'
 import { ProductStructuredData } from './structured-data'
 import { fbPixelEvents } from '@/lib/facebook-pixel-events'
@@ -276,6 +276,57 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
                 Chat on WhatsApp • +880 1735-547173
               </Button>
             </div>
+
+            {/* Delivery & Return Information */}
+            <div className="bg-muted/30 rounded-lg p-4 space-y-4 mt-4">
+              {/* Delivery Options */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Truck className="h-4 w-4 text-blue-600" />
+                  <span>Delivery Options</span>
+                </div>
+                <div className="ml-6 space-y-1 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-3 w-3" />
+                    <span>Inside Dhaka: Same day delivery, Max 1 day</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Package className="h-3 w-3" />
+                    <span>Outside Dhaka: 3–5 business days</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Package className="h-3 w-3" />
+                    <span>Free delivery on orders over TK 1000</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Package className="h-3 w-3" />
+                    <span>Cash on delivery available</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Return Policy */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <RotateCcw className="h-4 w-4 text-green-600" />
+                  <span>Return Policy</span>
+                </div>
+                <div className="ml-6 space-y-1 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-3 w-3" />
+                    <span>7-day return guarantee</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-3 w-3" />
+                    <span>Free replacement for defective items</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-3 w-3" />
+                    <span>Return must be in original packaging</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* No raw tags shown to users */}
@@ -286,7 +337,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
       <div className="mt-16">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList
-            className="grid w-full grid-cols-2 max-w-md mx-auto sticky top-16 md:top-20 z-30 bg-background/95 supports-[backdrop-filter]:bg-background/90 backdrop-blur rounded-full shadow-sm p-1.5 h-11"
+            className="grid w-full grid-cols-2 max-w-md mx-auto rounded-full shadow-sm p-1.5 h-11"
           >
             <TabsTrigger
               value="description"
@@ -320,7 +371,7 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Delivery Information:</h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li>• Inside Dhaka: 2–3 business days</li>
+                    <li>• Inside Dhaka: Same day delivery, Max 1 day</li>
                     <li>• Outside Dhaka: 3–5 business days</li>
                     <li>• Free delivery on orders over TK 1000</li>
                     <li>• Cash on delivery available</li>
