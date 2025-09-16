@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Markdown } from '@/components/markdown'
 import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
-import { ShoppingCart, MessageCircle, Zap, Truck, RotateCcw, Shield, Package } from 'lucide-react'
+import { ShoppingCart, MessageCircle, Zap, Truck, RotateCcw, Shield, Package, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Product } from '@/lib/schema'
 import { ProductStructuredData } from './structured-data'
 import { fbPixelEvents } from '@/lib/facebook-pixel-events'
@@ -20,6 +20,9 @@ interface ProductPageClientProps {
 export function ProductPageClient({ product }: ProductPageClientProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState("description")
+  const [isAutoSliding, setIsAutoSliding] = useState(true)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const addToCart = useCartStore((state) => state.addToCart)
   const setDirectBuy = useCartStore((state) => state.setDirectBuy)
   const openCart = useOverlayStore((s) => s.openCart)
@@ -52,6 +55,68 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
 
     return () => clearTimeout(timer)
   }, [product.id]) // Only re-run if product ID changes, not on every render
+
+  // Auto-slide functionality
+  useEffect(() => {
+    const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/og-image.png']
+    
+    if (!isAutoSliding || images.length <= 1) return
+
+    const interval = setInterval(() => {
+      setSelectedImage((prev) => (prev + 1) % images.length)
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [isAutoSliding, product.images])
+
+  // Touch handling for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+    setIsAutoSliding(false) // Pause auto-slide during touch
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+    const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/og-image.png']
+
+    if (isLeftSwipe && images.length > 1) {
+      setSelectedImage((prev) => (prev + 1) % images.length)
+    }
+    if (isRightSwipe && images.length > 1) {
+      setSelectedImage((prev) => (prev - 1 + images.length) % images.length)
+    }
+
+    // Resume auto-slide after a delay
+    setTimeout(() => setIsAutoSliding(true), 2000)
+  }
+
+  // Arrow navigation functions
+  const goToPrevious = () => {
+    const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/og-image.png']
+    setSelectedImage((prev) => (prev - 1 + images.length) % images.length)
+    setIsAutoSliding(false)
+    setTimeout(() => setIsAutoSliding(true), 2000)
+  }
+
+  const goToNext = () => {
+    const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/og-image.png']
+    setSelectedImage((prev) => (prev + 1) % images.length)
+    setIsAutoSliding(false)
+    setTimeout(() => setIsAutoSliding(true), 2000)
+  }
+
+  // Pause auto-slide on hover
+  const handleMouseEnter = () => setIsAutoSliding(false)
+  const handleMouseLeave = () => setIsAutoSliding(true)
 
   const hasDiscount = product.comparePrice && parseFloat(product.comparePrice) > parseFloat(product.price)
   const discountPercentage = hasDiscount 
@@ -171,14 +236,61 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
         {/* Left Column - Images */}
         <div className="space-y-4">
           {/* Main Image */}
-          <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+          <div 
+            className="aspect-square overflow-hidden rounded-lg bg-muted relative touch-pan-y group"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
             <Image
               src={images[selectedImage]}
               alt={product.name}
               width={600}
               height={600}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-opacity duration-300"
             />
+            {/* Navigation arrows */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={goToPrevious}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all md:opacity-0 md:group-hover:opacity-100 hover:scale-110 touch-manipulation"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={goToNext}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all md:opacity-0 md:group-hover:opacity-100 hover:scale-110 touch-manipulation"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+            {/* Image indicators */}
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedImage(index)
+                      setIsAutoSliding(false)
+                      setTimeout(() => setIsAutoSliding(true), 2000)
+                    }}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      selectedImage === index 
+                        ? 'bg-white scale-125' 
+                        : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                    aria-label={`View image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           
           {/* Thumbnail Images */}
@@ -187,7 +299,11 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
               {images.map((image, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedImage(index)}
+                  onClick={() => {
+                    setSelectedImage(index)
+                    setIsAutoSliding(false)
+                    setTimeout(() => setIsAutoSliding(true), 2000)
+                  }}
                   className={`flex-shrink-0 aspect-square w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                     selectedImage === index 
                       ? 'border-primary ring-2 ring-primary/20' 
@@ -337,19 +453,13 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
       <div className="mt-16">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList
-            className="grid w-full grid-cols-2 max-w-md mx-auto rounded-full shadow-sm p-1.5 h-11"
+            className="grid w-full grid-cols-1 max-w-md mx-auto rounded-full shadow-sm p-1.5 h-11"
           >
             <TabsTrigger
               value="description"
               className="rounded-full px-4 py-2 text-[15px]"
             >
               Description
-            </TabsTrigger>
-            <TabsTrigger
-              value="shipping"
-              className="rounded-full px-4 py-2 text-[15px]"
-            >
-              Delivery & Shipping
             </TabsTrigger>
           </TabsList>
           
@@ -362,31 +472,6 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
                   No description for this product.
                 </p>
               )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="shipping" className="mt-6">
-            <div className="bg-muted/50 rounded-lg p-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Delivery Information:</h3>
-                  <ul className="space-y-2 text-muted-foreground">
-                    <li>• Inside Dhaka: Same day delivery, Max 1 day</li>
-                    <li>• Outside Dhaka: 3–5 business days</li>
-                    <li>• Free delivery on orders over TK 1000</li>
-                    <li>• Cash on delivery available</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Return Policy:</h3>
-                  <ul className="space-y-2 text-muted-foreground">
-                    <li>• 7-day return guarantee</li>
-                    <li>• Free replacement for defective items</li>
-                    <li>• Return must be in original packaging</li>
-                  </ul>
-                </div>
-              </div>
             </div>
           </TabsContent>
         </Tabs>
