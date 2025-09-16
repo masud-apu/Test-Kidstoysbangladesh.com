@@ -49,7 +49,7 @@ const heroSlides = [
     buttonLink: "/#new-arrivals",
     badge: "✨ Just Arrived",
     badgeColor: "bg-purple-100 text-purple-800",
-    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1758053253/Untitled_2048_x_850_px_2880_x_800_px_2880_x_670_px_7_hpzu89.png",
+    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1758053568/Untitled_2048_x_850_px_2880_x_800_px_2880_x_670_px_8_tf2dig.png",
     imageAlt: "New arrivals toys"
   }
 ]
