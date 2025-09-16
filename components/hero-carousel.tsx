@@ -18,14 +18,14 @@ import Image from 'next/image'
 const heroSlides = [
   {
     id: 1,
-    title: "New Year Special Sale",
-    subtitle: "Up to 50% Off",
-    description: "Discover amazing toys that spark imagination and create lasting memories for your little ones.",
+    title: "The Big Toy Sale Is On!",
+    subtitle: "Unbeatable Prices, Unforgettable Fun.",
+    description: "Don't miss out! Find the perfect toys to spark their imagination and create lasting memories.",
     buttonText: "Shop Sale Now",
     buttonLink: "#sale",
     badge: "🎉 Limited Time",
     badgeColor: "bg-red-100 text-red-800",
-    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1757205088/slide-2_2_cgtvla.svg",
+    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1757967345/Untitled_2048_x_850_px_2880_x_800_px_rs63ae.svg",
     imageAlt: "Kids toys new year sale"
   },
   {
@@ -42,14 +42,14 @@ const heroSlides = [
   },
   {
     id: 3,
-    title: "New Arrivals This Week",
-    subtitle: "Fresh & Exciting",
-    description: "Check out the latest toy arrivals that kids are loving. From trendy games to classic favorites.",
+    title: "This Week's Hottest Drops",
+    subtitle: "Get Them Before They're Gone.",
+    description: "Meet the new must-haves! We've just dropped the toys everyone's talking about, from viral trends to timeless treasures.",
     buttonText: "See New Toys",
     buttonLink: "/#new-arrivals",
     badge: "✨ Just Arrived",
     badgeColor: "bg-purple-100 text-purple-800",
-    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1757205432/Untitled_2880_x_800_px_vmrh51.svg",
+    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1757972298/Untitled_2048_x_850_px_2880_x_800_px_2880_x_670_px_ppglte.svg",
     imageAlt: "New arrivals toys"
   }
 ]
@@ -112,7 +112,7 @@ export function HeroCarousel() {
                 </div>
 
                 {/* Overlay for text readability */}
-                <div className="absolute inset-0 z-0 bg-black/30" />
+                <div className="absolute inset-0 z-0 bg-black/0" />
 
                 {/* Optional subtle pattern */}
                 <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
@@ -122,7 +122,7 @@ export function HeroCarousel() {
                 <div className="container mx-auto max-w-7xl px-4 relative z-10">
                   <div className="grid gap-6 items-center min-h-[160px]">
                     {/* Content */}
-                    <div className="text-center lg:text-left text-white">
+                    <div className="text-center lg:text-left text-gray-700">
                       <Badge className={`mb-6 ${slide.badgeColor} border-0 text-sm font-medium px-4 py-2`}>
                         {slide.badge}
                       </Badge>

@@ -376,6 +376,7 @@ function CheckoutContent() {
                       rows={3}
                       placeholder="House/Flat, Road, Area, City (e.g., House 12, Road 5, Dhanmondi, Dhaka)"
                       className="resize-y min-h-[96px]"
+                      onFocus={(e) => e.target.placeholder = ''}
                       {...register('address')}
                     />
                     <p className="text-xs text-muted-foreground mt-1">Provide full delivery address so the courier can find you.</p>
@@ -391,6 +392,7 @@ function CheckoutContent() {
                       rows={2}
                       placeholder="Any delivery instruction (e.g., call before delivery, landmark, preferred time)"
                       className="resize-y min-h-[72px]"
+                      onFocus={(e) => e.target.placeholder = ''}
                       {...register('specialNote')}
                     />
                     {errors.specialNote && (
@@ -403,7 +405,13 @@ function CheckoutContent() {
 
                   <div>
                     <Label htmlFor="email">Email (optional)</Label>
-                    <Input id="email" type="email" placeholder="example@email.com" {...register('email')} />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="example@email.com"
+                      onFocus={(e) => e.target.placeholder = ''}
+                      {...register('email')} 
+                    />
                     {errors.email && (
                       <p className="text-sm text-destructive">{errors.email.message}</p>
                     )}
