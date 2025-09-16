@@ -25,7 +25,7 @@ const heroSlides = [
     buttonLink: "#sale",
     badge: "🎉 Limited Time",
     badgeColor: "bg-red-100 text-red-800",
-    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1757967345/Untitled_2048_x_850_px_2880_x_800_px_rs63ae.svg",
+    imageSrc: "https://res.cloudinary.com/dcuwepyuz/image/upload/v1758054365/Untitled_2048_x_850_px_2880_x_800_px_2880_x_670_px_3_roiptj.svg",
     imageAlt: "Kids toys new year sale"
   },
   {
