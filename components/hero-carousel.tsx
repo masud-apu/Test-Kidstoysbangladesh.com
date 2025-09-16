@@ -136,7 +136,7 @@ export function HeroCarousel() {
                       {/* Button at the bottom center */}
                       <div className="flex justify-center">
                         <Link href={slide.buttonLink}>
-                          <Button size="lg" variant="secondary" className="px-6 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
+                          <Button size="lg" variant="secondary" className="px-6 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer">
                             Buy now
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
