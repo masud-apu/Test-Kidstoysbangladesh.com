@@ -18,9 +18,9 @@ import Image from 'next/image'
 const heroSlides = [
   {
     id: 1,
-    title: "The Big Toy Sale Is On!",
-    subtitle: "Unbeatable Prices, Unforgettable Fun.",
-    description: "Don't miss out! Find the perfect toys to spark their imagination and create lasting memories.",
+    // title: "The Big Toy Sale Is On!",
+    // subtitle: "Unbeatable Prices, Unforgettable Fun.",
+    // description: "Don't miss out! Find the perfect toys to spark their imagination and create lasting memories.",
     buttonText: "Shop Sale Now",
     buttonLink: "#sale",
     badge: "🎉 Limited Time",
@@ -30,9 +30,9 @@ const heroSlides = [
   },
   {
     id: 2,
-    title: "Educational Toys Collection",
-    subtitle: "Learn Through Play",
-    description: "Premium educational toys designed to boost creativity, problem-solving skills and cognitive development.",
+    // title: "Educational Toys Collection",
+    // subtitle: "Learn Through Play",
+    // description: "Premium educational toys designed to boost creativity, problem-solving skills and cognitive development.",
     buttonText: "Explore Learning",
     buttonLink: "/#educational-toys",
     badge: "🧠 Smart Play",
@@ -42,10 +42,10 @@ const heroSlides = [
   },
   {
     id: 3,
-    title: "This Week's Hottest Drops",
-    subtitle: "Get Them Before They're Gone.",
-    description: "Meet the new must-haves! We've just dropped the toys everyone's talking about, from viral trends to timeless treasures.",
-    buttonText: "See New Toys",
+    // title: "This Week's Hottest Drops",
+    // subtitle: "Get Them Before They're Gone.",
+    // description: "Meet the new must-haves! We've just dropped the toys everyone's talking about, from viral trends to timeless treasures.",
+    // buttonText: "See New Toys",
     buttonLink: "/#new-arrivals",
     badge: "✨ Just Arrived",
     badgeColor: "bg-purple-100 text-purple-800",
@@ -64,7 +64,7 @@ export function HeroCarousel() {
     const startAutoScroll = () => {
       autoScrollRef.current = setInterval(() => {
         api.scrollNext()
-      }, 5000)
+      }, 8000)
     }
 
     const stopAutoScroll = () => {
@@ -122,20 +122,19 @@ export function HeroCarousel() {
                 <div className="container mx-auto max-w-7xl px-4 relative z-10">
                   <div className="grid gap-6 items-center min-h-[160px]">
                     {/* Content */}
-                    <div className="text-center lg:text-left text-gray-700">
-                      <Badge className={`mb-6 ${slide.badgeColor} border-0 text-sm font-medium px-4 py-2`}>
-                        {slide.badge}
-                      </Badge>
-                      <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
-                        {slide.title}
-                      </h1>
-                      <h2 className="text-xl md:text-2xl font-semibold mb-4 opacity-90">
-                        {slide.subtitle}
-                      </h2>
-                      <p className="text-base md:text-lg mb-6 leading-relaxed opacity-90 max-w-2xl">
-                        {slide.description}
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <div className="text-center text-gray-700 flex flex-col justify-between h-full min-h-[200px] md:min-h-[250px]">
+                      {/* Badge at the top center */}
+                      <div className="flex justify-center">
+                        <Badge className={`${slide.badgeColor} border-0 text-sm font-medium px-4 py-2`}>
+                          {slide.badge}
+                        </Badge>
+                      </div>
+                      
+                      {/* Spacer to push button to bottom */}
+                      <div className="flex-grow"></div>
+                      
+                      {/* Button at the bottom center */}
+                      <div className="flex justify-center">
                         <Link href={slide.buttonLink}>
                           <Button size="lg" variant="secondary" className="px-6 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
                             Buy now
