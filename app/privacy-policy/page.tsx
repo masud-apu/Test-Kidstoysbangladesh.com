@@ -76,7 +76,17 @@ export default function PrivacyPolicyPage() {
           We may update this Privacy Policy from time to time. Any changes will be posted on this page with the updated “Effective Date.”
         </p>
 
-        <h2>8. Contact Us</h2>
+        <h2>8. Return Policy</h2>
+        <p>
+          We offer a 7-day return guarantee on all products. If you receive a defective item, we provide free replacement. 
+          Please note that returns must be in original packaging and condition.
+        </p>
+        <ul>
+          <li><strong>7-day return guarantee</strong> – Return any item within 7 days of delivery.</li>
+          <li><strong>Free replacement for defective items</strong> – We'll replace any faulty products at no cost.</li>
+          <li><strong>Original packaging required</strong> – Items must be returned in their original packaging and condition.</li>
+        </ul>
+        <h2>9. Contact Us</h2>
         <p>
           If you have questions about this Privacy Policy, please contact us:
         </p>
