@@ -90,6 +90,7 @@ export default function RootLayout({
       <head>
         <OrganizationStructuredData />
         <WebsiteStructuredData />
+        <meta name="google-site-verification" content="6DJ_1MrTl9d74WV42luKp3HRmdWfHZOh1OfHY-9thFs" />
       </head>
       <body
         className={`${nunito.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
