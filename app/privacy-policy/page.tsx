@@ -83,7 +83,7 @@ export default function PrivacyPolicyPage() {
         </p>
         <ul>
           <li><strong>7-day return guarantee</strong> – Return any item within 7 days of delivery.</li>
-          <li><strong>Free replacement for defective items</strong> – We'll replace any faulty products at no cost.</li>
+          <li><strong>Free replacement for defective items</strong> – We&apos;ll replace any faulty products at no cost.</li>
           <li><strong>Original packaging required</strong> – Items must be returned in their original packaging and condition.</li>
         </ul>
         <h2>9. Contact Us</h2>
