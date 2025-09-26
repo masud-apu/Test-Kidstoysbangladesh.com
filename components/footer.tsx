@@ -55,8 +55,6 @@ export function Footer() {
             <h3 className="font-semibold text-gray-900 mb-4">Contact</h3>
             <ul className="space-y-3 text-sm text-gray-600">
               <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-gray-500" /> +880 1337-411948</li>
-              <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-gray-500" /> +880 1735-547173</li>
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-gray-500" /> support@kidstoysbangladesh.com</li>
               <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-gray-500" /> Khilkhet, Dhaka, Bangladesh</li>
             </ul>
           </div>

@@ -208,7 +208,7 @@ This project is proprietary software for KidsToysBangladesh.
 
 ---
 
-**Contact**: +8801735547173 | apu.sns@gmail.com
+**Contact**: +8801337411948 | apu.sns@gmail.com
 
 Built with ❤️ for kids and parents in Bangladesh. 
  

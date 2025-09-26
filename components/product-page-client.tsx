@@ -221,11 +221,11 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   const handleWhatsApp = () => {
     const productUrl = `https://kidstoysbangladesh.com/product/${product.handle}`
     const message = `Hi! I'm interested in this product: ${product.name} - TK ${product.price}\n\nProduct link: ${productUrl}`
-    // Corrected WhatsApp phone number (BD): 8801735547173
-    const whatsappUrl = `https://wa.me/8801735547173?text=${encodeURIComponent(message)}`
+    // Corrected WhatsApp phone number (BD): 8801337411948
+    const whatsappUrl = `https://wa.me/8801337411948?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
-
+8801337411948
   const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/og-image.png']
 
   return (
@@ -385,11 +385,11 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
                 variant="default"
                 size="lg"
                 className="flex-1 h-12 text-base font-semibold bg-[#25D366] hover:bg-[#1ebe57] text-white"
-                aria-label="Chat on WhatsApp (+880 1735-547173)"
-                title="Chat on WhatsApp (+880 1735-547173)"
+                aria-label="Chat on WhatsApp (+880 1337-411948)"
+                title="Chat on WhatsApp (+880 1337-411948)"
               >
                 <MessageCircle className="mr-2 h-5 w-5" />
-                Chat on WhatsApp • +880 1735-547173
+                Chat on WhatsApp • +880 1337-411948
               </Button>
             </div>
 
@@ -508,8 +508,8 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
               variant="default"
               size="lg"
               className="w-full h-11 text-base font-semibold bg-[#25D366] hover:bg-[#1ebe57] text-white"
-              aria-label="Chat on WhatsApp (+880 1735-547173)"
-              title="Chat on WhatsApp (+880 1735-547173)"
+              aria-label="Chat on WhatsApp (+880 1337-411948)"
+              title="Chat on WhatsApp (+880 1337-411948)"
             >
               <MessageCircle className="mr-2 h-5 w-5" />
               Chat on WhatsApp
