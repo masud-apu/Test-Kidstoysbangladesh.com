@@ -12,7 +12,8 @@
       "Bash(pnpm tsx:*)",
       "Bash(pnmp build:*)",
       "Bash(pnpm dev:*)",
-      "Bash(convert:*)"
+      "Bash(convert:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -20,6 +20,8 @@ import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
 import { Analytics } from '@/lib/analytics'
 import { fbPixelEvents } from '@/lib/facebook-pixel-events'
+import { Product } from '@/lib/schema'
+import { CartItem } from '@/lib/store'
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
@@ -27,40 +29,120 @@ function CheckoutContent() {
   const overlayCheckoutMode = useOverlayStore((s) => s.checkoutMode)
   const closeCheckout = useOverlayStore((s) => s.closeCheckout)
   const showSuccessDialog = useOverlayStore((s) => s.showSuccessDialog)
-  const checkoutType = overlayCheckoutOpen ? overlayCheckoutMode : (searchParams.get('type') || 'cart')
-  
-  const { 
+  // Determine checkout type based on different modes
+  const hasUrlProducts = searchParams.get('productIds')
+  const checkoutType = overlayCheckoutOpen
+    ? overlayCheckoutMode
+    : hasUrlProducts
+    ? 'url'
+    : (searchParams.get('type') || 'cart')
+
+  const {
     directBuyItem,
     getSelectedItems,
     getSelectedTotal,
-    updateQuantity, 
-    removeFromCart, 
+    updateQuantity,
+    removeFromCart,
     clearCart,
   clearDirectBuy,
   deliveryType,
   setDeliveryType,
   getShippingCost,
   } = useCartStore()
-  
+
   const [isLoading, setIsLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [urlProducts, setUrlProducts] = useState<CartItem[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(
+    // Set initial loading state if we have URL products to load
+    !overlayCheckoutOpen && !!hasUrlProducts
+  )
   
+  // Load products from URL if productIds parameter exists
+  useEffect(() => {
+    const productIdsParam = searchParams.get('productIds')
+
+    if (mounted && productIdsParam && !overlayCheckoutOpen) {
+      setLoadingProducts(true)
+
+      // Parse and count duplicate IDs
+      const allIds = productIdsParam.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
+      const quantityMap = new Map<number, number>()
+
+      // Count occurrences of each ID
+      allIds.forEach(id => {
+        quantityMap.set(id, (quantityMap.get(id) || 0) + 1)
+      })
+
+      // Get unique IDs for API call
+      const uniqueIds = Array.from(quantityMap.keys())
+
+      if (uniqueIds.length === 0) {
+        setLoadingProducts(false)
+        return
+      }
+
+      fetch(`/api/products/bulk?ids=${uniqueIds.join(',')}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.products) {
+            const cartItems = data.products.map((product: Product): CartItem => ({
+              ...product,
+              quantity: quantityMap.get(product.id) || 1
+            }))
+            setUrlProducts(cartItems)
+          }
+        })
+        .catch(error => {
+          console.error('Error loading products:', error)
+          toast.error('Failed to load products')
+        })
+        .finally(() => {
+          setLoadingProducts(false)
+        })
+    }
+  }, [mounted, searchParams, overlayCheckoutOpen])
+
   // Determine which items to show based on checkout type
-  const checkoutItems = checkoutType === 'direct' && directBuyItem 
-    ? [directBuyItem] 
-    : checkoutType === 'cart' 
-    ? getSelectedItems() 
-    : []
+  const checkoutItems = useMemo(() => {
+    if (checkoutType === 'direct' && directBuyItem) {
+      return [directBuyItem]
+    }
+    if (checkoutType === 'url') {
+      return urlProducts
+    }
+    if (checkoutType === 'cart') {
+      return getSelectedItems()
+    }
+    return []
+  }, [checkoutType, directBuyItem, getSelectedItems, urlProducts])
     
   const itemsTotal = checkoutType === 'direct' && directBuyItem
     ? parseFloat(directBuyItem.price) * directBuyItem.quantity
+    : checkoutType === 'url'
+    ? urlProducts.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
     : getSelectedTotal()
   const shippingCost = checkoutItems.length > 0 ? getShippingCost() : 0
   const totalPrice = itemsTotal + shippingCost
+
+  // Helper functions for URL products quantity management
+  const updateUrlProductQuantity = (productId: number, newQuantity: number) => {
+    setUrlProducts(prev =>
+      prev.map(item =>
+        item.id === productId
+          ? { ...item, quantity: Math.max(1, newQuantity) }
+          : item
+      )
+    )
+  }
+
+  const removeUrlProduct = (productId: number) => {
+    setUrlProducts(prev => prev.filter(item => item.id !== productId))
+  }
   
   useEffect(() => {
     setMounted(true)
-    
+
     // Track checkout started
     if (checkoutItems.length > 0) {
       // Track Facebook Pixel InitiateCheckout event
@@ -173,9 +255,11 @@ function CheckoutContent() {
           delivery_type: deliveryType
         })
         
-        // Clear cart or direct buy item
+        // Clear cart, direct buy item, or URL products
         if (checkoutType === 'direct') {
           clearDirectBuy()
+        } else if (checkoutType === 'url') {
+          setUrlProducts([])
         } else {
           clearCart()
         }
@@ -205,7 +289,7 @@ function CheckoutContent() {
     }
   }
 
-  if (!mounted) {
+  if (!mounted || (checkoutType === 'url' && loadingProducts)) {
     return <div className="container mx-auto max-w-6xl py-16 text-center">Loading...</div>
   }
   
@@ -215,8 +299,10 @@ function CheckoutContent() {
         <ShoppingBag className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
         <h2 className="text-2xl font-bold mb-2">No items to checkout</h2>
         <p className="text-muted-foreground mb-4">
-          {checkoutType === 'direct' 
-            ? 'No product selected for direct purchase' 
+          {checkoutType === 'direct'
+            ? 'No product selected for direct purchase'
+            : checkoutType === 'url'
+            ? 'No valid products found'
             : 'No items selected from cart'}
         </p>
         <Button asChild>
@@ -232,7 +318,11 @@ function CheckoutContent() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Checkout</h1>
           <div className="text-sm text-muted-foreground">
-            {checkoutType === 'direct' ? 'Direct Purchase' : 'From Cart'}
+            {checkoutType === 'direct'
+              ? 'Direct Purchase'
+              : checkoutType === 'url'
+              ? 'From URL'
+              : 'From Cart'}
           </div>
         </div>
         
@@ -289,13 +379,17 @@ function CheckoutContent() {
                       <h3 className="font-medium line-clamp-2">{item.name}</h3>
                       <p className="font-bold">TK {item.price}</p>
                       
-                      {checkoutType === 'cart' && (
+                      {(checkoutType === 'cart' || checkoutType === 'url') && (
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() =>
+                              checkoutType === 'url'
+                                ? updateUrlProductQuantity(item.id, item.quantity - 1)
+                                : updateQuantity(item.id, item.quantity - 1)
+                            }
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -304,7 +398,11 @@ function CheckoutContent() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() =>
+                              checkoutType === 'url'
+                                ? updateUrlProductQuantity(item.id, item.quantity + 1)
+                                : updateQuantity(item.id, item.quantity + 1)
+                            }
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -312,7 +410,11 @@ function CheckoutContent() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8 ml-auto"
-                            onClick={() => removeFromCart(item.id)}
+                            onClick={() =>
+                              checkoutType === 'url'
+                                ? removeUrlProduct(item.id)
+                                : removeFromCart(item.id)
+                            }
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
