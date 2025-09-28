@@ -44,6 +44,10 @@ export const createOrderSchema = z.object({
   deliveryType: z.enum(['inside', 'outside']),
   paymentStatus: paymentStatusSchema.default('pending'),
   orderId: z.string(),
+  // Promo code fields
+  promoCodeId: z.number().optional().nullable(),
+  promoCode: z.string().optional().nullable(),
+  promoCodeDiscount: z.number().optional().nullable(),
 })
 
 // Internal schema for database operations

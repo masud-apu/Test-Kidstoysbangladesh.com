@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 import { db } from '@/lib/db'
-import { orders, orderItems, products } from '@/lib/schema'
+import { orders, orderItems, products, promoCodes } from '@/lib/schema'
 import { createOrderSchema } from '@/lib/validations/order'
 import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
 import { generatePDFBuffer } from '@/lib/pdf-generator'
@@ -37,6 +37,10 @@ export async function POST(request: NextRequest) {
         deliveryType: validatedData.deliveryType,
         paymentStatus: validatedData.paymentStatus || 'pending',
         status: 'order_placed',
+        // Promo code fields
+        promoCodeId: validatedData.promoCodeId,
+        promoCode: validatedData.promoCode,
+        promoCodeDiscount: validatedData.promoCodeDiscount?.toString() || null,
       }).returning()
 
       // 2. Transform cart items to order items and insert
@@ -66,6 +70,17 @@ export async function POST(request: NextRequest) {
           .where(eq(products.id, item.id))
       }
 
+      // 4. Handle promo code usage tracking and expiry
+      if (validatedData.promoCodeId) {
+        await tx
+          .update(promoCodes)
+          .set({
+            usedCount: sql`${promoCodes.usedCount} + 1`,
+            updatedAt: sql`now()`
+          })
+          .where(eq(promoCodes.id, validatedData.promoCodeId))
+      }
+
       return newOrder
     })
 
@@ -88,6 +103,9 @@ export async function POST(request: NextRequest) {
       shippingCost: validatedData.shippingCost,
       totalAmount: validatedData.totalAmount,
       orderId: validatedData.orderId,
+      // Promo code data for email
+      promoCode: validatedData.promoCode || undefined,
+      promoCodeDiscount: validatedData.promoCodeDiscount || undefined,
     }
 
     // 5. Generate and upload PDF invoice
@@ -112,7 +130,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Send confirmation emails with PDF attachment
+    console.log('📧 Starting email sending process for order:', validatedData.orderId)
+    console.log('📧 Email data:', {
+      customerEmail: emailOrderData.customerEmail,
+      customerName: emailOrderData.customerName,
+      orderId: emailOrderData.orderId,
+      invoiceUrl: invoiceUrl ? 'Present' : 'Not available',
+      promoCode: emailOrderData.promoCode || 'None',
+      promoCodeDiscount: emailOrderData.promoCodeDiscount || 0
+    })
+
     const emailResult = await sendOrderConfirmationEmails(emailOrderData, invoiceUrl)
+
+    console.log('📧 Email sending result:', emailResult)
 
     return NextResponse.json({
       success: true,

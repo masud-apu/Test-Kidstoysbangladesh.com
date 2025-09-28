@@ -86,7 +86,7 @@ function SmartText({ children, style = {} }: { children: React.ReactNode; style?
 }
 
 export function InvoiceDocument({ orderData, logoDataUrl, isPaidReceipt = false, paidStampDataUrl }: { orderData: OrderData; logoDataUrl?: string | null; isPaidReceipt?: boolean; paidStampDataUrl?: string | null }) {
-  const { customerName, customerPhone, customerAddress, items, itemsTotal, shippingCost, totalAmount, orderId } = orderData
+  const { customerName, customerPhone, customerAddress, items, itemsTotal, shippingCost, totalAmount, orderId, promoCode, promoCodeDiscount } = orderData
   const currentDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
   return (
@@ -167,6 +167,17 @@ export function InvoiceDocument({ orderData, logoDataUrl, isPaidReceipt = false,
               </View>
             )})()}
           </View>
+          {promoCode && promoCodeDiscount && promoCodeDiscount > 0 && (
+            <View style={styles.totalsRow}>
+              <Text style={styles.totalsLabel}>Promo ({promoCode}):</Text>
+              {(() => { const p = formatBDTParts(promoCodeDiscount); return (
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={[styles.taka, { color: '#16A34A' }]}>-{p.symbol}</Text>
+                  <Text style={[styles.priceDigits, { color: '#16A34A' }]}>{p.digits}</Text>
+                </View>
+              )})()}
+            </View>
+          )}
           <View style={styles.totalsRow}>
             <Text style={styles.totalsLabel}>Shipping Cost:</Text>
             {(() => { const p = formatBDTParts(shippingCost); return (

@@ -16,7 +16,7 @@ import { useCartStore, type DeliveryType } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { checkoutSchema, type CheckoutType } from '@/lib/validations'
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
+import { Minus, Plus, Trash2, ShoppingBag, Tag, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Analytics } from '@/lib/analytics'
 import { fbPixelEvents } from '@/lib/facebook-pixel-events'
@@ -57,6 +57,21 @@ function CheckoutContent() {
     // Set initial loading state if we have URL products to load
     !overlayCheckoutOpen && !!hasUrlProducts
   )
+
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('')
+  const [appliedPromoCode, setAppliedPromoCode] = useState<{
+    id: number
+    code: string
+    name: string
+    discountAmount: number
+    discountType: 'percentage' | 'fixed'
+    discountValue: string
+    maxDiscountAmount?: string
+    isStoreWide: boolean
+  } | null>(null)
+  const [promoCodeLoading, setPromoCodeLoading] = useState(false)
+  const [promoCodeError, setPromoCodeError] = useState('')
   
   // Load products from URL if productIds parameter exists
   useEffect(() => {
@@ -123,7 +138,68 @@ function CheckoutContent() {
     ? urlProducts.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
     : getSelectedTotal()
   const shippingCost = checkoutItems.length > 0 ? getShippingCost() : 0
-  const totalPrice = itemsTotal + shippingCost
+  const discountAmount = appliedPromoCode?.discountAmount || 0
+  const totalPrice = Math.max(0, itemsTotal + shippingCost - discountAmount)
+
+  // Promo code functions
+  const applyPromoCode = async () => {
+    if (!promoCode.trim()) {
+      setPromoCodeError('Please enter a promo code')
+      return
+    }
+
+    setPromoCodeLoading(true)
+    setPromoCodeError('')
+
+    try {
+      const response = await fetch('/api/promo-codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: promoCode.trim(),
+          items: checkoutItems.map(item => ({
+            id: item.id,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          itemsTotal,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.valid) {
+        setAppliedPromoCode({
+          id: result.promoCode.id,
+          code: result.promoCode.code,
+          name: result.promoCode.name,
+          discountAmount: result.discountAmount,
+          discountType: result.promoCode.discountType,
+          discountValue: result.promoCode.discountValue,
+          maxDiscountAmount: result.promoCode.maxDiscountAmount,
+          isStoreWide: result.isStoreWide,
+        })
+        setPromoCode('')
+        toast.success(`Promo code "${result.promoCode.code}" applied successfully! You saved ৳${result.discountAmount}`)
+      } else {
+        setPromoCodeError(result.error)
+        toast.error(result.error)
+      }
+    } catch (error) {
+      console.error('Error applying promo code:', error)
+      setPromoCodeError('Failed to validate promo code')
+      toast.error('Failed to validate promo code')
+    } finally {
+      setPromoCodeLoading(false)
+    }
+  }
+
+  const removePromoCode = () => {
+    setAppliedPromoCode(null)
+    setPromoCode('')
+    setPromoCodeError('')
+    toast.success('Promo code removed')
+  }
 
   // Helper functions for URL products quantity management
   const updateUrlProductQuantity = (productId: number, newQuantity: number) => {
@@ -193,13 +269,17 @@ function CheckoutContent() {
         customerEmail: data.email ?? null,
         customerPhone: data.phone,
         customerAddress: data.address,
-  specialNote: data.specialNote ?? undefined,
+        specialNote: data.specialNote ?? undefined,
         // city and postalCode removed
         items: checkoutItems,
         totalAmount: totalPrice,
         shippingCost,
         deliveryType,
         orderId: newOrderId,
+        // Promo code data
+        promoCodeId: appliedPromoCode?.id || null,
+        promoCode: appliedPromoCode?.code || null,
+        promoCodeDiscount: appliedPromoCode?.discountAmount || null,
       }
       
       const response = await fetch('/api/orders', {
@@ -438,11 +518,88 @@ function CheckoutContent() {
                     <span>Shipping:</span>
                     <span>TK {shippingCost.toFixed(2)}</span>
                   </div>
+                  {appliedPromoCode && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Promo Discount ({appliedPromoCode.code}):</span>
+                      <span>-TK {discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-lg font-bold">
                     <span>Grand Total:</span>
                     <span>TK {totalPrice.toFixed(2)}</span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Promo Code Section */}
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Tag className="h-5 w-5" />
+                  Promo Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {appliedPromoCode ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div>
+                        <p className="font-medium text-green-800">{appliedPromoCode.code}</p>
+                        <p className="text-sm text-green-600">{appliedPromoCode.name}</p>
+                        <p className="text-sm text-green-600">
+                          You saved ৳{appliedPromoCode.discountAmount.toFixed(2)}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={removePromoCode}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter promo code"
+                        value={promoCode}
+                        onChange={(e) => {
+                          setPromoCode(e.target.value.toUpperCase())
+                          setPromoCodeError('')
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            applyPromoCode()
+                          }
+                        }}
+                        className={promoCodeError ? 'border-red-500' : ''}
+                        disabled={promoCodeLoading}
+                      />
+                      <Button
+                        onClick={applyPromoCode}
+                        disabled={promoCodeLoading || !promoCode.trim()}
+                        className="whitespace-nowrap"
+                      >
+                        {promoCodeLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Applying...
+                          </>
+                        ) : (
+                          'Apply'
+                        )}
+                      </Button>
+                    </div>
+                    {promoCodeError && (
+                      <p className="text-sm text-red-600">{promoCodeError}</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

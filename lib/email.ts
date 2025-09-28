@@ -1,114 +1,217 @@
-import { Resend } from 'resend'
-import { type OrderStatus } from './validations/order'
-import { CartItemType } from './validations'
-import { R2StorageService } from './r2-storage'
-import { generatePaidReceiptBuffer } from './pdf-generator'
+import { Resend } from "resend";
+import { type OrderStatus } from "./validations/order";
+import { CartItemType } from "./validations";
+import { R2StorageService } from "./r2-storage";
+import { generatePaidReceiptBuffer } from "./pdf-generator";
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export interface OrderData {
-  customerName: string
-  customerEmail?: string | null
-  customerPhone: string
-  customerAddress: string
-  specialNote?: string
-  items: CartItemType[]
-  itemsTotal: number
-  shippingCost: number
-  totalAmount: number
-  orderId: string
+  customerName: string;
+  customerEmail?: string | null;
+  customerPhone: string;
+  customerAddress: string;
+  specialNote?: string;
+  items: CartItemType[];
+  itemsTotal: number;
+  shippingCost: number;
+  totalAmount: number;
+  orderId: string;
+  // Promo code fields
+  promoCode?: string;
+  promoCodeDiscount?: number;
 }
 
-export async function sendOrderConfirmationEmails(orderData: OrderData, invoiceUrl?: string | null) {
-  const { customerEmail, customerName, items, itemsTotal, shippingCost, totalAmount, orderId } = orderData
-  
+export async function sendOrderConfirmationEmails(
+  orderData: OrderData,
+  invoiceUrl?: string | null,
+) {
+  const {
+    customerEmail,
+    customerName,
+    items,
+    itemsTotal,
+    shippingCost,
+    totalAmount,
+    orderId,
+    promoCode,
+    promoCodeDiscount,
+  } = orderData;
+
+  console.log("📧 sendOrderConfirmationEmails called with:", {
+    orderId,
+    customerEmail,
+    customerName,
+    hasInvoiceUrl: !!invoiceUrl,
+    itemsCount: items.length,
+    totalAmount,
+    resendApiKey: process.env.RESEND_API_KEY ? "Present" : "Missing",
+    resendFromEmail: process.env.RESEND_FROM_EMAIL || "Not set",
+  });
+
+  // Validate Resend configuration
+  if (!process.env.RESEND_API_KEY) {
+    console.error("📧 RESEND_API_KEY is not configured!");
+    return {
+      success: false,
+      error: "Email service not configured - missing API key",
+    };
+  }
+
   try {
-    const logoUrl = await getMainLogoUrl()
+    const logoUrl = await getMainLogoUrl();
     // Prepare PDF attachment if invoice URL is provided
-    let pdfAttachment = null
+    let pdfAttachment = null;
     if (invoiceUrl) {
       try {
-        const fileName = R2StorageService.generateFileName(orderId)
-        const pdfBuffer = await R2StorageService.downloadPDF(fileName)
+        const fileName = R2StorageService.generateFileName(orderId);
+        const pdfBuffer = await R2StorageService.downloadPDF(fileName);
         pdfAttachment = {
           filename: `Invoice-${orderId}.pdf`,
           content: pdfBuffer,
-          type: 'application/pdf',
-          disposition: 'attachment'
-        }
+          type: "application/pdf",
+          disposition: "attachment",
+        };
       } catch (attachmentError) {
-        console.error('Failed to prepare PDF attachment:', attachmentError)
+        console.error("Failed to prepare PDF attachment:", attachmentError);
         // Continue without attachment
       }
     }
 
     // Email to customer
-    let customerEmailId: string | undefined
+    let customerEmailId: string | undefined;
     if (customerEmail) {
+      console.log("📧 Sending customer email to:", customerEmail);
+
       const emailPayload: {
-        from: string
-        to: string
-        subject: string
-        html: string
+        from: string;
+        to: string;
+        subject: string;
+        html: string;
         attachments?: Array<{
-          filename: string
-          content: Buffer
-          type: string
-          disposition: string
-        }>
+          filename: string;
+          content: Buffer;
+          type: string;
+          disposition: string;
+        }>;
       } = {
-        from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
+        from:
+          process.env.RESEND_FROM_EMAIL ||
+          "KidsToys Bangladesh <noreply@kidstoysbangladesh.com>",
         to: customerEmail,
         subject: `Order Confirmation - #${orderId}`,
-        html: generateCustomerEmailTemplate(customerName, items, itemsTotal, shippingCost, totalAmount, orderId, invoiceUrl),
-      }
-      
+        html: generateCustomerEmailTemplate(
+          customerName,
+          items,
+          itemsTotal,
+          shippingCost,
+          totalAmount,
+          orderId,
+          invoiceUrl,
+          promoCode,
+          promoCodeDiscount,
+          logoUrl,
+        ),
+      };
+
       // Add PDF attachment if available
       if (pdfAttachment) {
-        emailPayload.attachments = [pdfAttachment]
+        console.log("📧 Adding PDF attachment to customer email");
+        emailPayload.attachments = [pdfAttachment];
       }
-      
-      const customerRes = await resend.emails.send(emailPayload)
-      customerEmailId = customerRes.data?.id
+
+      console.log("📧 Customer email payload prepared:", {
+        from: emailPayload.from,
+        to: emailPayload.to,
+        subject: emailPayload.subject,
+        hasAttachments: !!emailPayload.attachments,
+      });
+
+      try {
+        const customerRes = await resend.emails.send(emailPayload);
+        customerEmailId = customerRes.data?.id;
+        console.log("📧 Customer email sent successfully:", {
+          emailId: customerEmailId,
+          response: customerRes,
+        });
+      } catch (customerEmailError) {
+        console.error("📧 Customer email failed:", customerEmailError);
+        throw customerEmailError;
+      }
+    } else {
+      console.log(
+        "📧 No customer email provided, skipping customer notification",
+      );
     }
 
     // Email to owner (with PDF attachment as well)
+    console.log("📧 Sending owner notification email");
+
     const ownerEmailPayload: {
-      from: string
-      to: string
-      subject: string
-      html: string
+      from: string;
+      to: string;
+      subject: string;
+      html: string;
       attachments?: Array<{
-        filename: string
-        content: Buffer
-        type: string
-        disposition: string
-      }>
+        filename: string;
+        content: Buffer;
+        type: string;
+        disposition: string;
+      }>;
     } = {
-      from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
-      to: 'apu.sns@gmail.com',
+      from:
+        process.env.RESEND_FROM_EMAIL ||
+        "KidsToys Bangladesh <noreply@kidstoysbangladesh.com>",
+      to: "kidstoysbangladesh@gmail.com",
       subject: `New Order - #${orderId}`,
       html: generateOwnerEmailTemplate(orderData, invoiceUrl, logoUrl),
-    }
-    
+    };
+
     // Add PDF attachment if available
     if (pdfAttachment) {
-      ownerEmailPayload.attachments = [pdfAttachment]
+      console.log("📧 Adding PDF attachment to owner email");
+      ownerEmailPayload.attachments = [pdfAttachment];
     }
-    
-    const ownerRes = await resend.emails.send(ownerEmailPayload)
 
+    console.log("📧 Owner email payload prepared:", {
+      from: ownerEmailPayload.from,
+      to: ownerEmailPayload.to,
+      subject: ownerEmailPayload.subject,
+      hasAttachments: !!ownerEmailPayload.attachments,
+    });
+
+    let ownerRes;
+    try {
+      ownerRes = await resend.emails.send(ownerEmailPayload);
+      console.log("📧 Owner email sent successfully:", {
+        emailId: ownerRes.data?.id,
+        response: ownerRes,
+      });
+    } catch (ownerEmailError) {
+      console.error("📧 Owner email failed:", ownerEmailError);
+      throw ownerEmailError;
+    }
+
+    console.log("📧 All emails processed successfully");
     return {
       success: true,
       customerEmailId,
       ownerEmailId: ownerRes.data?.id,
-    }
+    };
   } catch (error) {
-    console.error('Email sending failed:', error)
+    console.error("📧 Email sending failed:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      orderData: {
+        orderId,
+        customerEmail,
+        customerName,
+      },
+    });
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -120,10 +223,20 @@ function generateCustomerEmailTemplate(
   totalAmount: number,
   orderId: string,
   invoiceUrl?: string | null,
+  promoCode?: string,
+  promoCodeDiscount?: number,
+  logoDataUrl?: string,
 ): string {
   const itemsHtml = items
-    .map(item => `<tr><td style="padding:8px;border-bottom:1px solid #ddd;"><b>${item.name}</b></td><td style="padding:8px;text-align:center;">${item.quantity}</td><td style="padding:8px;text-align:right;">TK ${item.price}</td><td style="padding:8px;text-align:right;"><b>TK ${(parseFloat(item.price) * item.quantity).toFixed(2)}</b></td></tr>`)
-    .join('')
+    .map(
+      (item) =>
+        `<tr><td style="padding:8px;border-bottom:1px solid #ddd;"><b>${item.name}</b></td><td style="padding:8px;text-align:center;">${item.quantity}</td><td style="padding:8px;text-align:right;">TK ${item.price}</td><td style="padding:8px;text-align:right;"><b>TK ${(parseFloat(item.price) * item.quantity).toFixed(2)}</b></td></tr>`,
+    )
+    .join("");
+
+  const logoBlock = logoDataUrl
+    ? `<div style="text-align:center;margin-bottom:20px;"><img src="${logoDataUrl}" alt="KidsToys Bangladesh" style="height:60px;max-width:100%;object-fit:contain"/></div>`
+    : "";
 
   return `
     <!DOCTYPE html>
@@ -151,6 +264,7 @@ function generateCustomerEmailTemplate(
               <!-- Header with Logo -->
               <tr>
                 <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;">
+                  ${logoBlock ? logoBlock.replace('style="height:60px;max-width:100%;object-fit:contain"', 'style="height:60px;max-width:200px;object-fit:contain;margin-bottom:15px;filter:brightness(0) invert(1);"') : ""}
                   <h1 style="color: #ffffff; margin: 0 0 10px; font-size: 32px; font-weight: 700;">KidsToys Bangladesh</h1>
                   <div style="background: rgba(255, 255, 255, 0.2); display: inline-block; padding: 8px 20px; border-radius: 20px; margin-top: 10px;">
                     <p style="color: #ffffff; margin: 0; font-size: 16px; font-weight: 600;">
@@ -223,6 +337,15 @@ function generateCustomerEmailTemplate(
                         <td style="padding: 8px 0; color: #6b7280; font-size: 15px;">Shipping</td>
                         <td style="padding: 8px 0; text-align: right; color: #4b5563; font-size: 15px;">TK ${shippingCost.toFixed(2)}</td>
                       </tr>
+                      ${
+                        promoCode && promoCodeDiscount
+                          ? `
+                      <tr>
+                        <td style="padding: 8px 0; color: #10b981; font-size: 15px;">Promo Discount (${promoCode})</td>
+                        <td style="padding: 8px 0; text-align: right; color: #10b981; font-size: 15px;">-TK ${promoCodeDiscount.toFixed(2)}</td>
+                      </tr>`
+                          : ""
+                      }
                       <tr style="border-top: 2px solid #e5e7eb;">
                         <td style="padding: 12px 0 8px; color: #111827; font-size: 18px; font-weight: 700;">Total</td>
                         <td style="padding: 12px 0 8px; text-align: right; color: #7c3aed; font-size: 20px; font-weight: 700;">TK ${totalAmount.toFixed(2)}</td>
@@ -250,7 +373,9 @@ function generateCustomerEmailTemplate(
               </tr>
               
               <!-- Invoice Download (if available) -->
-              ${invoiceUrl ? `
+              ${
+                invoiceUrl
+                  ? `
               <tr>
                 <td style="padding: 0 40px 30px;">
                   <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 25px; border-radius: 10px; text-align: center;">
@@ -266,7 +391,9 @@ function generateCustomerEmailTemplate(
                   </div>
                 </td>
               </tr>
-              ` : ''}
+              `
+                  : ""
+              }
               
               <!-- Next Steps -->
               <tr>
@@ -296,10 +423,10 @@ function generateCustomerEmailTemplate(
                       Our customer support team is here to assist you with any questions.
                     </p>
                     <div>
-                      <a href="tel:+8801234567890" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background: #ffffff; color: #7c3aed; text-decoration: none; border: 2px solid #7c3aed; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                      <a href="tel:+8801735547173" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background: #ffffff; color: #7c3aed; text-decoration: none; border: 2px solid #7c3aed; border-radius: 6px; font-weight: 600; font-size: 14px;">
                         📞 Call Support
                       </a>
-                      <a href="mailto:support@kidstoysbangladesh.com" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background: #7c3aed; color: #ffffff; text-decoration: none; border: 2px solid #7c3aed; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                      <a href="mailto:kidstoysbangladesh@gmail.com" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background: #7c3aed; color: #ffffff; text-decoration: none; border: 2px solid #7c3aed; border-radius: 6px; font-weight: 600; font-size: 14px;">
                         ✉️ Email Us
                       </a>
                     </div>
@@ -341,10 +468,14 @@ function generateCustomerEmailTemplate(
       </table>
     </body>
     </html>
-  `
+  `;
 }
 
-function generateOwnerEmailTemplate(orderData: OrderData, invoiceUrl?: string | null, logoDataUrl?: string): string {
+function generateOwnerEmailTemplate(
+  orderData: OrderData,
+  invoiceUrl?: string | null,
+  logoDataUrl?: string,
+): string {
   const itemsHtml = orderData.items
     .map(
       (item) => `
@@ -362,11 +493,13 @@ function generateOwnerEmailTemplate(orderData: OrderData, invoiceUrl?: string | 
           TK ${(parseFloat(item.price) * item.quantity).toFixed(2)}
         </td>
       </tr>
-    `
+    `,
     )
-    .join('')
+    .join("");
 
-  const logoBlock = logoDataUrl ? `<div style="text-align:center;margin-bottom:12px;"><img src="${logoDataUrl}" alt="KidsToys Bangladesh" style="height:48px;max-width:100%;object-fit:contain"/></div>` : ''
+  const logoBlock = logoDataUrl
+    ? `<div style="text-align:center;margin-bottom:12px;"><img src="${logoDataUrl}" alt="KidsToys Bangladesh" style="height:48px;max-width:100%;object-fit:contain"/></div>`
+    : "";
 
   return `
     <!DOCTYPE html>
@@ -383,6 +516,7 @@ function generateOwnerEmailTemplate(orderData: OrderData, invoiceUrl?: string | 
         <div style="background-color: #fee2e2; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <h3>অর্ডার #${orderData.orderId}</h3>
           <p><strong>পণ্যের মূল্য: TK ${orderData.itemsTotal.toFixed(2)}</strong></p>
+          ${orderData.promoCode && orderData.promoCodeDiscount ? `<p><strong style="color: #10b981;">প্রোমো ডিসকাউন্ট (${orderData.promoCode}): -TK ${orderData.promoCodeDiscount.toFixed(2)}</strong></p>` : ""}
           <p><strong>ডেলিভারি চার্জ: TK ${orderData.shippingCost.toFixed(2)}</strong></p>
           <hr style="border: none; border-top: 1px solid #dc2626; margin: 10px 0;">
           <p><strong>মোট পরিমাণ: TK ${orderData.totalAmount.toFixed(2)}</strong></p>
@@ -401,11 +535,15 @@ function generateOwnerEmailTemplate(orderData: OrderData, invoiceUrl?: string | 
           </div>
         </div>
 
-        ${orderData.specialNote && orderData.specialNote.trim().length > 0 ? `
+        ${
+          orderData.specialNote && orderData.specialNote.trim().length > 0
+            ? `
         <div style="background-color: #fff7ed; padding: 12px 16px; border-left: 4px solid #fb923c; border-radius: 6px; margin: 10px 0 20px 0;">
           <p style="margin: 0;"><strong>Special Note:</strong> ${orderData.specialNote}</p>
         </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <h3>অর্ডারের পণ্যসমূহ:</h3>
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
@@ -431,7 +569,9 @@ function generateOwnerEmailTemplate(orderData: OrderData, invoiceUrl?: string | 
           </ol>
         </div>
 
-        ${invoiceUrl ? `
+        ${
+          invoiceUrl
+            ? `
         <div style="background-color: #ecfdf5; padding: 15px; border-radius: 6px; margin: 20px 0; text-align: center;">
           <p style="margin-bottom: 10px;"><strong>📄 Invoice PDF</strong></p>
           <a href="${invoiceUrl}" target="_blank" style="display: inline-block; background: #16a34a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: 600;">
@@ -441,68 +581,89 @@ function generateOwnerEmailTemplate(orderData: OrderData, invoiceUrl?: string | 
             Invoice is also attached to this email.
           </p>
         </div>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
-export async function sendPaymentConfirmationEmail(orderData: OrderData, orderId: string) {
-  const { customerEmail, customerName, totalAmount } = orderData
-  
+export async function sendPaymentConfirmationEmail(
+  orderData: OrderData,
+  orderId: string,
+) {
+  const { customerEmail, customerName, totalAmount } = orderData;
+
   if (!customerEmail) {
-    return { success: false, message: 'No customer email provided' }
+    return { success: false, message: "No customer email provided" };
   }
-  
+
   try {
-    console.log('🔄 Generating receipt PDF...')
-    const logoDataUrl = await getMainLogoUrl()
-    
+    console.log("🔄 Generating receipt PDF...");
+    const logoDataUrl = await getMainLogoUrl();
+
     // Generate receipt PDF
-    const paidReceiptBuffer = await generatePaidReceiptBuffer(orderData)
-    const paidReceiptFileName = R2StorageService.generatePaidReceiptFileName(orderId)
-    
+    const paidReceiptBuffer = await generatePaidReceiptBuffer(orderData);
+    const paidReceiptFileName =
+      R2StorageService.generatePaidReceiptFileName(orderId);
+
     // Upload receipt to R2
-    const paidReceiptUrl = await R2StorageService.uploadPDF(paidReceiptBuffer, paidReceiptFileName)
-    console.log('📤 Paid receipt uploaded successfully:', paidReceiptUrl)
-    
+    const paidReceiptUrl = await R2StorageService.uploadPDF(
+      paidReceiptBuffer,
+      paidReceiptFileName,
+    );
+    console.log("📤 Paid receipt uploaded successfully:", paidReceiptUrl);
+
     // Prepare PDF attachment
     const pdfAttachment = {
       filename: `Receipt-${orderId}-PAID.pdf`,
       content: paidReceiptBuffer,
-      type: 'application/pdf',
-      disposition: 'attachment'
-    }
-    
+      type: "application/pdf",
+      disposition: "attachment",
+    };
+
     // Send payment confirmation email
     const result = await resend.emails.send({
-      from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
+      from: "KidsToys Bangladesh <noreply@kidstoysbangladesh.com>",
       to: customerEmail,
       subject: `Payment Confirmed - Order #${orderId}`,
-      html: generatePaymentConfirmationTemplate(customerName, orderId, totalAmount, paidReceiptUrl, logoDataUrl || undefined),
-      attachments: [pdfAttachment]
-    })
-    
-    console.log('✅ Payment confirmation email sent:', result.data?.id)
-    
-    return { 
-      success: true, 
-      message: 'Payment confirmation email sent successfully',
-      receiptUrl: paidReceiptUrl
-    }
+      html: generatePaymentConfirmationTemplate(
+        customerName,
+        orderId,
+        totalAmount,
+        paidReceiptUrl,
+        logoDataUrl || undefined,
+      ),
+      attachments: [pdfAttachment],
+    });
+
+    console.log("✅ Payment confirmation email sent:", result.data?.id);
+
+    return {
+      success: true,
+      message: "Payment confirmation email sent successfully",
+      receiptUrl: paidReceiptUrl,
+    };
   } catch (error) {
-    console.error('❌ Payment confirmation email error:', error)
-    return { 
-      success: false, 
-      message: `Failed to send payment confirmation email: ${error instanceof Error ? error.message : 'Unknown error'}`
-    }
+    console.error("❌ Payment confirmation email error:", error);
+    return {
+      success: false,
+      message: `Failed to send payment confirmation email: ${error instanceof Error ? error.message : "Unknown error"}`,
+    };
   }
 }
 
-function generatePaymentConfirmationTemplate(customerName: string, orderId: string, totalAmount: number, receiptUrl?: string, logoDataUrl?: string): string {
-  const formatBDT = (amount: number) => `TK ${amount.toFixed(0)}`
-  
+function generatePaymentConfirmationTemplate(
+  customerName: string,
+  orderId: string,
+  totalAmount: number,
+  receiptUrl?: string,
+  logoDataUrl?: string,
+): string {
+  const formatBDT = (amount: number) => `TK ${amount.toFixed(0)}`;
+
   return `
     <!DOCTYPE html>
     <html>
@@ -512,7 +673,7 @@ function generatePaymentConfirmationTemplate(customerName: string, orderId: stri
       <title>Payment Confirmed - KidsToys Bangladesh</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      ${logoDataUrl ? `<div style="text-align:center;margin-bottom:12px;"><img src="${logoDataUrl}" alt="KidsToys Bangladesh" style="height:48px;max-width:100%;object-fit:contain"/></div>` : ''}
+      ${logoDataUrl ? `<div style="text-align:center;margin-bottom:12px;"><img src="${logoDataUrl}" alt="KidsToys Bangladesh" style="height:48px;max-width:100%;object-fit:contain"/></div>` : ""}
       <div style="text-align: center; margin-bottom: 30px;">
         <h1 style="color: #16a34a; margin: 0;">🎉 Payment Confirmed!</h1>
         <h2 style="color: #374151; margin: 5px 0 0 0;">KidsToys Bangladesh</h2>
@@ -535,14 +696,18 @@ function generatePaymentConfirmationTemplate(customerName: string, orderId: stri
         <p style="margin-bottom: 10px; color: #16a34a;"><strong>✅ PAYMENT STATUS: PAID</strong></p>
         <p style="margin-bottom: 15px;">Your order is confirmed and will be shipped soon!</p>
         
-        ${receiptUrl ? `
+        ${
+          receiptUrl
+            ? `
         <a href="${receiptUrl}" target="_blank" style="display: inline-block; background: #16a34a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: 600; margin-bottom: 10px;">
           View Paid Receipt
         </a>
         <p style="font-size: 12px; color: #6b7280; margin: 5px 0;">
           Receipt is also attached to this email.
         </p>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
 
       <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
@@ -563,139 +728,172 @@ function generatePaymentConfirmationTemplate(customerName: string, orderId: stri
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
 // Sends a status update email to the customer for any status change
 export async function sendOrderStatusUpdateEmail(params: {
-  to: string
-  customerName: string
-  orderId: string
-  status: OrderStatus
+  to: string;
+  customerName: string;
+  orderId: string;
+  status: OrderStatus;
 }) {
-  const { to, customerName, orderId, status } = params
+  const { to, customerName, orderId, status } = params;
   console.log(`📨 Preparing to send status update email:`, {
     to,
     customerName,
     orderId,
     status,
-    humanizedStatus: humanizeStatus(status)
-  })
-  
+    humanizedStatus: humanizeStatus(status),
+  });
+
   try {
-    const logoDataUrl = await getMainLogoUrl()
-    const subject = `Order Update - #${orderId}: ${humanizeStatus(status)}`
-    const html = generateStatusUpdateEmailTemplate({ customerName, orderId, status, logoDataUrl: logoDataUrl || undefined })
-    
-    console.log(`📤 Sending email via Resend...`)
+    const logoDataUrl = await getMainLogoUrl();
+    const subject = `Order Update - #${orderId}: ${humanizeStatus(status)}`;
+    const html = generateStatusUpdateEmailTemplate({
+      customerName,
+      orderId,
+      status,
+      logoDataUrl: logoDataUrl || undefined,
+    });
+
+    console.log(`📤 Sending email via Resend...`);
     const result = await resend.emails.send({
-      from: 'KidsToys Bangladesh <noreply@kidstoysbangladesh.com>',
+      from: "KidsToys Bangladesh <noreply@kidstoysbangladesh.com>",
       to,
       subject,
       html,
-    })
-    
-    console.log(`✅ Email sent successfully:`, result)
-    return { success: true, emailId: result.data?.id }
+    });
+
+    console.log(`✅ Email sent successfully:`, result);
+    return { success: true, emailId: result.data?.id };
   } catch (error) {
-    console.error('❌ Status email failed:', error)
+    console.error("❌ Status email failed:", error);
     if (error instanceof Error) {
-      console.error('Error details:', error.message)
+      console.error("Error details:", error.message);
     }
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
 function humanizeStatus(status: OrderStatus): string {
   const map: Record<OrderStatus, string> = {
-    order_placed: 'Order Placed',
-    confirmed: 'Confirmed',
-    shipped: 'Shipped',
-    delivered: 'Delivered',
-    returned: 'Returned',
-    canceled: 'Canceled',
-  }
-  return map[status]
+    order_placed: "Order Placed",
+    confirmed: "Confirmed",
+    shipped: "Shipped",
+    delivered: "Delivered",
+    returned: "Returned",
+    canceled: "Canceled",
+  };
+  return map[status];
 }
 
-function generateStatusUpdateEmailTemplate({ customerName, orderId, status, logoDataUrl }: { customerName: string; orderId: string; status: OrderStatus; logoDataUrl?: string }): string {
-  const title = humanizeStatus(status)
-  
-  const statusConfig: Record<OrderStatus, { emoji: string; color: string; bgColor: string; message: string; nextSteps?: string[] }> = {
+function generateStatusUpdateEmailTemplate({
+  customerName,
+  orderId,
+  status,
+  logoDataUrl,
+}: {
+  customerName: string;
+  orderId: string;
+  status: OrderStatus;
+  logoDataUrl?: string;
+}): string {
+  const title = humanizeStatus(status);
+
+  const statusConfig: Record<
+    OrderStatus,
+    {
+      emoji: string;
+      color: string;
+      bgColor: string;
+      message: string;
+      nextSteps?: string[];
+    }
+  > = {
     order_placed: {
-      emoji: '📦',
-      color: '#3b82f6',
-      bgColor: '#eff6ff',
-      message: 'Great news! We have received your order and our team is reviewing it.',
+      emoji: "📦",
+      color: "#3b82f6",
+      bgColor: "#eff6ff",
+      message:
+        "Great news! We have received your order and our team is reviewing it.",
       nextSteps: [
-        'Our team will verify your order details',
-        'You will receive a confirmation once the order is approved',
-        'We will contact you if we need any additional information'
-      ]
+        "Our team will verify your order details",
+        "You will receive a confirmation once the order is approved",
+        "We will contact you if we need any additional information",
+      ],
     },
     confirmed: {
-      emoji: '✅',
-      color: '#16a34a',
-      bgColor: '#f0fdf4',
-      message: 'Your order has been confirmed! We are now preparing your items for shipment.',
+      emoji: "✅",
+      color: "#16a34a",
+      bgColor: "#f0fdf4",
+      message:
+        "Your order has been confirmed! We are now preparing your items for shipment.",
       nextSteps: [
-        'Our warehouse team is picking your items',
-        'Quality check will be performed',
-        'Package will be prepared for shipping',
-        'You will receive tracking information once shipped'
-      ]
+        "Our warehouse team is picking your items",
+        "Quality check will be performed",
+        "Package will be prepared for shipping",
+        "You will receive tracking information once shipped",
+      ],
     },
     shipped: {
-      emoji: '🚚',
-      color: '#0891b2',
-      bgColor: '#f0fdfa',
-      message: 'Exciting news! Your order has been shipped and is on its way to you.',
+      emoji: "🚚",
+      color: "#0891b2",
+      bgColor: "#f0fdfa",
+      message:
+        "Exciting news! Your order has been shipped and is on its way to you.",
       nextSteps: [
-        'Track your package using the tracking number',
-        'Expected delivery within 2-5 business days',
-        'Our delivery partner will call you before delivery',
-        'Keep your phone accessible for delivery updates'
-      ]
+        "Track your package using the tracking number",
+        "Expected delivery within 2-5 business days",
+        "Our delivery partner will call you before delivery",
+        "Keep your phone accessible for delivery updates",
+      ],
     },
     delivered: {
-      emoji: '🎉',
-      color: '#7c3aed',
-      bgColor: '#faf5ff',
-      message: 'Wonderful! Your order has been successfully delivered. We hope you and your little ones enjoy the toys!',
+      emoji: "🎉",
+      color: "#7c3aed",
+      bgColor: "#faf5ff",
+      message:
+        "Wonderful! Your order has been successfully delivered. We hope you and your little ones enjoy the toys!",
       nextSteps: [
-        'Check all items in your package',
-        'Contact us if anything is missing or damaged',
-        'Share your feedback to help us improve',
-        'Follow us on social media for exclusive offers'
-      ]
+        "Check all items in your package",
+        "Contact us if anything is missing or damaged",
+        "Share your feedback to help us improve",
+        "Follow us on social media for exclusive offers",
+      ],
     },
     returned: {
-      emoji: '↩️',
-      color: '#ea580c',
-      bgColor: '#fff7ed',
-      message: 'We have processed the return for your order. Your refund will be initiated shortly.',
+      emoji: "↩️",
+      color: "#ea580c",
+      bgColor: "#fff7ed",
+      message:
+        "We have processed the return for your order. Your refund will be initiated shortly.",
       nextSteps: [
-        'Refund will be processed within 3-5 business days',
-        'You will receive a confirmation once refund is complete',
-        'Contact support if you have any questions'
-      ]
+        "Refund will be processed within 3-5 business days",
+        "You will receive a confirmation once refund is complete",
+        "Contact support if you have any questions",
+      ],
     },
     canceled: {
-      emoji: '❌',
-      color: '#dc2626',
-      bgColor: '#fef2f2',
-      message: 'Your order has been canceled. If this was not requested by you, please contact our support team immediately.',
+      emoji: "❌",
+      color: "#dc2626",
+      bgColor: "#fef2f2",
+      message:
+        "Your order has been canceled. If this was not requested by you, please contact our support team immediately.",
       nextSteps: [
-        'Any payment made will be refunded',
-        'Refund will reflect in 3-5 business days',
-        'You can place a new order anytime',
-        'Contact support for assistance'
-      ]
+        "Any payment made will be refunded",
+        "Refund will reflect in 3-5 business days",
+        "You can place a new order anytime",
+        "Contact support for assistance",
+      ],
     },
-  }
-  
-  const config = statusConfig[status]
-  
+  };
+
+  const config = statusConfig[status];
+
   return `
     <!DOCTYPE html>
     <html>
@@ -722,11 +920,15 @@ function generateStatusUpdateEmailTemplate({ customerName, orderId, status, logo
               <!-- Header with Logo -->
               <tr>
                 <td style="padding: 30px 40px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;">
-                  ${logoDataUrl ? `
+                  ${
+                    logoDataUrl
+                      ? `
                     <img src="${logoDataUrl}" alt="KidsToys Bangladesh" style="height: 50px; max-width: 200px; margin-bottom: 10px; filter: brightness(0) invert(1);">
-                  ` : `
+                  `
+                      : `
                     <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">KidsToys Bangladesh</h1>
-                  `}
+                  `
+                  }
                   <p style="color: #e0e7ff; margin: 8px 0 0; font-size: 14px;">Your Trusted Toy Store</p>
                 </td>
               </tr>
@@ -766,7 +968,9 @@ function generateStatusUpdateEmailTemplate({ customerName, orderId, status, logo
               </tr>
               
               <!-- Next Steps (if applicable) -->
-              ${config.nextSteps ? `
+              ${
+                config.nextSteps
+                  ? `
               <tr>
                 <td style="padding: 0 40px 30px;">
                   <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px;">
@@ -774,12 +978,14 @@ function generateStatusUpdateEmailTemplate({ customerName, orderId, status, logo
                       What happens next?
                     </h3>
                     <ul style="color: #4b5563; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
-                      ${config.nextSteps.map(step => `<li style="margin-bottom: 8px;">${step}</li>`).join('')}
+                      ${config.nextSteps.map((step) => `<li style="margin-bottom: 8px;">${step}</li>`).join("")}
                     </ul>
                   </div>
                 </td>
               </tr>
-              ` : ''}
+              `
+                  : ""
+              }
               
               <!-- Call to Action -->
               <tr>
@@ -800,11 +1006,11 @@ function generateStatusUpdateEmailTemplate({ customerName, orderId, status, logo
                           Need help? We're here for you!
                         </p>
                         <p style="margin: 0;">
-                          <a href="tel:+8801234567890" style="color: #667eea; text-decoration: none; font-size: 14px; font-weight: 600;">
+                          <a href="tel:+8801735547173" style="color: #667eea; text-decoration: none; font-size: 14px; font-weight: 600;">
                             📞 Call Us
                           </a>
                           <span style="color: #d1d5db; margin: 0 15px;">|</span>
-                          <a href="mailto:support@kidstoysbangladesh.com" style="color: #667eea; text-decoration: none; font-size: 14px; font-weight: 600;">
+                          <a href="mailto:kidstoysbangladesh@gmail.com" style="color: #667eea; text-decoration: none; font-size: 14px; font-weight: 600;">
                             ✉️ Email Support
                           </a>
                         </p>
@@ -841,12 +1047,12 @@ function generateStatusUpdateEmailTemplate({ customerName, orderId, status, logo
       </table>
     </body>
     </html>
-  `
+  `;
 }
 
 // Load the main site logo and return a data URL for embedding in emails
 async function getMainLogoUrl(): Promise<string> {
   // Return the URL of the logo hosted on the domain
   // This avoids embedding base64 images which increases email size
-  return 'https://kidstoysbangladesh.com/main-logo.png'
+  return "https://kidstoysbangladesh.com/main-logo.png";
 }

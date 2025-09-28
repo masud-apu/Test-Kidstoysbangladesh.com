@@ -6,6 +6,7 @@ import {
   Package,
   ShoppingCart,
   User,
+  Tag,
 } from "lucide-react"
 
 import { AdminNavMain } from "@/components/admin-nav-main"
@@ -36,6 +37,11 @@ const adminNavData = {
       title: "Orders",
       url: "/admin/orders",
       icon: ShoppingCart,
+    },
+    {
+      title: "Promo Codes",
+      url: "/admin/promo-codes",
+      icon: Tag,
     },
     {
       title: "Account",

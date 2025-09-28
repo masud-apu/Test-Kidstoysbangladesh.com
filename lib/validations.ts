@@ -32,6 +32,13 @@ export const checkoutSchema = z.object({
     .optional()
     .or(z.literal(''))
     .optional(),
+  // Promo code is optional
+  promoCode: z
+    .string()
+    .max(50, 'Promo code must be at most 50 characters')
+    .optional()
+    .or(z.literal(''))
+    .optional(),
   // City and postal code removed per requirements
 })
 

@@ -54,7 +54,7 @@ export async function generatePaidReceiptBuffer(orderData: OrderData): Promise<B
 
 async function generateWithJsPDF(orderData: OrderData, isPaidReceipt: boolean): Promise<Buffer> {
   try {
-    const { customerName, customerPhone, customerAddress, items, itemsTotal, shippingCost, totalAmount, orderId } = orderData
+    const { customerName, customerPhone, customerAddress, items, itemsTotal, shippingCost, totalAmount, orderId, promoCode, promoCodeDiscount } = orderData
     
     const currentDate = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -207,33 +207,52 @@ async function generateWithJsPDF(orderData: OrderData, isPaidReceipt: boolean): 
     yPosition = (doc as any).lastAutoTable.finalY + 20
 
     // Totals Section
+    const hasPromoDiscount = promoCode && promoCodeDiscount && promoCodeDiscount > 0
+    const totalsHeight = hasPromoDiscount ? 54 : 44
+
     doc.setFillColor(248, 250, 252)
-    doc.roundedRect(pageWidth - 140, yPosition, 120, 44, 2, 2, 'F')
-    
+    doc.roundedRect(pageWidth - 140, yPosition, 120, totalsHeight, 2, 2, 'F')
+
     doc.setFontSize(12)
     setBold()
-    
+
     const totalsX = pageWidth - 130
-    doc.text('Items Total:', totalsX, yPosition + 12)
+    let currentY = yPosition + 12
+
+    doc.text('Items Total:', totalsX, currentY)
     setNormal()
-    doc.text(`${formatBDT(itemsTotal)}`, pageWidth - 30, yPosition + 12, { align: 'right' })
-    
+    doc.text(`${formatBDT(itemsTotal)}`, pageWidth - 30, currentY, { align: 'right' })
+    currentY += 10
+
+    // Promo code discount if applicable
+    if (hasPromoDiscount) {
+      setBold()
+      doc.text(`Promo (${promoCode}):`, totalsX, currentY)
+      doc.setTextColor(22, 163, 74) // Green color
+      setNormal()
+      doc.text(`-${formatBDT(promoCodeDiscount)}`, pageWidth - 30, currentY, { align: 'right' })
+      doc.setTextColor(17, 24, 39) // Reset to default color
+      currentY += 10
+    }
+
     setBold()
-    doc.text('Shipping Cost:', totalsX, yPosition + 22)
+    doc.text('Shipping Cost:', totalsX, currentY)
     setNormal()
-    doc.text(`${formatBDT(shippingCost)}`, pageWidth - 30, yPosition + 22, { align: 'right' })
-    
+    doc.text(`${formatBDT(shippingCost)}`, pageWidth - 30, currentY, { align: 'right' })
+    currentY += 5
+
     // Draw line for final total
     doc.setLineWidth(0.5)
-    doc.line(totalsX, yPosition + 27, pageWidth - 30, yPosition + 27)
-    
+    doc.line(totalsX, currentY, pageWidth - 30, currentY)
+    currentY += 8
+
     doc.setFontSize(14)
     setBold()
-    doc.text('Grand Total:', totalsX, yPosition + 38)
+    doc.text('Grand Total:', totalsX, currentY)
     setBold()
-    doc.text(`${formatBDT(totalAmount)}`, pageWidth - 30, yPosition + 38, { align: 'right' })
+    doc.text(`${formatBDT(totalAmount)}`, pageWidth - 30, currentY, { align: 'right' })
     
-    yPosition += 56
+    yPosition += hasPromoDiscount ? 66 : 56
 
     // Add PAID stamp for receipts (image overlay)
     if (isPaidReceipt) {

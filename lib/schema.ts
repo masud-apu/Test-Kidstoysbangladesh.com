@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, decimal, text, timestamp, json, integer } from 'drizzle-orm/pg-core'
+import { pgTable, serial, varchar, decimal, text, timestamp, json, integer, boolean } from 'drizzle-orm/pg-core'
 
 export const products = pgTable('products', {
   id: serial('id').primaryKey(),
@@ -58,10 +58,15 @@ export const orders = pgTable('orders', {
   
   // Payment status
   paymentStatus: varchar('payment_status', { length: 50 }).default('pending').notNull(),
-  
+
+  // Promo code information
+  promoCodeId: integer('promo_code_id').references(() => promoCodes.id),
+  promoCode: varchar('promo_code', { length: 50 }),
+  promoCodeDiscount: decimal('promo_code_discount', { precision: 10, scale: 2 }),
+
   // Invoice PDF URL
   invoiceUrl: varchar('invoice_url', { length: 500 }),
-  
+
   // Paid receipt PDF URL
   paidReceiptUrl: varchar('paid_receipt_url', { length: 500 }),
   
@@ -74,16 +79,44 @@ export const orderItems = pgTable('order_items', {
   id: serial('id').primaryKey(),
   orderId: integer('order_id').references(() => orders.id).notNull(),
   productId: integer('product_id').references(() => products.id).notNull(),
-  
+
   // Product snapshot (in case product changes after order)
   productName: varchar('product_name', { length: 255 }).notNull(),
   productPrice: decimal('product_price', { precision: 10, scale: 2 }).notNull(),
   productImage: varchar('product_image', { length: 500 }),
-  
+
   quantity: integer('quantity').notNull(),
   itemTotal: decimal('item_total', { precision: 10, scale: 2 }).notNull(),
-  
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const promoCodes = pgTable('promo_codes', {
+  id: serial('id').primaryKey(),
+  code: varchar('code', { length: 50 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+
+  // Discount configuration
+  discountType: varchar('discount_type', { length: 20 }).notNull(), // 'percentage' or 'fixed'
+  discountValue: decimal('discount_value', { precision: 10, scale: 2 }).notNull(),
+  maxDiscountAmount: decimal('max_discount_amount', { precision: 10, scale: 2 }), // For percentage discounts with ceiling
+
+  // Usage configuration
+  isOneTimeUse: boolean('is_one_time_use').default(false).notNull(),
+  usageLimit: integer('usage_limit'), // null for unlimited
+  usedCount: integer('used_count').default(0).notNull(),
+
+  // Scope configuration
+  isStoreWide: boolean('is_store_wide').default(true).notNull(),
+  applicableProducts: json('applicable_products').$type<number[]>().default([]), // Product IDs
+
+  // Status and timing
+  isActive: boolean('is_active').default(true).notNull(),
+  expiresAt: timestamp('expires_at'),
+
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
 export type Product = typeof products.$inferSelect
@@ -96,3 +129,5 @@ export type Order = typeof orders.$inferSelect
 export type NewOrder = typeof orders.$inferInsert
 export type OrderItem = typeof orderItems.$inferSelect
 export type NewOrderItem = typeof orderItems.$inferInsert
+export type PromoCode = typeof promoCodes.$inferSelect
+export type NewPromoCode = typeof promoCodes.$inferInsert
