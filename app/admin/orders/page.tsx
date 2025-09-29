@@ -3,14 +3,17 @@
 import * as React from "react"
 import { useState, useEffect, useRef } from "react"
 import { usePersistentState, usePersistentObject } from "@/hooks/use-persistent-state"
-import { Loader2 } from "lucide-react"
+import { Loader2, Plus } from "lucide-react"
 import { toast } from "sonner"
 
+import { Button } from "@/components/ui/button"
 import { OrdersTable, Order } from "@/components/orders/orders-table"
+import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [createOrderDialogOpen, setCreateOrderDialogOpen] = useState(false)
   
   // Persistent pagination preferences
   const [paginationPrefs, setPaginationPrefs] = usePersistentObject("admin-orders-pagination", {
@@ -220,6 +223,15 @@ export default function OrdersPage() {
     }
   }
 
+  const handleCreateOrder = () => {
+    setCreateOrderDialogOpen(true)
+  }
+
+  const handleOrderCreated = () => {
+    // Refresh orders list when a new order is created
+    fetchOrders()
+  }
+
   return (
     <div className="flex flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
@@ -228,6 +240,12 @@ export default function OrdersPage() {
           <p className="text-muted-foreground">
             Manage customer orders and track their status
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleCreateOrder}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Order
+          </Button>
         </div>
       </div>
 
@@ -255,6 +273,12 @@ export default function OrdersPage() {
           onStatusFilterChange={handleStatusFilterChange}
         />
       )}
+
+      <CreateOrderDialog
+        open={createOrderDialogOpen}
+        onOpenChange={setCreateOrderDialogOpen}
+        onSuccess={handleOrderCreated}
+      />
     </div>
   )
 }
