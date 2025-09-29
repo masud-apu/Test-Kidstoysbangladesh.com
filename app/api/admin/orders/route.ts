@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { orders } from '@/lib/schema'
-import { eq, desc, asc, sql, count } from 'drizzle-orm'
+import { eq, desc, asc, count, and, or, ilike } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,10 +18,14 @@ export async function GET(request: NextRequest) {
 
     // Build where conditions
     const whereConditions = []
-    
+
     if (search) {
       whereConditions.push(
-        sql`${orders.orderId} ILIKE ${`%${search}%`} OR ${orders.customerName} ILIKE ${`%${search}%`} OR ${orders.customerPhone} ILIKE ${`%${search}%`}`
+        or(
+          ilike(orders.orderId, `%${search}%`),
+          ilike(orders.customerName, `%${search}%`),
+          ilike(orders.customerPhone, `%${search}%`)
+        )
       )
     }
 
@@ -29,8 +33,10 @@ export async function GET(request: NextRequest) {
       whereConditions.push(eq(orders.status, status))
     }
 
-    const whereClause = whereConditions.length > 0 
-      ? sql`${whereConditions[0]}${whereConditions.slice(1).map(condition => sql` AND ${condition}`).join('')}`
+    const whereClause = whereConditions.length > 0
+      ? whereConditions.length === 1
+        ? whereConditions[0]
+        : and(...whereConditions)
       : undefined
 
     // Get total count
