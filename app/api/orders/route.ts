@@ -6,7 +6,6 @@ import { createOrderSchema } from '@/lib/validations/order'
 import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
 import { generatePDFBuffer } from '@/lib/pdf-generator'
 import { R2StorageService } from '@/lib/r2-storage'
-import { SteadfastService } from '@/lib/steadfast'
 import { eq, sql } from 'drizzle-orm'
 
 export async function POST(request: NextRequest) {
@@ -145,40 +144,6 @@ export async function POST(request: NextRequest) {
 
     console.log('📧 Email sending result:', emailResult)
 
-    // 7. Create delivery order with Steadfast
-    let steadfastConsignmentId: string | null = null
-    let steadfastTrackingCode: string | null = null
-    try {
-      console.log('🚚 Creating Steadfast delivery order for:', validatedData.orderId)
-      const steadfastResponse = await SteadfastService.createOrder({
-        invoice: validatedData.orderId,
-        recipient_name: validatedData.customerName,
-        recipient_phone: validatedData.customerPhone,
-        recipient_address: validatedData.customerAddress,
-        cod_amount: validatedData.totalAmount,
-      })
-
-      if (steadfastResponse.status === 200) {
-        steadfastConsignmentId = steadfastResponse.consignment_id || null
-        steadfastTrackingCode = steadfastResponse.tracking_code || null
-        console.log('✅ Steadfast order created:', { steadfastConsignmentId, steadfastTrackingCode })
-
-        // Update order with Steadfast tracking information
-        await db
-          .update(orders)
-          .set({
-            steadfastConsignmentId,
-            steadfastTrackingCode,
-          })
-          .where(eq(orders.id, result.id))
-      } else {
-        console.error('❌ Steadfast order creation failed:', steadfastResponse)
-      }
-    } catch (steadfastError) {
-      console.error('🚚 Steadfast API error:', steadfastError)
-      // Continue without failing the order - Steadfast integration is optional
-    }
-
     return NextResponse.json({
       success: true,
       orderId: result.orderId,
@@ -187,8 +152,6 @@ export async function POST(request: NextRequest) {
         : 'Order placed successfully but email sending failed',
       emailSent: emailResult.success,
       invoiceUrl,
-      steadfastConsignmentId,
-      steadfastTrackingCode,
     })
 
   } catch (error) {
