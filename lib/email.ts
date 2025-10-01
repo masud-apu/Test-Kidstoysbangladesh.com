@@ -395,6 +395,23 @@ function generateCustomerEmailTemplate(
                   : ""
               }
               
+              <!-- Track Order -->
+              <tr>
+                <td style="padding: 0 40px 30px;">
+                  <div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 25px; border-radius: 10px; text-align: center;">
+                    <p style="color: #3730a3; margin: 0 0 15px; font-size: 16px; font-weight: 600;">
+                      📦 Track Your Order
+                    </p>
+                    <a href="https://kidstoysbangladesh.com/track-order?orderId=${orderId}" target="_blank" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);">
+                      Track Order #${orderId}
+                    </a>
+                    <p style="color: #64748b; margin: 12px 0 0; font-size: 13px;">
+                      Click the button above to check your delivery status anytime.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+
               <!-- Next Steps -->
               <tr>
                 <td style="padding: 0 40px 30px;">

@@ -69,7 +69,11 @@ export const orders = pgTable('orders', {
 
   // Paid receipt PDF URL
   paidReceiptUrl: varchar('paid_receipt_url', { length: 500 }),
-  
+
+  // Steadfast delivery tracking
+  steadfastConsignmentId: varchar('steadfast_consignment_id', { length: 100 }),
+  steadfastTrackingCode: varchar('steadfast_tracking_code', { length: 100 }),
+
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

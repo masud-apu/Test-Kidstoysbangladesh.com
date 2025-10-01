@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Sparkles, Flame, Star } from 'lucide-react'
+import { Sparkles, Flame, Star, PackageSearch } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -49,15 +49,16 @@ export function MobileBottomNav() {
       className="fixed bottom-0 inset-x-0 z-50 md:hidden border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90"
     >
       <div className="mx-auto max-w-7xl">
-        <div className="grid grid-cols-3 text-center">
+        <div className="grid grid-cols-4 text-center">
           {(
             [
-              { id: 'new-arrivals', href: '/#new-arrivals', label: 'New Arrival', Icon: Sparkles, hover: 'hover:text-teal-600' },
+              { id: 'new-arrivals', href: '/#new-arrivals', label: 'New', Icon: Sparkles, hover: 'hover:text-teal-600' },
               { id: 'sale', href: '/#sale', label: 'Sale', Icon: Flame, hover: 'hover:text-orange-600' },
-              { id: 'all-products', href: '/#all-products', label: 'All Products', Icon: Star, hover: 'hover:text-gray-900' },
+              { id: 'all-products', href: '/#all-products', label: 'Products', Icon: Star, hover: 'hover:text-gray-900' },
+              { id: 'track-order', href: '/track-order', label: 'Track', Icon: PackageSearch, hover: 'hover:text-blue-600' },
             ] as const
           ).map(({ id, href, label, Icon, hover }) => {
-            const active = activeSection === id
+            const active = activeSection === id || (pathname === '/track-order' && id === 'track-order')
             return (
               <Link
                 key={id}

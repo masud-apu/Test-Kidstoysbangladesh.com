@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ShoppingCart, Sparkles, Flame, Star } from 'lucide-react'
+import { ShoppingCart, Sparkles, Flame, Star, PackageSearch } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 import { cn } from '@/lib/utils'
@@ -127,6 +127,7 @@ export function Header() {
               { id: 'new-arrivals', href: '/#new-arrivals', label: 'New Arrival', Icon: Sparkles },
               { id: 'sale', href: '/#sale', label: 'Sale', Icon: Flame },
               { id: 'all-products', href: '/#all-products', label: 'All Products', Icon: Star },
+              { id: 'track-order', href: '/track-order', label: 'Track Order', Icon: PackageSearch },
             ].map(({ id, href, label, Icon }) => {
               const active = activeSection === id
               return (

@@ -1,0 +1,243 @@
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Loader2, Package, TruckIcon, MapPin, Phone, User, Calendar } from 'lucide-react'
+import { toast } from 'sonner'
+
+interface OrderTrackingData {
+  order: {
+    orderId: string
+    status: string
+    customerName: string
+    customerPhone: string
+    customerAddress: string
+    totalAmount: string
+    deliveryType: string
+    steadfastConsignmentId: string | null
+    steadfastTrackingCode: string | null
+    createdAt: string
+    updatedAt: string
+  }
+  steadfastStatus: any
+}
+
+const statusLabels: Record<string, string> = {
+  order_placed: 'Order Placed',
+  confirmed: 'Confirmed',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  out_for_delivery: 'Out for Delivery',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+  returned: 'Returned',
+}
+
+export default function TrackOrderPage() {
+  const [orderId, setOrderId] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [trackingData, setTrackingData] = useState<OrderTrackingData | null>(null)
+
+  const handleTrackOrder = async () => {
+    if (!orderId.trim()) {
+      toast.error('Please enter an order ID')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/orders/track?orderId=${encodeURIComponent(orderId.trim())}`)
+      const data = await response.json()
+
+      if (data.success) {
+        setTrackingData(data)
+        toast.success('Order found!')
+      } else {
+        toast.error(data.message || 'Order not found')
+        setTrackingData(null)
+      }
+    } catch (error) {
+      console.error('Error tracking order:', error)
+      toast.error('Failed to track order')
+      setTrackingData(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="container mx-auto max-w-4xl py-8 px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Track Your Order</h1>
+        <p className="text-muted-foreground">
+          Enter your order ID to track the delivery status
+        </p>
+      </div>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Order ID</CardTitle>
+          <CardDescription>
+            You can find your order ID in the confirmation email or SMS
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label htmlFor="orderId" className="sr-only">Order ID</Label>
+              <Input
+                id="orderId"
+                placeholder="e.g., KTB1234567890"
+                value={orderId}
+                onChange={(e) => setOrderId(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleTrackOrder()
+                  }
+                }}
+                disabled={loading}
+              />
+            </div>
+            <Button onClick={handleTrackOrder} disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Tracking...
+                </>
+              ) : (
+                'Track Order'
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {trackingData && (
+        <div className="space-y-6">
+          {/* Order Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Order Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <span className="font-semibold text-lg">
+                    {statusLabels[trackingData.order.status] || trackingData.order.status}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Order ID:</span>
+                  <span className="font-mono">{trackingData.order.orderId}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Total Amount:</span>
+                  <span className="font-semibold">TK {trackingData.order.totalAmount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Delivery Type:</span>
+                  <span className="capitalize">{trackingData.order.deliveryType} Dhaka</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Customer Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Delivery Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <User className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Name</p>
+                    <p className="font-medium">{trackingData.order.customerName}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Phone</p>
+                    <p className="font-medium">{trackingData.order.customerPhone}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Delivery Address</p>
+                    <p className="font-medium">{trackingData.order.customerAddress}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Calendar className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Order Date</p>
+                    <p className="font-medium">
+                      {new Date(trackingData.order.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Steadfast Tracking */}
+          {trackingData.order.steadfastTrackingCode && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TruckIcon className="h-5 w-5" />
+                  Courier Tracking
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Tracking Code:</span>
+                    <span className="font-mono text-sm">
+                      {trackingData.order.steadfastTrackingCode}
+                    </span>
+                  </div>
+                  {trackingData.order.steadfastConsignmentId && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Consignment ID:</span>
+                      <span className="font-mono text-sm">
+                        {trackingData.order.steadfastConsignmentId}
+                      </span>
+                    </div>
+                  )}
+                  {trackingData.steadfastStatus && (
+                    <div className="mt-4 p-4 bg-muted rounded-lg">
+                      <p className="text-sm font-medium mb-2">Courier Status:</p>
+                      <pre className="text-xs overflow-auto">
+                        {JSON.stringify(trackingData.steadfastStatus, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

@@ -199,6 +199,22 @@ export function InvoiceDocument({ orderData, logoDataUrl, isPaidReceipt = false,
           </View>
         </View>
 
+        {/* Track Order */}
+        <View style={{ backgroundColor: '#EEF2FF', borderRadius: 4, padding: 10, marginTop: 12, marginBottom: 8 }}>
+          <Text style={{ fontSize: 11, fontWeight: 700, marginBottom: 4, color: '#4338CA' }}>
+            📦 Track Your Order
+          </Text>
+          <Text style={{ fontSize: 9, color: '#4B5563', marginBottom: 4 }}>
+            Track your order status anytime at:
+          </Text>
+          <Text style={{ fontSize: 10, fontWeight: 700, color: '#4F46E5' }}>
+            www.kidstoysbangladesh.com/track-order
+          </Text>
+          <Text style={{ fontSize: 9, color: '#6B7280', marginTop: 4 }}>
+            Enter your Order ID: {orderId}
+          </Text>
+        </View>
+
         {/* Footer */}
         <View style={styles.footer}>
           <Text>Thank you for choosing KidsToys Bangladesh!</Text>
