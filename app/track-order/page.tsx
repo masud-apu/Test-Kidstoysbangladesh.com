@@ -8,6 +8,15 @@ import { Label } from '@/components/ui/label'
 import { Loader2, Package, TruckIcon, MapPin, Phone, User, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
 
+interface TrackingEvent {
+  id?: string | number
+  text: string
+  created_at?: string
+  deliveryman?: {
+    name?: string
+  }
+}
+
 interface OrderTrackingData {
   order: {
     orderId: string
@@ -22,7 +31,15 @@ interface OrderTrackingData {
     createdAt: string
     updatedAt: string
   }
-  steadfastStatus: Record<string, unknown> | null
+  steadfastStatus: {
+    result?: {
+      rider?: {
+        name?: string
+        phone?: string
+      }
+    }
+    trackings?: TrackingEvent[]
+  } | null
 }
 
 const statusLabels: Record<string, string> = {
@@ -251,7 +268,7 @@ export default function TrackOrderPage() {
                       {/* Timeline line */}
                       <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-border" />
 
-                      {trackingData.steadfastStatus.trackings.map((event: any, index: number) => (
+                      {trackingData.steadfastStatus.trackings.map((event: TrackingEvent, index: number) => (
                         <div key={event.id || index} className="relative">
                           {/* Timeline dot */}
                           <div className={`absolute left-[-23px] top-1 h-4 w-4 rounded-full border-2 ${
