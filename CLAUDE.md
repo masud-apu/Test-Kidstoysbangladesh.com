@@ -6,66 +6,156 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT: Always use pnpm instead of npm for this project.**
 
+### Core Commands
 - `pnpm dev`: Start development server with Turbopack
 - `pnpm build`: Build the project for production with Turbopack
 - `pnpm start`: Start the production server
 - `pnpm lint`: Run ESLint for code quality checks
-- `pnpm db:generate`: Generate Drizzle migration files
+
+### Database Commands
+- `pnpm db:generate`: Generate Drizzle migration files from schema changes
 - `pnpm db:migrate`: Run database migrations
-- `pnpm db:push`: Push schema directly to database (development)
+- `pnpm db:push`: Push schema directly to database (development only)
 - `pnpm db:studio`: Open Drizzle Studio for database management
+
+### Utility Scripts
+- `pnpm import:csv`: Import products from CSV file (see scripts/import-csv.ts)
+- `pnpm seed:admin`: Create/reset admin user with default credentials
+- `pnpm reset:admin`: Reset admin password to default
 
 ## Project Architecture
 
-This is a Next.js 15 application using the App Router with TypeScript. The project is set up with modern tooling and follows current Next.js best practices.
+KidsToysBangladesh.com is an e-commerce platform for kids' toys built with Next.js 15 App Router, featuring static site generation for optimal performance, admin dashboard for product/order management, and integrated email notifications.
 
 ### Tech Stack
 - **Framework**: Next.js 15 with App Router and Turbopack
 - **Language**: TypeScript with strict mode enabled
 - **Styling**: TailwindCSS v4 with CSS variables
 - **UI Components**: shadcn/ui components (New York style)
-- **Database**: Drizzle ORM with Neon Database
-- **State Management**: Zustand
+- **Database**: PostgreSQL (Neon Database) with Drizzle ORM
+- **State Management**: Zustand (cart and UI state)
 - **Forms**: React Hook Form with Zod validation
+- **Email**: Resend for order confirmations and notifications
+- **Storage**: Cloudflare R2 for PDF invoice storage
+- **Analytics**: PostHog for product analytics
 - **Icons**: Lucide React
 
-### Project Structure
-- `app/`: Next.js App Router pages and layouts
-- `components/ui/`: shadcn/ui components library
-- `lib/`: Utility functions and shared logic
-- `hooks/`: Custom React hooks
+### Database Schema (lib/schema.ts)
 
-### Key Configurations
-- **TypeScript**: Configured with Next.js plugin and path aliases (`@/*` maps to root)
-- **ESLint**: Uses Next.js recommended config with TypeScript support
-- **shadcn/ui**: Configured with New York style, RSC enabled, using Lucide icons
-- **Tailwind**: Uses CSS variables for theming with neutral base color
+**Products Table**: Stores product catalog
+- `handle`: URL-friendly slug for SEO
+- `name`, `description`: Support Bengali/Bangla text
+- `price`, `actualPrice`, `comparePrice`: Decimal pricing fields
+- `quantity`, `completedOrders`: Inventory tracking
+- `tags`, `images`: JSON arrays
 
-### Database Setup
-The project includes Drizzle ORM and Neon Database integration. Database schema and migrations should be managed through Drizzle Kit.
+**Orders Table**: Order management
+- `orderId`: Unique order identifier (formatted)
+- `status`: Order lifecycle (order_placed → confirmed → shipped → delivered)
+- `customerName`, `customerEmail`, `customerPhone`, `customerAddress`: Customer details
+- `itemsTotal`, `shippingCost`, `totalAmount`: Order totals
+- `deliveryType`: 'inside' (Dhaka) or 'outside' (Dhaka)
+- `promoCodeId`, `promoCode`, `promoCodeDiscount`: Promotional code support
+- `invoiceUrl`, `paidReceiptUrl`: PDF document URLs (stored in R2)
 
-## E-commerce Project Requirements
+**Order Items Table**: Line items for each order
+- Stores product snapshot at time of order
+- References both orders and products tables
 
-### Functionality
-- **Pages**: Home page (product listing), Product detail page, Checkout page
-- **Performance**: Mostly static rendering, mobile-friendly, optimized for speed
-- **Internationalization**: Bangla font support for multilingual content
+**Promo Codes Table**: Discount code management
+- `discountType`: 'percentage' or 'fixed'
+- `isStoreWide` or `applicableProducts`: Scope control
+- `usageLimit`, `usedCount`: Usage tracking
+- `isActive`, `expiresAt`: Status and expiration
 
-### Product Schema
-Products have the following fields:
-- `id`: Unique identifier
-- `name`: Product name (supports Bangla text)
-- `price`: Current selling price
-- `compare_price`: Original/compare price (for showing discounts)
-- `tags`: Array of tags for categorization
-- `images`: Array of product images
-- `description`: Product description (supports Bangla text)
+**Users & Sessions Tables**: Admin authentication
+- Custom session-based auth (no external auth library)
+- Password hashing with PBKDF2 via Web Crypto API
+- See lib/auth.ts for authentication logic
+
+### State Management Architecture
+
+**Cart Store (lib/store.ts)**: Shopping cart using Zustand with persistence
+- `items`: Cart items with quantities
+- `selectedItems`: Item IDs selected for checkout (supports partial cart checkout)
+- `directBuyItem`: Single-item "Buy Now" flow (bypasses cart)
+- `deliveryType`: 'inside' or 'outside' Dhaka (affects shipping cost: 60 TK vs 120 TK)
+- Key methods: `addToCart`, `updateQuantity`, `toggleItemSelection`, `setDirectBuy`
+
+**UI Store (lib/ui-store.ts)**: Admin dashboard UI state
+- Manages data table state, filters, and view preferences
+
+### Authentication Flow (Admin Only)
+
+1. User visits `/admin/*` routes
+2. Middleware (middleware.ts) checks for session cookie
+3. If no session → redirect to `/admin/login`
+4. Login validates credentials via lib/auth.ts `authenticate()`
+5. Session created with 7-day expiration
+6. Session ID stored in HTTP-only cookie
+7. Middleware injects user info into request headers for admin pages
+
+Default admin credentials (change after first login):
+- Username: `admin`
+- Password: `Admin12345&`
+
+### Email System (lib/email.ts)
+
+Uses Resend API for transactional emails:
+- **Order Confirmation**: Sent to customer + owner, includes PDF invoice attachment
+- **Payment Confirmation**: Sent when order marked as paid, includes paid receipt PDF
+- **Order Status Updates**: Sent on status changes (confirmed, shipped, delivered, etc.)
+
+Email templates are inline HTML with responsive design and Bengali text support.
+
+### PDF Generation (lib/pdf-generator.ts)
+
+- Generates invoices and paid receipts using @react-pdf/renderer
+- PDFs uploaded to Cloudflare R2 storage (lib/r2-storage.ts)
+- Public URLs returned for email attachments and download links
+
+### API Routes Structure
+
+**Admin APIs** (`/api/admin/*`):
+- `/admin/products`: CRUD operations for products
+- `/admin/products/bulk-delete`: Delete multiple products
+- `/admin/products/check-handle`: Validate unique product handles
+- `/admin/products/import-csv`: Bulk import from CSV
+- `/admin/orders`: Order management and status updates
+- `/admin/orders/bulk-delete`: Delete multiple orders
+- `/admin/promo-codes`: CRUD for promotional codes
+- `/admin/account`: Admin account management
+
+**Public APIs**:
+- `/api/orders`: Create new customer orders (POST)
+- `/api/products/bulk`: Fetch multiple products by IDs
+- `/api/promo-codes/validate`: Validate promo code for checkout
+- `/api/upload/image`: Image upload to Cloudinary
+
+All admin routes protected by middleware session validation.
+
+### Validation Layer (lib/validations/)
+
+Zod schemas for type-safe validation:
+- `product.ts`: Product creation/update schemas with handle validation
+- `order.ts`: Order creation schema, status enum
+- `promo-code.ts`: Promo code validation
+- `validations.ts`: Shared schemas (cart items, customer info)
+
+### Key Design Patterns
+
+1. **Static Site Generation**: Product pages pre-rendered at build time for performance
+2. **Dual Checkout Flow**: Both "Buy Now" (direct) and traditional cart checkout supported
+3. **Optimistic Updates**: Admin dashboard uses optimistic UI updates for better UX
+4. **Progressive Enhancement**: Core functionality works without JavaScript
+5. **Internationalization Ready**: Bengali/Bangla text support throughout
+6. **Mobile-First**: Responsive design prioritizing mobile users
 
 ### Development Rules
+
 - **Package Manager**: Always use pnpm (never npm or yarn)
 - **Code Limits**: All code files must be under 250 lines
-- **Reusability**: Reuse components whenever possible
-- **Documentation**: Check documentation before implementation
-- **State Management**: Use Zustand for cart and global state
-- **Validation**: Use Zod for all data validation
-- **Database**: PostgreSQL with Neon DB and Drizzle ORM
+- **Reusability**: Reuse components and utilities whenever possible
+- **Type Safety**: Use Zod for runtime validation, TypeScript for compile-time types
+- **Database Changes**: Always generate migrations (don't use db:push in production)
+- **Admin Security**: All admin routes must go through middleware authentication
