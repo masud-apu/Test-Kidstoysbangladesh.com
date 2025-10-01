@@ -238,12 +238,24 @@ export default function TrackOrderPage() {
                         </div>
                       </div>
                       {trackingData.steadfastStatus.result.rider.phone && (
-                        <div className="flex items-start gap-3">
-                          <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
-                          <div>
-                            <p className="text-sm text-muted-foreground">Rider Phone</p>
-                            <p className="font-medium">{trackingData.steadfastStatus.result.rider.phone}</p>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-start gap-3">
+                            <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
+                            <div>
+                              <p className="text-sm text-muted-foreground">Rider Phone</p>
+                              <p className="font-medium">{trackingData.steadfastStatus.result.rider.phone}</p>
+                            </div>
                           </div>
+                          <Button
+                            asChild
+                            size="sm"
+                            className="shrink-0"
+                          >
+                            <a href={`tel:${trackingData.steadfastStatus.result.rider.phone}`}>
+                              <Phone className="h-4 w-4 mr-2" />
+                              Call
+                            </a>
+                          </Button>
                         </div>
                       )}
                     </div>
