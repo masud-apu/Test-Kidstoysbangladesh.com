@@ -34,7 +34,8 @@ export async function GET(request: NextRequest) {
     let steadfastStatus = null
     if (order.steadfastTrackingCode) {
       try {
-        steadfastStatus = await SteadfastService.getStatusByInvoice(orderId)
+        // Use public tracking endpoint (no API limits, no authentication required)
+        steadfastStatus = await SteadfastService.getPublicTrackingInfo(order.steadfastTrackingCode)
       } catch (error) {
         console.error('Error fetching Steadfast status:', error)
         // Continue without Steadfast status

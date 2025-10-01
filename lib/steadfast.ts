@@ -17,19 +17,9 @@ interface SteadfastOrderPayload {
 
 interface SteadfastOrderResponse {
   status: number
+  consignment_id?: string
+  tracking_code?: string
   message?: string
-  consignment?: {
-    consignment_id: number
-    tracking_code: string
-    invoice: string
-    recipient_name: string
-    recipient_phone: string
-    recipient_address: string
-    cod_amount: number
-    status: string
-    created_at: string
-    updated_at: string
-  }
   errors?: Record<string, string[]>
 }
 
@@ -88,10 +78,31 @@ export class SteadfastService {
   }
 
   /**
-   * Check delivery status by tracking code
+   * Check delivery status by tracking code (authenticated API - limited usage)
    */
   static async getStatusByTrackingCode(trackingCode: string): Promise<SteadfastOrderResponse> {
     return this.makeRequest(`/status_by_trackingcode/${trackingCode}`, 'GET')
+  }
+
+  /**
+   * Get public tracking information using the consignment tracking page API
+   * This endpoint has no usage limits and doesn't require authentication
+   */
+  static async getPublicTrackingInfo(trackingCode: string) {
+    const url = `https://steadfast.com.bd/track/consignment/${trackingCode}`
+
+    console.log('🚚 Steadfast Public Tracking Request:', { url, trackingCode })
+
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tracking info: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('🚚 Steadfast Public Tracking Response:', data)
+
+    return data
   }
 
   /**

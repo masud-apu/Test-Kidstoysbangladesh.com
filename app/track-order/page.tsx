@@ -200,41 +200,102 @@ export default function TrackOrderPage() {
           </Card>
 
           {/* Steadfast Tracking */}
-          {trackingData.order.steadfastTrackingCode && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TruckIcon className="h-5 w-5" />
-                  Courier Tracking
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Tracking Code:</span>
-                    <span className="font-mono text-sm">
-                      {trackingData.order.steadfastTrackingCode}
-                    </span>
-                  </div>
-                  {trackingData.order.steadfastConsignmentId && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Consignment ID:</span>
-                      <span className="font-mono text-sm">
-                        {trackingData.order.steadfastConsignmentId}
-                      </span>
+          {trackingData.order.steadfastTrackingCode && trackingData.steadfastStatus && (
+            <>
+              {/* Delivery Person Info */}
+              {trackingData.steadfastStatus.result?.rider && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="h-5 w-5" />
+                      Delivery Rider
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <User className="h-4 w-4 mt-1 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Rider Name</p>
+                          <p className="font-medium">{trackingData.steadfastStatus.result.rider.name}</p>
+                        </div>
+                      </div>
+                      {trackingData.steadfastStatus.result.rider.phone && (
+                        <div className="flex items-start gap-3">
+                          <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm text-muted-foreground">Rider Phone</p>
+                            <p className="font-medium">{trackingData.steadfastStatus.result.rider.phone}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {trackingData.steadfastStatus && (
-                    <div className="mt-4 p-4 bg-muted rounded-lg">
-                      <p className="text-sm font-medium mb-2">Courier Status:</p>
-                      <pre className="text-xs overflow-auto">
-                        {JSON.stringify(trackingData.steadfastStatus, null, 2)}
-                      </pre>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Tracking Timeline */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TruckIcon className="h-5 w-5" />
+                    Tracking History
+                  </CardTitle>
+                  <CardDescription>
+                    Tracking ID: {trackingData.order.steadfastTrackingCode}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {trackingData.steadfastStatus.trackings && trackingData.steadfastStatus.trackings.length > 0 ? (
+                    <div className="relative space-y-6 pl-6">
+                      {/* Timeline line */}
+                      <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-border" />
+
+                      {trackingData.steadfastStatus.trackings.map((event: any, index: number) => (
+                        <div key={event.id || index} className="relative">
+                          {/* Timeline dot */}
+                          <div className={`absolute left-[-23px] top-1 h-4 w-4 rounded-full border-2 ${
+                            index === 0 ? 'bg-primary border-primary' : 'bg-background border-border'
+                          }`} />
+
+                          <div className="space-y-2">
+                            <p className="font-medium text-sm leading-relaxed">
+                              {event.text}
+                            </p>
+
+                            <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                              {event.created_at && (
+                                <div className="flex items-center gap-1.5">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>
+                                    {new Date(event.created_at).toLocaleString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </span>
+                                </div>
+                              )}
+
+                              {event.deliveryman?.name && (
+                                <div className="flex items-center gap-1.5">
+                                  <User className="h-3 w-3" />
+                                  <span>{event.deliveryman.name}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No tracking history available yet.</p>
                   )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
       )}
