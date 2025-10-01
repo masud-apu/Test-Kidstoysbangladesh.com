@@ -17,9 +17,19 @@ interface SteadfastOrderPayload {
 
 interface SteadfastOrderResponse {
   status: number
-  consignment_id?: string
-  tracking_code?: string
   message?: string
+  consignment?: {
+    consignment_id: number
+    tracking_code: string
+    invoice: string
+    recipient_name: string
+    recipient_phone: string
+    recipient_address: string
+    cod_amount: number
+    status: string
+    created_at: string
+    updated_at: string
+  }
   errors?: Record<string, string[]>
 }
 
