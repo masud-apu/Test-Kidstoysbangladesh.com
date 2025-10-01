@@ -22,7 +22,7 @@ interface OrderTrackingData {
     createdAt: string
     updatedAt: string
   }
-  steadfastStatus: any
+  steadfastStatus: Record<string, unknown> | null
 }
 
 const statusLabels: Record<string, string> = {

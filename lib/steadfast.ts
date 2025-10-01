@@ -27,7 +27,7 @@ export class SteadfastService {
   private static async makeRequest(
     endpoint: string,
     method: 'GET' | 'POST' = 'POST',
-    body?: any
+    body?: SteadfastOrderPayload | Record<string, unknown>
   ) {
     if (!STEADFAST_API_KEY || !STEADFAST_SECRET_KEY) {
       throw new Error('Steadfast API credentials not configured')
@@ -73,21 +73,21 @@ export class SteadfastService {
   /**
    * Check delivery status by invoice number
    */
-  static async getStatusByInvoice(invoice: string): Promise<any> {
+  static async getStatusByInvoice(invoice: string): Promise<SteadfastOrderResponse> {
     return this.makeRequest(`/status_by_invoice/${invoice}`, 'GET')
   }
 
   /**
    * Check delivery status by tracking code
    */
-  static async getStatusByTrackingCode(trackingCode: string): Promise<any> {
+  static async getStatusByTrackingCode(trackingCode: string): Promise<SteadfastOrderResponse> {
     return this.makeRequest(`/status_by_trackingcode/${trackingCode}`, 'GET')
   }
 
   /**
    * Check current balance
    */
-  static async getBalance(): Promise<any> {
+  static async getBalance(): Promise<SteadfastOrderResponse> {
     return this.makeRequest('/get_balance', 'GET')
   }
 }

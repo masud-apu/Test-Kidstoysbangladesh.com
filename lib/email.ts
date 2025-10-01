@@ -95,9 +95,7 @@ export async function sendOrderConfirmationEmails(
           disposition: string;
         }>;
       } = {
-        from:
-          process.env.RESEND_FROM_EMAIL ||
-          "KidsToys Bangladesh <noreply@kidstoysbangladesh.com>",
+        from: "KidsToys Bangladesh <noreply@kidstoysbangladesh.com>",
         to: customerEmail,
         subject: `Order Confirmation - #${orderId}`,
         html: generateCustomerEmailTemplate(
@@ -159,9 +157,7 @@ export async function sendOrderConfirmationEmails(
         disposition: string;
       }>;
     } = {
-      from:
-        process.env.RESEND_FROM_EMAIL ||
-        "KidsToys Bangladesh <noreply@kidstoysbangladesh.com>",
+      from: "KidsToys Bangladesh <noreply@kidstoysbangladesh.com>",
       to: "kidstoysbangladesh@gmail.com",
       subject: `New Order - #${orderId}`,
       html: generateOwnerEmailTemplate(orderData, invoiceUrl, logoUrl),
