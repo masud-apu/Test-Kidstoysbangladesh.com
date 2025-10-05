@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## CRITICAL: Project Separation
+
+**THIS IS THE FRONTEND/CUSTOMER-FACING PROJECT ONLY. DO NOT MODIFY THE ADMIN PROJECT.**
+
+This frontend is located at `/stuff/Study/projects/kids/Kidstoysbangladesh.com/`
+The admin dashboard is at `/stuff/Study/projects/kids/admin/`
+
+**NEVER create, modify, or suggest changes to files in `/stuff/Study/projects/kids/admin/`**
+**ALL frontend/customer-facing work must be done in `/stuff/Study/projects/kids/Kidstoysbangladesh.com/` only**
+
 ## Development Commands
 
 **IMPORTANT: Always use pnpm instead of npm for this project.**
@@ -151,6 +161,28 @@ Zod schemas for type-safe validation:
 5. **Internationalization Ready**: Bengali/Bangla text support throughout
 6. **Mobile-First**: Responsive design prioritizing mobile users
 
+### Relationship with Admin Dashboard
+
+This frontend is a **separate application** from the admin dashboard:
+
+**Shared (but duplicated - must keep in sync manually):**
+- PostgreSQL database (all tables) - SAME database, different connections
+- Drizzle ORM schema (lib/schema.ts) - **CRITICAL: Must be identical in both projects**
+- Database utilities (lib/db.ts, lib/email.ts, lib/r2-storage.ts, lib/pdf-generator.ts)
+- Validation schemas (lib/validations/)
+
+**⚠️ IMPORTANT: When updating lib/schema.ts, you MUST update it in BOTH projects:**
+- `/stuff/Study/projects/kids/Kidstoysbangladesh.com/lib/schema.ts`
+- `/stuff/Study/projects/kids/admin/lib/schema.ts`
+
+**⚠️ These files MUST be kept exactly the same in both projects:**
+- `lib/schema.ts` - Database schema
+- `lib/db.ts` - Database connection
+- `lib/email.ts`, `lib/email-simple.ts` - Email services
+- `lib/pdf-generator.ts`, `lib/invoice-pdf.tsx` - PDF generation
+- `lib/r2-storage.ts` - File storage
+- `lib/validations/` - All validation schemas
+
 ### Development Rules
 
 - **Package Manager**: Always use pnpm (never npm or yarn)
@@ -158,4 +190,4 @@ Zod schemas for type-safe validation:
 - **Reusability**: Reuse components and utilities whenever possible
 - **Type Safety**: Use Zod for runtime validation, TypeScript for compile-time types
 - **Database Changes**: Always generate migrations (don't use db:push in production)
-- **Admin Security**: All admin routes must go through middleware authentication
+- **Schema Sync**: When updating schema.ts or shared lib files, update BOTH projects

@@ -224,10 +224,32 @@ function generateCustomerEmailTemplate(
   logoDataUrl?: string,
 ): string {
   const itemsHtml = items
-    .map(
-      (item) =>
-        `<tr><td style="padding:8px;border-bottom:1px solid #ddd;"><b>${item.name}</b></td><td style="padding:8px;text-align:center;">${item.quantity}</td><td style="padding:8px;text-align:right;">TK ${item.price}</td><td style="padding:8px;text-align:right;"><b>TK ${(parseFloat(item.price) * item.quantity).toFixed(2)}</b></td></tr>`,
-    )
+    .map((item) => {
+      const price = item.variantPrice || item.price;
+      const itemTotal = (parseFloat(price) * item.quantity).toFixed(2);
+
+      // Build variant information string
+      let variantInfo = '';
+      if (item.variantTitle && item.variantTitle !== 'Default Title') {
+        variantInfo = `<div style="font-size:12px;color:#6b7280;margin-top:4px;">${item.variantTitle}</div>`;
+      }
+      if (item.selectedOptions && item.selectedOptions.length > 0) {
+        const optionsText = item.selectedOptions
+          .map(opt => `${opt.optionName}: ${opt.valueName}`)
+          .join(' / ');
+        variantInfo += `<div style="font-size:12px;color:#6b7280;margin-top:2px;">${optionsText}</div>`;
+      }
+
+      return `<tr>
+        <td style="padding:8px;border-bottom:1px solid #ddd;">
+          <b>${item.title}</b>
+          ${variantInfo}
+        </td>
+        <td style="padding:8px;text-align:center;border-bottom:1px solid #ddd;">${item.quantity}</td>
+        <td style="padding:8px;text-align:right;border-bottom:1px solid #ddd;">TK ${price}</td>
+        <td style="padding:8px;text-align:right;border-bottom:1px solid #ddd;"><b>TK ${itemTotal}</b></td>
+      </tr>`;
+    })
     .join("");
 
   const logoBlock = logoDataUrl
@@ -407,7 +429,19 @@ function generateCustomerEmailTemplate(
                   </div>
                 </td>
               </tr>
-              
+
+              <!-- Track Order Button -->
+              <tr>
+                <td style="padding: 0 40px 30px; text-align: center;">
+                  <a href="https://www.kidstoysbangladesh.com/track-order?orderId=${orderId}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
+                    🔍 Track Your Order
+                  </a>
+                  <p style="color: #6b7280; margin: 12px 0 0; font-size: 13px;">
+                    Click to view real-time order status and delivery updates
+                  </p>
+                </td>
+              </tr>
+
               <!-- Contact Support -->
               <tr>
                 <td style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
@@ -473,24 +507,40 @@ function generateOwnerEmailTemplate(
   logoDataUrl?: string,
 ): string {
   const itemsHtml = orderData.items
-    .map(
-      (item) => `
+    .map((item) => {
+      const price = item.variantPrice || item.price;
+      const itemTotal = (parseFloat(price) * item.quantity).toFixed(2);
+
+      // Build variant information string
+      let variantInfo = '';
+      if (item.variantTitle && item.variantTitle !== 'Default Title') {
+        variantInfo = `<div style="font-size:11px;color:#64748b;margin-top:2px;">${item.variantTitle}</div>`;
+      }
+      if (item.selectedOptions && item.selectedOptions.length > 0) {
+        const optionsText = item.selectedOptions
+          .map(opt => `${opt.optionName}: ${opt.valueName}`)
+          .join(' / ');
+        variantInfo += `<div style="font-size:11px;color:#64748b;margin-top:2px;">${optionsText}</div>`;
+      }
+
+      return `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">
-          ${item.name}
+          ${item.title}
+          ${variantInfo}
         </td>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;">
           ${item.quantity}
         </td>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-          TK ${item.price}
+          TK ${price}
         </td>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-          TK ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+          TK ${itemTotal}
         </td>
       </tr>
-    `,
-    )
+    `;
+    })
     .join("");
 
   const logoBlock = logoDataUrl
@@ -714,6 +764,15 @@ function generatePaymentConfirmationTemplate(
           <li>We'll call you if we need any additional information</li>
           <li>Your order will be delivered to your address</li>
         </ol>
+      </div>
+
+      <div style="text-align: center; padding: 20px; background-color: #ffffff; border-radius: 6px; margin: 20px 0;">
+        <a href="https://www.kidstoysbangladesh.com/track-order?orderId=${orderId}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);">
+          🔍 Track Your Order
+        </a>
+        <p style="color: #6b7280; margin: 12px 0 0; font-size: 13px;">
+          Monitor your order status and delivery progress
+        </p>
       </div>
 
       <div style="text-align: center; padding: 20px; background-color: #f9fafb; border-radius: 6px; margin: 20px 0;">
@@ -986,8 +1045,8 @@ function generateStatusUpdateEmailTemplate({
               <!-- Call to Action -->
               <tr>
                 <td style="padding: 0 40px 30px; text-align: center;">
-                  <a href="https://kidstoysbangladesh.com/orders" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px;">
-                    Track Your Order
+                  <a href="https://www.kidstoysbangladesh.com/track-order?orderId=${orderId}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px;">
+                    🔍 Track Your Order
                   </a>
                 </td>
               </tr>

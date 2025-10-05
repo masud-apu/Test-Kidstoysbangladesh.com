@@ -2,8 +2,8 @@ import { ProductCard } from '@/components/product-card'
 import { HeroCarousel } from '@/components/hero-carousel'
 import { NewArrivalsCarousel } from '@/components/new-arrivals-carousel'
 import { db } from '@/lib/db'
-import { products } from '@/lib/schema'
-// import { desc } from 'drizzle-orm'
+import { products, productVariants } from '@/lib/schema'
+import { eq } from 'drizzle-orm'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -27,13 +27,32 @@ import {
 export default async function Home() {
   // Fetch products then sort by latest in JS to avoid DB-specific orderBy typing issues
   const fetched = await db.select().from(products).limit(100)
-  const allProducts = [...fetched]
+
+  // Fetch variants for all products to calculate price ranges
+  const productsWithVariants = await Promise.all(
+    fetched.map(async (product) => {
+      const variants = await db
+        .select()
+        .from(productVariants)
+        .where(eq(productVariants.productId, product.id))
+
+      return {
+        ...product,
+        variants
+      }
+    })
+  )
+
+  const allProducts = [...productsWithVariants]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 20)
   const saleProducts = allProducts.filter((p) => {
-    const price = parseFloat(String(p.price))
-    const compare = p.comparePrice ? parseFloat(String(p.comparePrice)) : 0
-    return compare > price
+    // Check if any variant has a discount
+    return p.variants.some(v => {
+      const price = parseFloat(v.price)
+      const compare = v.compareAtPrice ? parseFloat(v.compareAtPrice) : 0
+      return compare > price
+    })
   })
   // Always keep 5 items in the Sale list by filling with non-sale items if needed
   const saleList = (() => {
@@ -42,18 +61,13 @@ export default async function Home() {
     return [...saleProducts, ...filler].slice(0, 5)
   })()
   
-  // Educational Toys: pick up to 10 items marked by tags or name
-  // We fetch a larger recent set then filter in JS to avoid DB-specific JSON queries
-  const educationalCandidates = await db
-    .select()
-    .from(products)
-    .limit(100)
-  const educationalProducts = educationalCandidates
+  // Educational Toys: filter from already fetched products
+  const educationalProducts = productsWithVariants
     .filter((p) => {
       const tagsArr = Array.isArray(p.tags) ? p.tags : []
-      const name = (p.name || '').toLowerCase()
+      const title = (p.title || '').toLowerCase()
       const tagMatch = tagsArr.some((t) => String(t).toLowerCase().includes('educational') || String(t).toLowerCase().includes('learning'))
-      return tagMatch || name.includes('educational') || name.includes('learning')
+      return tagMatch || title.includes('educational') || title.includes('learning')
     })
     .slice(0, 10)
   

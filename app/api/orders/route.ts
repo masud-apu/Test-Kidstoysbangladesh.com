@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 import { db } from '@/lib/db'
-import { orders, orderItems, products, promoCodes } from '@/lib/schema'
+import { orders, orderItems, products, productVariants, promoCodes } from '@/lib/schema'
 import { createOrderSchema } from '@/lib/validations/order'
 import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
 import { generatePDFBuffer } from '@/lib/pdf-generator'
@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
 
     // Calculate items total from cart items
     const itemsTotal = validatedData.items.reduce((total, item) => {
-      return total + (parseFloat(item.price) * item.quantity)
+      const price = item.variantPrice || item.price || '0'
+      return total + (parseFloat(price) * item.quantity)
     }, 0)
 
     // Start database transaction
@@ -45,13 +46,20 @@ export async function POST(request: NextRequest) {
 
       // 2. Transform cart items to order items and insert
       const orderItemsData = validatedData.items.map(item => {
-        const itemTotal = parseFloat(item.price) * item.quantity
+        // Use variant price if available, otherwise use product price
+        const effectivePrice = item.variantPrice || item.price || '0'
+        const itemTotal = parseFloat(effectivePrice) * item.quantity
+
         return {
           orderId: newOrder.id,
-          productId: item.id, // CartItem uses 'id' not 'productId'
-          productName: item.name, // CartItem uses 'name' not 'productName'
-          productPrice: item.price, // Already a string
-          productImage: item.images?.[0] || null, // Get first image
+          productId: item.id,
+          variantId: item.variantId || null,
+          productName: item.title || item.name || 'Unknown Product',
+          productPrice: effectivePrice,
+          productImage: item.images?.[0] || null,
+          variantTitle: item.variantTitle || null,
+          variantSku: item.variantSku || null,
+          selectedOptions: item.selectedOptions || null,
           quantity: item.quantity,
           itemTotal: itemTotal.toString(),
         }
@@ -59,15 +67,40 @@ export async function POST(request: NextRequest) {
 
       await tx.insert(orderItems).values(orderItemsData)
 
-      // 3. Update product quantities (subtract ordered quantities)
+      // 3. Update variant inventory (subtract ordered quantities) and product totals
       for (const item of validatedData.items) {
-        await tx
-          .update(products)
-          .set({
-            quantity: sql`${products.quantity} - ${item.quantity}`,
-            updatedAt: sql`now()`
-          })
-          .where(eq(products.id, item.id))
+        // Only update inventory if variantId is provided
+        if (item.variantId) {
+          await tx
+            .update(productVariants)
+            .set({
+              inventoryQuantity: sql`${productVariants.inventoryQuantity} - ${item.quantity}`,
+              updatedAt: sql`now()`
+            })
+            .where(eq(productVariants.id, item.variantId))
+
+          // Update product's totalInventory by recalculating from all variants
+          const allVariants = await tx
+            .select()
+            .from(productVariants)
+            .where(eq(productVariants.productId, item.id))
+
+          const totalInventory = allVariants.reduce((sum, v) => {
+            // Subtract quantity from the variant we just updated
+            const inventory = v.id === item.variantId
+              ? v.inventoryQuantity - item.quantity
+              : v.inventoryQuantity
+            return sum + inventory
+          }, 0)
+
+          await tx
+            .update(products)
+            .set({
+              totalInventory,
+              updatedAt: sql`now()`
+            })
+            .where(eq(products.id, item.id))
+        }
       }
 
       // 4. Handle promo code usage tracking and expiry

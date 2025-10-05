@@ -132,28 +132,48 @@ export function InvoiceDocument({ orderData, logoDataUrl, isPaidReceipt = false,
             <Text style={[styles.th, { flex: 1, textAlign: 'right' }]}>Unit Price</Text>
             <Text style={[styles.th, { flex: 1, textAlign: 'right' }, styles.thLast]}>Total</Text>
           </View>
-          {items.map((item, idx) => (
-            <View key={idx} style={styles.tr}>
-              <Text style={[styles.td, { flex: 2 }]}>{item.name}</Text>
-              <Text style={[styles.td, { flex: 0.8 }, styles.tdRight]}>{String(item.quantity)}</Text>
-              <View style={[styles.td, { flex: 1 }]}>
-                {(() => { const p = formatBDTParts(parseFloat(item.price)); return (
-                  <View style={styles.priceRow}>
-                    <Text style={styles.taka}>{p.symbol}</Text>
-                    <Text style={styles.priceDigits}>{p.digits}</Text>
-                  </View>
-                )})()}
+          {items.map((item, idx) => {
+            const price = item.variantPrice || item.price
+            const productName = item.title || item.name
+
+            return (
+              <View key={idx} style={styles.tr}>
+                <View style={[styles.td, { flex: 2 }]}>
+                  <SmartText>{productName}</SmartText>
+                  {item.variantTitle && item.variantTitle !== 'Default Title' && (
+                    <>
+                      {item.selectedOptions && item.selectedOptions.length > 0 ? (
+                        <Text style={{ fontSize: 8, color: '#6b7280', marginTop: 2 }}>
+                          {item.selectedOptions.map(opt => `${opt.optionName}: ${opt.valueName}`).join(' / ')}
+                        </Text>
+                      ) : (
+                        <Text style={{ fontSize: 8, color: '#6b7280', marginTop: 2 }}>
+                          {item.variantTitle}
+                        </Text>
+                      )}
+                    </>
+                  )}
+                </View>
+                <Text style={[styles.td, { flex: 0.8 }, styles.tdRight]}>{String(item.quantity)}</Text>
+                <View style={[styles.td, { flex: 1 }]}>
+                  {(() => { const p = formatBDTParts(parseFloat(price)); return (
+                    <View style={styles.priceRow}>
+                      <Text style={styles.taka}>{p.symbol}</Text>
+                      <Text style={styles.priceDigits}>{p.digits}</Text>
+                    </View>
+                  )})()}
+                </View>
+                <View style={[styles.td, { flex: 1 }, styles.tdLast]}>
+                  {(() => { const p = formatBDTParts(parseFloat(price) * item.quantity); return (
+                    <View style={styles.priceRow}>
+                      <Text style={styles.taka}>{p.symbol}</Text>
+                      <Text style={styles.priceDigits}>{p.digits}</Text>
+                    </View>
+                  )})()}
+                </View>
               </View>
-              <View style={[styles.td, { flex: 1 }, styles.tdLast]}>
-                {(() => { const p = formatBDTParts(parseFloat(item.price) * item.quantity); return (
-                  <View style={styles.priceRow}>
-                    <Text style={styles.taka}>{p.symbol}</Text>
-                    <Text style={styles.priceDigits}>{p.digits}</Text>
-                  </View>
-                )})()}
-              </View>
-            </View>
-          ))}
+            )
+          })}
         </View>
 
         {/* Totals */}

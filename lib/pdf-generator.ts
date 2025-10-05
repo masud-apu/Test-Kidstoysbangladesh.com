@@ -172,14 +172,30 @@ async function generateWithJsPDF(orderData: OrderData, isPaidReceipt: boolean): 
     doc.text('Order Items', margin, yPosition)
     yPosition += 10
 
-    // Prepare table data
+    // Prepare table data with variant information
     const tableHeaders = ['Product Name', 'Quantity', 'Unit Price', 'Total']
-    const tableData = items.map(item => [
-      item.name,
-      String(item.quantity),
-      `${formatBDT(parseFloat(item.price))}`,
-      `${formatBDT(parseFloat(item.price) * item.quantity)}`
-    ])
+    const tableData = items.map(item => {
+      const price = item.variantPrice || item.price
+      const productName = item.title || item.name
+
+      // Build product name with variant info
+      let displayName = productName
+      if (item.variantTitle && item.variantTitle !== 'Default Title') {
+        if (item.selectedOptions && item.selectedOptions.length > 0) {
+          const optionsText = item.selectedOptions.map(opt => `${opt.optionName}: ${opt.valueName}`).join(' / ')
+          displayName += `\n${optionsText}`
+        } else {
+          displayName += `\n${item.variantTitle}`
+        }
+      }
+
+      return [
+        displayName,
+        String(item.quantity),
+        `${formatBDT(parseFloat(price))}`,
+        `${formatBDT(parseFloat(price) * item.quantity)}`
+      ]
+    })
 
     // Create table
     doc.autoTable({

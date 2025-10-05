@@ -13,6 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, MoreHorizontal, Eye, Trash2, Download } from "lucide-react"
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -53,7 +54,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { OrderStatusBadge } from "./order-status-badge"
 import { PaymentStatusBadge } from "./payment-status-badge"
-import { OrderDetailsDialog } from "./order-details-dialog"
 import { OrderStatus } from "@/lib/validations/order"
 
 export type Order = {
@@ -131,8 +131,6 @@ export function OrdersTable({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = usePersistentState<VisibilityState>("admin-orders-columns", {})
   const [rowSelection, setRowSelection] = useState({})
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<number | null>(null)
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
@@ -284,12 +282,11 @@ export function OrdersTable({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => {
-                setSelectedOrder(order)
-                setDetailsDialogOpen(true)
-              }}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/orders/${order.id}`} className="flex items-center cursor-pointer">
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Details
+                </Link>
               </DropdownMenuItem>
               {order.invoiceUrl && (
                 <DropdownMenuItem onClick={() => window.open(order.invoiceUrl!, '_blank')}>
@@ -550,15 +547,6 @@ export function OrdersTable({
           </div>
         </div>
       </div>
-
-      <OrderDetailsDialog
-        order={selectedOrder}
-        open={detailsDialogOpen}
-        onOpenChange={setDetailsDialogOpen}
-        onUpdateStatus={onUpdateStatus}
-        onUpdatePaymentStatus={onUpdatePaymentStatus}
-        onUpdateCustomerInfo={onUpdateCustomerInfo}
-      />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

@@ -13,13 +13,31 @@ interface SteadfastOrderPayload {
   recipient_phone: string
   recipient_address: string
   cod_amount: number // Cash on Delivery amount
+  item_description?: string // Optional description of items
+}
+
+interface SteadfastConsignment {
+  consignment_id: number
+  invoice: string
+  tracking_code: string
+  recipient_name: string
+  recipient_phone: string
+  recipient_address: string
+  recipient_email: string | null
+  alternative_phone: string | null
+  item_description: string | null
+  total_lot: number
+  cod_amount: number
+  status: string
+  note: string
+  created_at: string
+  updated_at: string
 }
 
 interface SteadfastOrderResponse {
   status: number
-  consignment_id?: string
-  tracking_code?: string
   message?: string
+  consignment?: SteadfastConsignment
   errors?: Record<string, string[]>
 }
 

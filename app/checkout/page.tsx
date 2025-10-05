@@ -44,10 +44,11 @@ function CheckoutContent() {
     updateQuantity,
     removeFromCart,
     clearCart,
-  clearDirectBuy,
-  deliveryType,
-  setDeliveryType,
-  getShippingCost,
+    clearDirectBuy,
+    deliveryType,
+    setDeliveryType,
+    getShippingCost,
+    getItemKey,
   } = useCartStore()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -133,9 +134,9 @@ function CheckoutContent() {
   }, [checkoutType, directBuyItem, getSelectedItems, urlProducts])
     
   const itemsTotal = checkoutType === 'direct' && directBuyItem
-    ? parseFloat(directBuyItem.price) * directBuyItem.quantity
+    ? parseFloat(directBuyItem.variantPrice || '0') * directBuyItem.quantity
     : checkoutType === 'url'
-    ? urlProducts.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
+    ? urlProducts.reduce((total, item) => total + parseFloat(item.variantPrice || '0') * item.quantity, 0)
     : getSelectedTotal()
   const shippingCost = checkoutItems.length > 0 ? getShippingCost() : 0
   const discountAmount = appliedPromoCode?.discountAmount || 0
@@ -159,7 +160,7 @@ function CheckoutContent() {
           code: promoCode.trim(),
           items: checkoutItems.map(item => ({
             id: item.id,
-            price: item.price,
+            price: item.variantPrice || '0',
             quantity: item.quantity,
           })),
           itemsTotal,
@@ -227,7 +228,7 @@ function CheckoutContent() {
         contents: checkoutItems.map(item => ({
           id: item.id.toString(),
           quantity: item.quantity,
-          price: parseFloat(item.price)
+          price: parseFloat(item.variantPrice || '0')
         })),
         currency: 'BDT',
         num_items: checkoutItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -239,8 +240,8 @@ function CheckoutContent() {
       Analytics.trackCheckoutStart({
         items: checkoutItems.map(item => ({
           product_id: item.id.toString(),
-          product_name: item.name,
-          price: parseFloat(item.price),
+          product_name: item.title,
+          price: parseFloat(item.variantPrice || '0'),
           quantity: item.quantity
         })),
         total_amount: totalPrice,
@@ -299,12 +300,12 @@ function CheckoutContent() {
         // Track Facebook Pixel Purchase event
         fbPixelEvents.purchase({
           content_ids: checkoutItems.map(item => item.id.toString()),
-          content_name: checkoutItems.map(item => item.name).join(', '),
+          content_name: checkoutItems.map(item => item.title).join(', '),
           content_type: 'product',
           contents: checkoutItems.map(item => ({
             id: item.id.toString(),
             quantity: item.quantity,
-            price: parseFloat(item.price)
+            price: parseFloat(item.variantPrice || '0')
           })),
           currency: 'BDT',
           num_items: checkoutItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -315,8 +316,8 @@ function CheckoutContent() {
         Analytics.trackPurchase({
           items: checkoutItems.map(item => ({
             product_id: item.id.toString(),
-            product_name: item.name,
-            price: parseFloat(item.price),
+            product_name: item.title,
+            price: parseFloat(item.variantPrice || '0'),
             quantity: item.quantity
           })),
           total_amount: totalPrice,
@@ -438,75 +439,92 @@ function CheckoutContent() {
                   </RadioGroup>
                 </div>
 
-                {checkoutItems.map((item) => (
-                  <div key={item.id} className="flex gap-4">
-                    <div className="relative h-20 w-20 overflow-hidden rounded">
-                      {item.images && item.images[0] ? (
-                        <Image
-                          src={item.images[0]}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
-                          No image
-                        </div>
-                      )}
+                {checkoutItems.map((item) => {
+                  const itemKey = getItemKey(item)
+                  const displayPrice = item.variantPrice || item.price
+
+                  return (
+                    <div key={itemKey} className="flex gap-4">
+                      <div className="relative h-20 w-20 overflow-hidden rounded">
+                        {item.images && item.images[0] ? (
+                          <Image
+                            src={item.images[0]}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
+                            No image
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 space-y-2">
+                        <h3 className="font-medium line-clamp-2">{item.title}</h3>
+
+                        {/* Display variant information - only if NOT a default variant product */}
+                        {!item.hasOnlyDefaultVariant && item.variantTitle && item.variantTitle !== 'Default Title' && (
+                          <div className="text-sm text-muted-foreground">
+                            {item.selectedOptions && item.selectedOptions.length > 0 ? (
+                              <span>{item.selectedOptions.map(opt => opt.valueName).join(' / ')}</span>
+                            ) : (
+                              <span>{item.variantTitle}</span>
+                            )}
+                          </div>
+                        )}
+
+                        <p className="font-bold">TK {displayPrice}</p>
+
+                        {(checkoutType === 'cart' || checkoutType === 'url') && (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() =>
+                                checkoutType === 'url'
+                                  ? updateUrlProductQuantity(item.id, item.quantity - 1)
+                                  : updateQuantity(itemKey, item.quantity - 1)
+                              }
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="w-8 text-center">{item.quantity}</span>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() =>
+                                checkoutType === 'url'
+                                  ? updateUrlProductQuantity(item.id, item.quantity + 1)
+                                  : updateQuantity(itemKey, item.quantity + 1)
+                              }
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 ml-auto"
+                              onClick={() =>
+                                checkoutType === 'url'
+                                  ? removeUrlProduct(item.id)
+                                  : removeFromCart(itemKey)
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-right">
+                        <p className="font-bold">TK {(parseFloat(displayPrice) * item.quantity).toFixed(2)}</p>
+                      </div>
                     </div>
-                    
-                    <div className="flex-1 space-y-2">
-                      <h3 className="font-medium line-clamp-2">{item.name}</h3>
-                      <p className="font-bold">TK {item.price}</p>
-                      
-                      {(checkoutType === 'cart' || checkoutType === 'url') && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                              checkoutType === 'url'
-                                ? updateUrlProductQuantity(item.id, item.quantity - 1)
-                                : updateQuantity(item.id, item.quantity - 1)
-                            }
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                              checkoutType === 'url'
-                                ? updateUrlProductQuantity(item.id, item.quantity + 1)
-                                : updateQuantity(item.id, item.quantity + 1)
-                            }
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 ml-auto"
-                            onClick={() =>
-                              checkoutType === 'url'
-                                ? removeUrlProduct(item.id)
-                                : removeFromCart(item.id)
-                            }
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="text-right">
-                      <p className="font-bold">TK {(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
                 
                 <Separator />
                 <div className="space-y-2">

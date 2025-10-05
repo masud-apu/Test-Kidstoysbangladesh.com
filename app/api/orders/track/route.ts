@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { orders } from '@/lib/schema'
+import { orders, orderItems } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
 import { SteadfastService } from '@/lib/steadfast'
 
@@ -30,6 +30,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get order items
+    const items = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id))
+
     // Get tracking status from Steadfast if available
     let steadfastStatus = null
     if (order.steadfastTrackingCode) {
@@ -50,13 +56,28 @@ export async function GET(request: NextRequest) {
         customerName: order.customerName,
         customerPhone: order.customerPhone,
         customerAddress: order.customerAddress,
+        itemsTotal: order.itemsTotal,
+        shippingCost: order.shippingCost,
         totalAmount: order.totalAmount,
         deliveryType: order.deliveryType,
+        promoCode: order.promoCode,
+        promoCodeDiscount: order.promoCodeDiscount,
         steadfastConsignmentId: order.steadfastConsignmentId,
         steadfastTrackingCode: order.steadfastTrackingCode,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
       },
+      items: items.map(item => ({
+        id: item.id,
+        productName: item.productName,
+        productPrice: item.productPrice,
+        productImage: item.productImage,
+        variantTitle: item.variantTitle,
+        variantSku: item.variantSku,
+        selectedOptions: item.selectedOptions,
+        quantity: item.quantity,
+        itemTotal: item.itemTotal,
+      })),
       steadfastStatus,
     })
   } catch (error) {

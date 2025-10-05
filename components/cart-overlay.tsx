@@ -9,7 +9,7 @@ import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 
 export default function CartOverlay() {
-  const { items, updateQuantity, removeFromCart, getTotalPrice, selectAllItems } = useCartStore()
+  const { items, updateQuantity, removeFromCart, getTotalPrice, selectAllItems, getItemKey } = useCartStore()
   const openCheckout = useOverlayStore((s) => s.openCheckout)
 
   const total = getTotalPrice()
@@ -23,65 +23,81 @@ export default function CartOverlay() {
   return (
     <div className="space-y-4">
       {/* Items */}
-      {items.map((item) => (
-        <Card key={item.id} className="overflow-hidden border-none shadow-none">
-          <CardContent className="p-0">
-            <div className="flex items-start gap-3 py-3">
-              {/* Thumb */}
-              <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-muted">
-                {item.images?.[0] ? (
-                  <Image src={item.images[0]} alt={item.name} fill className="object-cover" />
-                ) : (
-                  <div className="w-full h-full" />
-                )}
-              </div>
+      {items.map((item) => {
+        const itemKey = getItemKey(item)
+        const displayPrice = item.variantPrice || '0'
 
-              {/* Title and controls */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold leading-snug line-clamp-2">
-                  {item.name}
-                </h3>
+        return (
+          <Card key={itemKey} className="overflow-hidden border-none shadow-none">
+            <CardContent className="p-0">
+              <div className="flex items-start gap-3 py-3">
+                {/* Thumb */}
+                <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-muted">
+                  {item.images?.[0] ? (
+                    <Image src={item.images[0]} alt={item.title} fill className="object-cover" />
+                  ) : (
+                    <div className="w-full h-full" />
+                  )}
+                </div>
 
-                {/* Quantity controls */}
-                <div className="mt-2 inline-flex items-center gap-2">
+                {/* Title and controls */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold leading-snug line-clamp-2">
+                    {item.title}
+                  </h3>
+
+                  {/* Variant info - only if NOT a default variant product */}
+                  {!item.hasOnlyDefaultVariant && item.variantTitle && item.variantTitle !== 'Default Title' && (
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {item.selectedOptions && item.selectedOptions.length > 0 ? (
+                        <span>{item.selectedOptions.map(opt => opt.valueName).join(' / ')}</span>
+                      ) : (
+                        <span>{item.variantTitle}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Quantity controls */}
+                  <div className="mt-2 inline-flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => updateQuantity(itemKey, Math.max(0, item.quantity - 1))}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-8 text-center font-medium">{item.quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => updateQuantity(itemKey, item.quantity + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Remove + price */}
+                <div className="flex flex-col items-end gap-2 min-w-[56px]">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8"
-                    onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
+                    className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={() => removeFromCart(itemKey)}
+                    aria-label="Remove from cart"
                   >
-                    <Minus className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
-                  <span className="w-8 text-center font-medium">{item.quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  <span className="text-sm font-semibold">TK {(parseFloat(displayPrice) * item.quantity).toFixed(0)}</span>
                 </div>
               </div>
-
-              {/* Remove + price */}
-              <div className="flex flex-col items-end gap-2 min-w-[56px]">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={() => removeFromCart(item.id)}
-                  aria-label="Remove from cart"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-semibold">TK {(parseFloat(item.price) * item.quantity).toFixed(0)}</span>
-              </div>
-            </div>
-            <Separator />
-          </CardContent>
-        </Card>
-      ))}
+              <Separator />
+            </CardContent>
+          </Card>
+        )
+      })}
 
       {/* Total + CTA */}
       <div className="pt-2">

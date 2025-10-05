@@ -1,28 +1,40 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Product } from './schema'
+import { Product, ProductVariant } from './schema'
 import { Analytics } from './analytics'
 
 export type DeliveryType = 'inside' | 'outside'
 
+export interface SelectedOption {
+  optionName: string
+  valueName: string
+}
+
 export interface CartItem extends Product {
   quantity: number
+  // Variant-specific fields (optional for backward compatibility)
+  variantId?: number
+  variantTitle?: string
+  variantSku?: string | null
+  variantPrice?: string
+  variantCompareAtPrice?: string | null
+  selectedOptions?: SelectedOption[]
 }
 
 interface CartStore {
   items: CartItem[]
-  selectedItems: number[]
+  selectedItems: string[] // Changed to string to support composite keys (productId:variantId)
   directBuyItem: CartItem | null
   deliveryType: DeliveryType
-  addToCart: (product: Product) => void
-  removeFromCart: (productId: number) => void
-  updateQuantity: (productId: number, quantity: number) => void
+  addToCart: (product: Product, variant?: ProductVariant, selectedOptions?: SelectedOption[]) => void
+  removeFromCart: (itemKey: string) => void // Changed to support variant keys
+  updateQuantity: (itemKey: string, quantity: number) => void // Changed to support variant keys
   clearCart: () => void
   getTotalItems: () => number
   getTotalPrice: () => number
-  setDirectBuy: (product: Product) => void
+  setDirectBuy: (product: Product, variant?: ProductVariant, selectedOptions?: SelectedOption[]) => void
   clearDirectBuy: () => void
-  toggleItemSelection: (productId: number) => void
+  toggleItemSelection: (itemKey: string) => void
   selectAllItems: () => void
   clearSelection: () => void
   getSelectedItems: () => CartItem[]
@@ -30,6 +42,7 @@ interface CartStore {
   setDeliveryType: (type: DeliveryType) => void
   getShippingCost: () => number
   getSelectedTotalWithShipping: () => number
+  getItemKey: (item: CartItem) => string
 }
 
 export const useCartStore = create<CartStore>()(
@@ -39,56 +52,79 @@ export const useCartStore = create<CartStore>()(
   selectedItems: [],
   directBuyItem: null,
   deliveryType: 'outside',
-      
-      addToCart: (product) =>
+
+      // Helper function to create unique key for cart items
+      getItemKey: (item) => {
+        return item.variantId ? `${item.id}:${item.variantId}` : `${item.id}`
+      },
+
+      addToCart: (product, variant, selectedOptions) =>
         set((state) => {
-          const existingItem = state.items.find((item) => item.id === product.id)
+          // Create cart item with variant data if provided
+          const cartItem: CartItem = {
+            ...product,
+            quantity: 1,
+            ...(variant && {
+              variantId: variant.id,
+              variantTitle: variant.title,
+              variantSku: variant.sku,
+              variantPrice: variant.price,
+              variantCompareAtPrice: variant.compareAtPrice,
+            }),
+            ...(selectedOptions && { selectedOptions }),
+          }
+
+          const itemKey = get().getItemKey(cartItem)
+          const existingItem = state.items.find((item) => get().getItemKey(item) === itemKey)
+
           const updatedItems = existingItem
             ? state.items.map((item) =>
-                item.id === product.id
+                get().getItemKey(item) === itemKey
                   ? { ...item, quantity: item.quantity + 1 }
                   : item
               )
-            : [...state.items, { ...product, quantity: 1 }]
-          
+            : [...state.items, cartItem]
+
           // Auto-select newly added items
           const newSelectedItems = existingItem
             ? state.selectedItems
-            : state.selectedItems.includes(product.id)
+            : state.selectedItems.includes(itemKey)
             ? state.selectedItems
-            : [...state.selectedItems, product.id]
-          
+            : [...state.selectedItems, itemKey]
+
           return {
             items: updatedItems,
             selectedItems: newSelectedItems,
           }
         }),
 
-      removeFromCart: (productId) =>
+      removeFromCart: (itemKey) =>
         set((state) => {
-          const itemToRemove = state.items.find(item => item.id === productId)
+          const itemToRemove = state.items.find(item => get().getItemKey(item) === itemKey)
           if (itemToRemove) {
             Analytics.trackRemoveFromCart({
               product_id: itemToRemove.id.toString(),
-              product_name: itemToRemove.name,
-              quantity: itemToRemove.quantity
+              product_name: itemToRemove.title,
+              quantity: itemToRemove.quantity,
+              variant_id: itemToRemove.variantId?.toString(),
+              variant_title: itemToRemove.variantTitle
             })
           }
           return {
-            items: state.items.filter((item) => item.id !== productId),
-            selectedItems: state.selectedItems.filter(id => id !== productId),
+            items: state.items.filter((item) => get().getItemKey(item) !== itemKey),
+            selectedItems: state.selectedItems.filter(key => key !== itemKey),
           }
         }),
 
-      updateQuantity: (productId, quantity) =>
+      updateQuantity: (itemKey, quantity) =>
         set((state) => ({
           items: quantity === 0
-            ? state.items.filter((item) => item.id !== productId)
+            ? state.items.filter((item) => get().getItemKey(item) !== itemKey)
             : state.items.map((item) =>
-                item.id === productId ? { ...item, quantity } : item
+                get().getItemKey(item) === itemKey ? { ...item, quantity } : item
               ),
           selectedItems: quantity === 0
-            ? state.selectedItems.filter(id => id !== productId)
+            ? state.selectedItems.filter(key => key !== itemKey)
             : state.selectedItems,
         })),
 
@@ -101,36 +137,55 @@ export const useCartStore = create<CartStore>()(
 
       getTotalPrice: () => {
         const { items } = get()
-        return items.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
+        return items.reduce((total, item) => {
+          const price = item.variantPrice || '0'
+          return total + parseFloat(price) * item.quantity
+        }, 0)
       },
 
-      setDirectBuy: (product) => 
-        set({ directBuyItem: { ...product, quantity: 1 } }),
+      setDirectBuy: (product, variant, selectedOptions) => {
+        const directItem: CartItem = {
+          ...product,
+          quantity: 1,
+          ...(variant && {
+            variantId: variant.id,
+            variantTitle: variant.title,
+            variantSku: variant.sku,
+            variantPrice: variant.price,
+            variantCompareAtPrice: variant.compareAtPrice,
+          }),
+          ...(selectedOptions && { selectedOptions }),
+        }
+        set({ directBuyItem: directItem })
+      },
 
       clearDirectBuy: () => set({ directBuyItem: null }),
 
-      toggleItemSelection: (productId) =>
+      toggleItemSelection: (itemKey) =>
         set((state) => ({
-          selectedItems: state.selectedItems.includes(productId)
-            ? state.selectedItems.filter(id => id !== productId)
-            : [...state.selectedItems, productId],
+          selectedItems: state.selectedItems.includes(itemKey)
+            ? state.selectedItems.filter(key => key !== itemKey)
+            : [...state.selectedItems, itemKey],
         })),
 
       selectAllItems: () =>
         set((state) => ({
-          selectedItems: state.items.map(item => item.id),
+          selectedItems: state.items.map(item => get().getItemKey(item)),
         })),
 
       clearSelection: () => set({ selectedItems: [] }),
 
       getSelectedItems: () => {
         const { items, selectedItems } = get()
-        return items.filter(item => selectedItems.includes(item.id))
+        return items.filter(item => selectedItems.includes(get().getItemKey(item)))
       },
 
       getSelectedTotal: () => {
         const selectedItems = get().getSelectedItems()
-        return selectedItems.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
+        return selectedItems.reduce((total, item) => {
+          const price = item.variantPrice || '0'
+          return total + parseFloat(price) * item.quantity
+        }, 0)
       },
 
       setDeliveryType: (type) => set({ deliveryType: type }),

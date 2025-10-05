@@ -3,8 +3,9 @@ import { z } from 'zod'
 export const productSchema = z.object({
   id: z.number(),
   handle: z.string().min(1, 'Handle is required').regex(/^[a-z0-9-]+$/, 'Handle must only contain lowercase letters, numbers, and hyphens'),
-  name: z.string().min(1, 'Product name is required'),
-  price: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid price format'),
+  name: z.string().optional(), // Legacy field, kept for backward compatibility
+  title: z.string().min(1, 'Product title is required'),
+  price: z.string().optional(), // Legacy field, now price is in variants
   comparePrice: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid compare price format').optional().nullable(),
   tags: z.array(z.string()).default([]),
   images: z.array(z.string().url('Invalid image URL')).default([]),
@@ -15,8 +16,20 @@ export const productSchema = z.object({
 
 export const newProductSchema = productSchema.omit({ id: true, createdAt: true, updatedAt: true })
 
+export const selectedOptionSchema = z.object({
+  optionName: z.string(),
+  valueName: z.string(),
+})
+
 export const cartItemSchema = productSchema.extend({
   quantity: z.number().min(1, 'Quantity must be at least 1'),
+  // Variant-specific fields (optional)
+  variantId: z.number().optional(),
+  variantTitle: z.string().optional(),
+  variantSku: z.string().nullable().optional(),
+  variantPrice: z.string().optional(),
+  variantCompareAtPrice: z.string().nullable().optional(),
+  selectedOptions: z.array(selectedOptionSchema).optional(),
 })
 
 export const checkoutSchema = z.object({

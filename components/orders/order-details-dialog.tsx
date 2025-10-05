@@ -365,30 +365,50 @@ export function OrderDetailsDialog({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orderItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.productName}</TableCell>
-                      <TableCell>
-                        {item.productImage ? (
-                          <img // eslint-disable-line @next/next/no-img-element
-                            src={item.productImage}
-                            alt={item.productName}
-                            className="w-12 h-12 object-cover rounded border"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg"
-                            }}
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-muted rounded border flex items-center justify-center text-xs text-muted-foreground">
-                            No image
+                  {orderItems.map((item) => {
+                    const selectedOptions = item.selectedOptions as Array<{ optionName: string; valueName: string }> | null
+
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <div>
+                            <div>{item.productName}</div>
+                            {item.variantTitle && item.variantTitle !== 'Default Title' && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {selectedOptions && selectedOptions.length > 0 ? (
+                                  <span>{selectedOptions.map(opt => `${opt.optionName}: ${opt.valueName}`).join(' / ')}</span>
+                                ) : (
+                                  <span>{item.variantTitle}</span>
+                                )}
+                              </div>
+                            )}
+                            {item.variantSku && (
+                              <div className="text-xs text-muted-foreground">SKU: {item.variantSku}</div>
+                            )}
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">TK {parseFloat(item.productPrice)}</TableCell>
-                      <TableCell className="text-right">{item.quantity}</TableCell>
-                      <TableCell className="text-right">TK {parseFloat(item.itemTotal)}</TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          {item.productImage ? (
+                            <img // eslint-disable-line @next/next/no-img-element
+                              src={item.productImage}
+                              alt={item.productName}
+                              className="w-12 h-12 object-cover rounded border"
+                              onError={(e) => {
+                                e.currentTarget.src = "/placeholder.svg"
+                              }}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-muted rounded border flex items-center justify-center text-xs text-muted-foreground">
+                              No image
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">TK {parseFloat(item.productPrice)}</TableCell>
+                        <TableCell className="text-right">{item.quantity}</TableCell>
+                        <TableCell className="text-right">TK {parseFloat(item.itemTotal)}</TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             )}
