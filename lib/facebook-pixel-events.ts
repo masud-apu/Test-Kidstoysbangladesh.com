@@ -24,8 +24,10 @@ export const fbPixelEvents = {
   },
 
   initiateCheckout: (data?: {
+    content_name?: string;
     content_category?: string;
     content_ids?: string[];
+    content_type?: string;
     contents?: Array<Record<string, unknown>>;
     currency?: string;
     num_items?: number;

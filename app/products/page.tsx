@@ -1,7 +1,7 @@
 import { ProductCard } from '@/components/product-card'
 import { db } from '@/lib/db'
-import { products } from '@/lib/schema'
-// import { desc } from 'drizzle-orm'
+import { products, productVariants } from '@/lib/schema'
+import { eq } from 'drizzle-orm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,8 +23,24 @@ import { ProductsPageClient } from '@/components/products-page-client'
 
 export default async function ProductsPage() {
   const fetched = await db.select().from(products)
-  const allProducts = [...fetched].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-  
+
+  // Fetch variants for all products
+  const productsWithVariants = await Promise.all(
+    fetched.map(async (product) => {
+      const variants = await db
+        .select()
+        .from(productVariants)
+        .where(eq(productVariants.productId, product.id))
+
+      return {
+        ...product,
+        variants
+      }
+    })
+  )
+
+  const allProducts = [...productsWithVariants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
   return (
     <div className="min-h-screen bg-gray-50">
       <ProductsPageClient productCount={allProducts.length} category="All Products" />

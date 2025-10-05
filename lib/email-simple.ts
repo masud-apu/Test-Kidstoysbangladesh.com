@@ -35,18 +35,18 @@ function generateCustomerEmailTemplate(
 ): string {
   const itemsHtml = items
     .map((item) => {
-      const price = item.variantPrice || item.price;
+      const price = item.variantPrice || "0";
       const itemTotal = (parseFloat(price) * item.quantity).toFixed(2);
 
       // Build variant information string for compact display
-      let variantInfo = '';
-      if (item.variantTitle && item.variantTitle !== 'Default Title') {
+      let variantInfo = "";
+      if (item.variantTitle && item.variantTitle !== "Default Title") {
         variantInfo = `<br><span style="font-size:11px;color:#6b7280;">${item.variantTitle}</span>`;
       }
       if (item.selectedOptions && item.selectedOptions.length > 0) {
         const optionsText = item.selectedOptions
-          .map(opt => `${opt.optionName}: ${opt.valueName}`)
-          .join(' / ');
+          .map((opt) => `${opt.optionName}: ${opt.valueName}`)
+          .join(" / ");
         variantInfo += `<br><span style="font-size:11px;color:#6b7280;">${optionsText}</span>`;
       }
 
@@ -245,4 +245,3 @@ export async function sendOrderConfirmationEmails(
     };
   }
 }
-

@@ -225,7 +225,7 @@ function generateCustomerEmailTemplate(
 ): string {
   const itemsHtml = items
     .map((item) => {
-      const price = item.variantPrice || item.price;
+      const price = item.variantPrice || item.price || '0';
       const itemTotal = (parseFloat(price) * item.quantity).toFixed(2);
 
       // Build variant information string
@@ -508,7 +508,7 @@ function generateOwnerEmailTemplate(
 ): string {
   const itemsHtml = orderData.items
     .map((item) => {
-      const price = item.variantPrice || item.price;
+      const price = item.variantPrice || item.price || '0';
       const itemTotal = (parseFloat(price) * item.quantity).toFixed(2);
 
       // Build variant information string

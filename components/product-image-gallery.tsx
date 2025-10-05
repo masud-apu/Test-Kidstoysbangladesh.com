@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Zoom from "react-medium-image-zoom";
 import { ZoomIn } from "lucide-react";
 import {
@@ -11,6 +11,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 
 interface ProductImageGalleryProps {
@@ -26,6 +27,10 @@ export function ProductImageGallery({
 }: ProductImageGalleryProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+
+  const plugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  );
 
   // Display images: show variant image first if available, then product images
   const displayImages = variantImage ? [variantImage, ...images] : images;
@@ -54,8 +59,11 @@ export function ProductImageGallery({
             align: "start",
             loop: true,
           }}
+          plugins={[plugin.current]}
           setApi={handleApiChange}
           className="w-full"
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
         >
           <CarouselContent>
             {displayImages.map((image, index) => (

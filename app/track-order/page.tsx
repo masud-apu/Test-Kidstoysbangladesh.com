@@ -172,7 +172,9 @@ function TrackOrderContent() {
                 className="w-full"
               />
               <Button
-                onClick={handleTrackOrder}
+                onClick={() => {
+                  void handleTrackOrder()
+                }}
                 disabled={loading}
                 className="w-full sm:w-auto"
               >

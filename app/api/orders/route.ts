@@ -3,6 +3,7 @@ export const runtime = 'nodejs'
 import { db } from '@/lib/db'
 import { orders, orderItems, products, productVariants, promoCodes } from '@/lib/schema'
 import { createOrderSchema } from '@/lib/validations/order'
+import { CartItemType } from '@/lib/validations'
 import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
 import { generatePDFBuffer } from '@/lib/pdf-generator'
 import { R2StorageService } from '@/lib/r2-storage'
@@ -119,11 +120,21 @@ export async function POST(request: NextRequest) {
 
     // 4. Prepare data for email service (items are already in the correct CartItemType format)
     // Normalize items to CartItemType shape (ensure Date types)
-    const normalizedItems = validatedData.items.map((item) => ({
-      ...item,
-      createdAt: typeof item.createdAt === 'string' ? new Date(item.createdAt) : item.createdAt,
-      updatedAt: typeof item.updatedAt === 'string' ? new Date(item.updatedAt) : item.updatedAt,
-    }))
+    const normalizedItems: CartItemType[] = validatedData.items.map((item) => {
+      const createdAt =
+        typeof item.createdAt === 'string' ? new Date(item.createdAt) : item.createdAt
+      const updatedAt =
+        typeof item.updatedAt === 'string' ? new Date(item.updatedAt) : item.updatedAt
+
+      return {
+        ...item,
+        handle: item.handle ?? `product-${item.id}`,
+        tags: item.tags ?? [],
+        images: item.images ?? [],
+        createdAt,
+        updatedAt,
+      }
+    })
 
     const emailOrderData: OrderData = {
       customerName: validatedData.customerName,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { products } from '@/lib/schema'
-import { inArray } from 'drizzle-orm'
+import { products, productVariants } from '@/lib/schema'
+import { inArray, eq } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +29,22 @@ export async function GET(request: NextRequest) {
       .from(products)
       .where(inArray(products.id, ids))
 
-    return NextResponse.json({ products: productList })
+    // Fetch variants for each product
+    const productsWithVariants = await Promise.all(
+      productList.map(async (product) => {
+        const variants = await db
+          .select()
+          .from(productVariants)
+          .where(eq(productVariants.productId, product.id))
+
+        return {
+          ...product,
+          variants
+        }
+      })
+    )
+
+    return NextResponse.json({ products: productsWithVariants })
   } catch (error) {
     console.error('Error fetching products by IDs:', error)
     return NextResponse.json(

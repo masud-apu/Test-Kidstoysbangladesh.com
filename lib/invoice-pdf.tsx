@@ -133,7 +133,7 @@ export function InvoiceDocument({ orderData, logoDataUrl, isPaidReceipt = false,
             <Text style={[styles.th, { flex: 1, textAlign: 'right' }, styles.thLast]}>Total</Text>
           </View>
           {items.map((item, idx) => {
-            const price = item.variantPrice || item.price
+            const price = item.variantPrice || item.price || '0'
             const productName = item.title || item.name
 
             return (

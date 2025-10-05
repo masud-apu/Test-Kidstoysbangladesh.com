@@ -61,21 +61,19 @@ async function main() {
 
   // Map CSV rows to NewProduct[]
   const payload: NewProduct[] = rows.map((r) => {
-    const name = String(r.name || '').trim()
-    const price = String(r.price || '0').trim()
-    const comparePrice = r.compare_price ? String(r.compare_price).trim() : undefined
+    const title = String(r.name || r.title || '').trim()
     const description = r.description ? String(r.description) : null
-    const handle = String(r.handle || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
+    const handle = String(r.handle || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
 
     return {
       handle,
-      name,
-      price, // drizzle numeric accepts string
-      comparePrice,
-  tags: parseMaybeJsonArray(r.tags),
-  images: parseImagesField(r.images),
+      title,
+      tags: parseMaybeJsonArray(r.tags),
+      images: parseImagesField(r.images),
       description,
-      // createdAt/updatedAt default to now() if omitted
+      status: 'active',
+      // Note: Price and comparePrice are now stored in product variants, not products table
+      // This script only imports basic product info. Use admin panel to add variants and pricing.
     }
   })
 

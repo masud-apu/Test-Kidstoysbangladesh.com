@@ -136,7 +136,7 @@ export function VariantSelector({
             {option.values.map((value) => {
               const isSelected = selectedValues[option.name] === value.value;
               const isAvailable = isValueAvailable(option.name, value.value);
-              const optionValueImage = (value as any).image; // Small icon/swatch for the button
+              const optionValueImage = value.image ?? undefined; // Small icon/swatch for the button
 
               return optionValueImage ? (
                 // Image-only button for options with images

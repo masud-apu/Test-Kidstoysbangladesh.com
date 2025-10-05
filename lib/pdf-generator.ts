@@ -175,7 +175,7 @@ async function generateWithJsPDF(orderData: OrderData, isPaidReceipt: boolean): 
     // Prepare table data with variant information
     const tableHeaders = ['Product Name', 'Quantity', 'Unit Price', 'Total']
     const tableData = items.map(item => {
-      const price = item.variantPrice || item.price
+      const price = item.variantPrice || item.price || '0'
       const productName = item.title || item.name
 
       // Build product name with variant info

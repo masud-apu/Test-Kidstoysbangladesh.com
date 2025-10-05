@@ -1,15 +1,26 @@
-import { Product } from '@/lib/schema'
+import { Product, ProductVariant } from '@/lib/schema'
 
 interface ProductStructuredDataProps {
   product: Product
+  variants?: ProductVariant[]
 }
 
-export function ProductStructuredData({ product }: ProductStructuredDataProps) {
+export function ProductStructuredData({ product, variants = [] }: ProductStructuredDataProps) {
+  // Find the minimum price variant
+  const minPriceVariant = variants.reduce((min, v) => {
+    const price = parseFloat(v.price)
+    const minPrice = parseFloat(min.price)
+    return price < minPrice ? v : min
+  }, variants[0])
+
+  const price = minPriceVariant ? minPriceVariant.price : '0'
+  const compareAtPrice = minPriceVariant?.compareAtPrice
+
   const baseOffers = {
     "@type": "Offer",
     "url": `https://kidstoysbangladesh.com/product/${product.handle}`,
     "priceCurrency": "BDT",
-    "price": product.price,
+    "price": price,
     "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     "availability": "https://schema.org/InStock",
     "seller": {
@@ -18,15 +29,15 @@ export function ProductStructuredData({ product }: ProductStructuredDataProps) {
     }
   }
 
-  const offers = product.comparePrice && parseFloat(product.comparePrice) > parseFloat(product.price)
-    ? { ...baseOffers, "highPrice": product.comparePrice, "lowPrice": product.price }
+  const offers = compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price)
+    ? { ...baseOffers, "highPrice": compareAtPrice, "lowPrice": price }
     : baseOffers
 
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "name": product.name,
-    "description": product.description || `High quality ${product.name} for children`,
+    "name": product.title,
+    "description": product.description || `High quality ${product.title} for children`,
     "image": product.images && product.images.length > 0 ? product.images : undefined,
     "sku": product.handle,
     "brand": {
