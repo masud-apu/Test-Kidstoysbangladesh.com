@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Markdown } from "@/components/markdown";
 import { useCartStore } from "@/lib/store";
 import { useOverlayStore } from "@/lib/ui-store";
@@ -46,7 +45,6 @@ export function ProductPageClient({
   variants = [],
   options = [],
 }: ProductPageClientProps) {
-  const [activeTab, setActiveTab] = useState("description");
   const [isAdding, setIsAdding] = useState(false);
 
   // Variant state
@@ -207,12 +205,6 @@ export function ProductPageClient({
     }
   }, [hasVariants, selectedVariant, variants]);
 
-  const formatCurrency = (value: string | number) => {
-    const num = typeof value === "string" ? parseFloat(value) : value;
-    if (Number.isNaN(num)) return "TK 0.00";
-    return `TK ${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
   const prettify = (s: string) =>
     s
       .replace(/[_-]+/g, " ")
@@ -350,10 +342,10 @@ export function ProductPageClient({
   return (
     <>
       <ProductStructuredData product={product} variants={variants} />
-      <div className="container mx-auto max-w-6xl py-8 pb-28 md:pb-8">
+      <div className="container mx-auto max-w-7xl py-8 pb-28 md:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Column - Images */}
-          <div>
+          <div className="px-4">
             <ProductImageGallery
               images={images}
               productTitle={product.title}
@@ -363,7 +355,7 @@ export function ProductPageClient({
           </div>
 
           {/* Right Column - Product Details */}
-          <div className="space-y-6">
+          <div className="space-y-6 px-4">
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold leading-tight">
                 {mainTitle}
@@ -482,34 +474,26 @@ export function ProductPageClient({
           </div>
         </div>
 
-        {/* Tabs Section */}
-        <div className="mt-16">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-1 max-w-md mx-auto rounded-full shadow-sm p-1.5 h-11">
-              <TabsTrigger
-                value="description"
-                className="rounded-full px-4 py-2 text-[15px]"
-              >
-                Description
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="description" className="mt-6">
-              <div className="bg-muted/50 rounded-lg p-6">
-                {product.description ? (
-                  <Markdown content={product.description} />
-                ) : (
-                  <p className="text-muted-foreground">
-                    No description for this product.
-                  </p>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
+        {/* Description Section */}
+        <div className="mt-16 px-4">
+          <div className="relative flex items-center justify-center mb-6">
+            <div className="flex-grow border-t border-border"></div>
+            <span className="px-4 text-3xl font-semibold text-foreground">
+              Description
+            </span>
+            <div className="flex-grow border-t border-border"></div>
+          </div>
+          <div className="bg-muted/50 rounded-lg">
+            <div className="prose prose-sm max-w-none">
+              {product.description ? (
+                <Markdown content={product.description} />
+              ) : (
+                <p className="text-muted-foreground">
+                  No description for this product.
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
