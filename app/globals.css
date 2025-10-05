@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "highlight.js/styles/github.css";
+@import "react-medium-image-zoom/dist/styles.css";
 
 @custom-variant dark (&:is(.dark *));
 
