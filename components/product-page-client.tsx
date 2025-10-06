@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Shield,
   Package,
+  Sparkles,
 } from "lucide-react";
 import {
   Product,
@@ -26,6 +27,7 @@ import { Analytics } from "@/lib/analytics";
 import { VariantSelector } from "./variant-selector";
 import { SelectedOption } from "@/lib/store";
 import { ProductImageGallery } from "./product-image-gallery";
+import { isFreeDeliveryActive, FREE_DELIVERY_MESSAGE, FREE_DELIVERY_SUBTITLE } from "@/lib/free-delivery";
 
 interface VariantWithOptions extends ProductVariant {
   selectedOptions: Array<{
@@ -440,6 +442,22 @@ export function ProductPageClient({
 
               {/* Delivery & Return Information */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-4 mt-4">
+                {isFreeDeliveryActive() && (
+                  <div className="relative bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 rounded-lg p-4 -mt-2 mb-3 overflow-hidden">
+                    {/* Background decoration */}
+                    <div className="absolute inset-0 opacity-20">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-2xl"></div>
+                    </div>
+
+                    <div className="relative z-10 space-y-1">
+                      <div className="flex items-center gap-2 text-white">
+                        <Sparkles className="h-5 w-5 animate-pulse" />
+                        <span className="text-base font-bold">{FREE_DELIVERY_MESSAGE}</span>
+                      </div>
+                      <p className="text-xs text-white/90 ml-7">{FREE_DELIVERY_SUBTITLE}</p>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm font-semibold">
                     <Truck className="h-4 w-4 text-blue-600" />

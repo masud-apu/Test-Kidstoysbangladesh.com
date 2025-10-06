@@ -8,14 +8,16 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
+import {
   Truck,
   Banknote,
   Headset,
   ShieldCheck,
   Gift,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from 'lucide-react'
+import { isFreeDeliveryActive, FREE_DELIVERY_MESSAGE, FREE_DELIVERY_SUBTITLE } from '@/lib/free-delivery'
 import {
   Carousel,
   CarouselContent,
@@ -77,7 +79,31 @@ export default async function Home() {
       {/* Hero Carousel Section */}
       <HeroCarousel />
 
-        
+      {/* Free Delivery Campaign Banner */}
+      {isFreeDeliveryActive() && (
+        <div className="relative bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 py-6 px-4 overflow-hidden">
+          {/* Animated background decoration */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-0 left-1/4 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse delay-1000"></div>
+          </div>
+
+          <div className="container mx-auto max-w-7xl relative z-10">
+            <div className="flex flex-col items-center justify-center gap-2 text-white">
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-6 w-6 md:h-7 md:w-7 animate-bounce" />
+                <p className="text-xl md:text-3xl font-bold text-center tracking-wide">
+                  {FREE_DELIVERY_MESSAGE}
+                </p>
+                <Sparkles className="h-6 w-6 md:h-7 md:w-7 animate-bounce" />
+              </div>
+              <p className="text-sm md:text-base font-medium opacity-95 text-center">
+                {FREE_DELIVERY_SUBTITLE}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
   {/* New Arrivals Section */}
   <section id="new-arrivals" className="py-5 bg-white scroll-mt-24">
