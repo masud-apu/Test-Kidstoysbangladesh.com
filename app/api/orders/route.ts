@@ -7,12 +7,18 @@ import { CartItemType } from '@/lib/validations'
 import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
 import { generatePDFBuffer } from '@/lib/pdf-generator'
 import { R2StorageService } from '@/lib/r2-storage'
+import { convertBanglaToEnglishNumerals } from '@/lib/bangla-utils'
 import { eq, sql } from 'drizzle-orm'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
+    // Convert Bangla numerals to English numerals in phone number
+    if (body.customerPhone) {
+      body.customerPhone = convertBanglaToEnglishNumerals(body.customerPhone)
+    }
+
     // Validate the incoming data with our schema
     const validatedData = createOrderSchema.parse(body)
 
