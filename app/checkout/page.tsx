@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCartStore, type DeliveryType } from "@/lib/store";
 import { useOverlayStore } from "@/lib/ui-store";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { checkoutSchema, type CheckoutType } from "@/lib/validations";
 import { Minus, Plus, Trash2, ShoppingBag, Tag, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ function CheckoutContent() {
     getSelectedItems,
     getSelectedTotal,
     updateQuantity,
+    updateDirectBuyQuantity,
     removeFromCart,
     clearCart,
     clearDirectBuy,
@@ -246,8 +248,41 @@ function CheckoutContent() {
     setUrlProducts((prev) => prev.filter((item) => item.id !== productId));
   };
 
+  // Initialize form hook first
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+  } = useForm<CheckoutType>({
+    resolver: zodResolver(checkoutSchema),
+  });
+
+  // Watch required fields to show optional fields when validators pass
+  const name = watch("name");
+  const phone = watch("phone");
+  const address = watch("address");
+  const email = watch("email");
+  const specialNote = watch("specialNote");
+
   useEffect(() => {
     setMounted(true);
+
+    // Load saved personal information from localStorage
+    try {
+      const savedData = localStorage.getItem("checkout_personal_info");
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.name) setValue("name", parsed.name);
+        if (parsed.phone) setValue("phone", parsed.phone);
+        if (parsed.address) setValue("address", parsed.address);
+        if (parsed.email) setValue("email", parsed.email);
+        if (parsed.specialNote) setValue("specialNote", parsed.specialNote);
+      }
+    } catch (error) {
+      console.error("Error loading saved checkout data:", error);
+    }
 
     // Track checkout started
     if (checkoutItems.length > 0) {
@@ -283,15 +318,40 @@ function CheckoutContent() {
         item_count: checkoutItems.reduce((sum, item) => sum + item.quantity, 0),
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkoutItems, totalPrice]);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CheckoutType>({
-    resolver: zodResolver(checkoutSchema),
-  });
+  // Save personal information to localStorage whenever form fields change
+  useEffect(() => {
+    if (mounted) {
+      try {
+        const dataToSave = {
+          name: name || "",
+          phone: phone || "",
+          address: address || "",
+          email: email || "",
+          specialNote: specialNote || "",
+        };
+        localStorage.setItem("checkout_personal_info", JSON.stringify(dataToSave));
+      } catch (error) {
+        console.error("Error saving checkout data:", error);
+      }
+    }
+  }, [mounted, name, phone, address, email, specialNote]);
+
+  // Only show optional fields when all required fields are valid (no errors)
+  const showOptionalFields = Boolean(
+    name &&
+    name.length >= 2 &&
+    phone &&
+    phone.length === 11 &&
+    /^[0-9]{11}$/.test(phone) &&
+    address &&
+    address.length >= 10 &&
+    !errors.name &&
+    !errors.phone &&
+    !errors.address
+  );
 
   const onSubmit = async (data: CheckoutType) => {
     setIsLoading(true);
@@ -543,42 +603,45 @@ function CheckoutContent() {
 
                         <p className="font-bold">TK {displayPrice}</p>
 
-                        {(checkoutType === "cart" ||
-                          checkoutType === "url") && (
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() =>
-                                checkoutType === "url"
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() =>
+                              checkoutType === "direct"
+                                ? updateDirectBuyQuantity(item.quantity - 1)
+                                : checkoutType === "url"
                                   ? updateUrlProductQuantity(
                                       item.id,
                                       item.quantity - 1,
                                     )
                                   : updateQuantity(itemKey, item.quantity - 1)
-                              }
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="w-8 text-center">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() =>
-                                checkoutType === "url"
+                            }
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-8 text-center">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() =>
+                              checkoutType === "direct"
+                                ? updateDirectBuyQuantity(item.quantity + 1)
+                                : checkoutType === "url"
                                   ? updateUrlProductQuantity(
                                       item.id,
                                       item.quantity + 1,
                                     )
                                   : updateQuantity(itemKey, item.quantity + 1)
-                              }
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
+                            }
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                          {checkoutType !== "direct" && (
                             <Button
                               variant="outline"
                               size="icon"
@@ -591,8 +654,8 @@ function CheckoutContent() {
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
 
                       <div className="text-right">
@@ -728,7 +791,16 @@ function CheckoutContent() {
 
                   <div>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" {...register("phone")} />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="01XXXXXXXXX (11 digits)"
+                      maxLength={11}
+                      {...register("phone")}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enter your 11-digit mobile number
+                    </p>
                     {errors.phone && (
                       <p className="text-sm text-destructive">
                         {errors.phone.message}
@@ -756,43 +828,54 @@ function CheckoutContent() {
                     )}
                   </div>
 
-                  <div>
-                    <Label htmlFor="specialNote">Special Note (optional)</Label>
-                    <Textarea
-                      id="specialNote"
-                      rows={2}
-                      placeholder="Any delivery instruction (e.g., call before delivery, landmark, preferred time)"
-                      className="resize-y min-h-[72px]"
-                      onFocus={(e) => (e.target.placeholder = "")}
-                      {...register("specialNote")}
-                    />
-                    {errors.specialNote && (
-                      <p className="text-sm text-destructive">
-                        {errors.specialNote.message}
-                      </p>
-                    )}
-                  </div>
+                  {/* Optional Fields Section - only shown when required fields are filled */}
+                  <Collapsible open={showOptionalFields}>
+                    <CollapsibleContent className="space-y-4">
+                      <Separator className="my-6" />
 
-                  <Separator />
-                  <p className="text-sm text-muted-foreground">
-                    You can get invoice on your email (optional)
-                  </p>
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Optional Information
+                        </h3>
 
-                  <div>
-                    <Label htmlFor="email">Email (optional)</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="example@email.com"
-                      onFocus={(e) => (e.target.placeholder = "")}
-                      {...register("email")}
-                    />
-                    {errors.email && (
-                      <p className="text-sm text-destructive">
-                        {errors.email.message}
-                      </p>
-                    )}
-                  </div>
+                        <div>
+                          <Label htmlFor="specialNote">Special Note</Label>
+                          <Textarea
+                            id="specialNote"
+                            rows={2}
+                            placeholder="Any delivery instruction (e.g., call before delivery, landmark, preferred time)"
+                            className="resize-y min-h-[72px]"
+                            onFocus={(e) => (e.target.placeholder = "")}
+                            {...register("specialNote")}
+                          />
+                          {errors.specialNote && (
+                            <p className="text-sm text-destructive">
+                              {errors.specialNote.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="example@email.com"
+                            onFocus={(e) => (e.target.placeholder = "")}
+                            {...register("email")}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            You can get invoice on your email
+                          </p>
+                          {errors.email && (
+                            <p className="text-sm text-destructive">
+                              {errors.email.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
 
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Processing..." : "Place Order"}

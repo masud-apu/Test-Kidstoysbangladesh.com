@@ -41,6 +41,7 @@ interface CartStore {
     variant?: ProductVariant,
     selectedOptions?: SelectedOption[],
   ) => void;
+  updateDirectBuyQuantity: (quantity: number) => void;
   clearDirectBuy: () => void;
   toggleItemSelection: (itemKey: string) => void;
   selectAllItems: () => void;
@@ -176,6 +177,17 @@ export const useCartStore = create<CartStore>()(
         };
         set({ directBuyItem: directItem });
       },
+
+      updateDirectBuyQuantity: (quantity) =>
+        set((state) => {
+          if (!state.directBuyItem) return state;
+          return {
+            directBuyItem: {
+              ...state.directBuyItem,
+              quantity: Math.max(1, quantity),
+            },
+          };
+        }),
 
       clearDirectBuy: () => set({ directBuyItem: null }),
 
