@@ -1,5 +1,12 @@
 import { pgTable, serial, varchar, decimal, text, timestamp, json, integer, boolean } from 'drizzle-orm/pg-core'
 
+// Type for media items (images and videos)
+export type MediaItem = {
+  url: string;
+  type: 'image' | 'video';
+  thumbnail?: string; // Optional thumbnail for videos
+}
+
 export const products = pgTable('products', {
   id: serial('id').primaryKey(),
   handle: varchar('handle', { length: 255 }).notNull().unique(),
@@ -9,7 +16,7 @@ export const products = pgTable('products', {
   productType: varchar('product_type', { length: 255 }),
   status: varchar('status', { length: 50 }).default('active').notNull(), // active, draft, archived
   tags: json('tags').$type<string[]>().default([]),
-  images: json('images').$type<string[]>().default([]),
+  images: json('images').$type<(string | MediaItem)[]>().default([]), // Support both legacy string URLs and new MediaItem objects
   tracksInventory: boolean('tracks_inventory').default(true).notNull(),
   hasOnlyDefaultVariant: boolean('has_only_default_variant').default(true).notNull(),
   totalInventory: integer('total_inventory').default(0).notNull(),

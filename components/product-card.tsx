@@ -2,15 +2,48 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Product, ProductVariant } from '@/lib/schema'
+import { Product, ProductVariant, MediaItem } from '@/lib/schema'
 import { Button } from '@/components/ui/button'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import Link from 'next/link'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart, Play } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 import { fbPixelEvents } from '@/lib/facebook-pixel-events'
 import { Analytics } from '@/lib/analytics'
+
+// Helper function to normalize media items
+function normalizeMediaItem(item: string | MediaItem): MediaItem {
+  if (typeof item === 'string') {
+    const isVideo = item.includes('.mp4') || item.includes('.webm') || item.includes('.mov') || 
+                   item.includes('video/upload') || item.includes('resource_type=video');
+    return { url: item, type: isVideo ? 'video' : 'image' };
+  }
+  return item;
+}
+
+function forceCloudinaryMp4(url: string): string {
+  try {
+    if (!url.includes('res.cloudinary.com') || !url.includes('/video/upload/')) return url;
+    const [prefix, restRaw] = url.split('/upload/');
+    let rest = restRaw || '';
+    if (!rest.startsWith('f_mp4/')) {
+      rest = `f_mp4/${rest}`;
+    }
+    rest = rest.replace(/\.(mov|webm|mkv|avi|mpg|mpeg|3gp|wmv)(\?.*)?$/i, '.mp4$2');
+    if (!/\.mp4(\?|$)/i.test(rest)) {
+      const qIndex = rest.indexOf('?');
+      if (qIndex >= 0) {
+        rest = `${rest.slice(0, qIndex)}.mp4${rest.slice(qIndex)}`;
+      } else {
+        rest = `${rest}.mp4`;
+      }
+    }
+    return `${prefix}/upload/${rest}`;
+  } catch {
+    return url;
+  }
+}
 
 interface VariantWithOptions extends ProductVariant {
   selectedOptions?: Array<{
@@ -184,14 +217,36 @@ export function ProductCard({ product }: ProductCardProps) {
                   </div>
                 )}
                 {product.images && product.images.length > 0 ? (
-                  <Image
-                    src={product.images[0]}
-                    alt={product.title}
-                    fill
-                    sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-                    loading="lazy"
-                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                  />
+                  (() => {
+                    const firstMedia = normalizeMediaItem(product.images[0]);
+                    const isVideo = firstMedia.type === 'video';
+                    
+                    return isVideo ? (
+                      <div className="relative w-full h-full">
+                        <video
+                          src={forceCloudinaryMp4(firstMedia.url)}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                          preload="metadata"
+                          muted
+                          playsInline
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="bg-black/50 rounded-full p-2">
+                            <Play className="h-6 w-6 text-white fill-white" />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <Image
+                        src={firstMedia.url}
+                        alt={product.title}
+                        fill
+                        sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                        loading="lazy"
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+                    );
+                  })()
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm bg-gray-100">No image</div>
                 )}

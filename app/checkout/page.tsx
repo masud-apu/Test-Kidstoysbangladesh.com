@@ -21,9 +21,14 @@ import { Minus, Plus, Trash2, ShoppingBag, Tag, Loader2, Sparkles } from "lucide
 import { toast } from "sonner";
 import { Analytics } from "@/lib/analytics";
 import { fbPixelEvents } from "@/lib/facebook-pixel-events";
-import { Product, ProductVariant } from "@/lib/schema";
+import { Product, ProductVariant, MediaItem } from "@/lib/schema";
 import { CartItem } from "@/lib/store";
 import { isFreeDeliveryActive, FREE_DELIVERY_MESSAGE, FREE_DELIVERY_SUBTITLE } from "@/lib/free-delivery";
+
+// Helper function to get URL from media item
+function getMediaUrl(item: string | MediaItem): string {
+  return typeof item === 'string' ? item : item.url
+}
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -607,7 +612,7 @@ function CheckoutContent() {
                       <div className="relative h-20 w-20 overflow-hidden rounded">
                         {item.images && item.images[0] ? (
                           <Image
-                            src={item.images[0]}
+                            src={getMediaUrl(item.images[0])}
                             alt={item.title}
                             fill
                             className="object-cover"

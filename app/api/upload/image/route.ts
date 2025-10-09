@@ -16,11 +16,23 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
+    // Determine if the file is a video based on MIME type
+    const isVideo = file.type.startsWith('video/')
+
     const response = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
           folder: 'products',
-          resource_type: 'auto',
+          resource_type: isVideo ? 'video' : 'image',
+          // For videos, ensure web-compatible format and generate thumbnail
+          ...(isVideo && {
+            format: 'mp4',
+            quality: 'auto',
+            eager: [
+              { width: 400, height: 400, crop: 'fill', format: 'jpg' }
+            ],
+            eager_async: true,
+          })
         },
         (error, result) => {
           if (error) {
@@ -32,14 +44,29 @@ export async function POST(request: NextRequest) {
       ).end(buffer)
     })
 
+    const result = response as {
+      secure_url: string;
+      resource_type: string;
+      public_id: string;
+      eager?: Array<{ secure_url: string }>;
+    }
+
+    // For videos, build a guaranteed MP4 URL using public_id
+    const url = (result.resource_type === 'video')
+      ? cloudinary.url(result.public_id, { resource_type: 'video', format: 'mp4', secure: true })
+      : result.secure_url
+
+    // Return media item object with type information
     return NextResponse.json({
       success: true,
-      url: (response as { secure_url: string }).secure_url,
+      url,
+      type: result.resource_type === 'video' ? 'video' : 'image',
+      thumbnail: result.eager?.[0]?.secure_url,
     })
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error)
     return NextResponse.json(
-      { error: 'Failed to upload image' },
+      { error: 'Failed to upload media' },
       { status: 500 }
     )
   }

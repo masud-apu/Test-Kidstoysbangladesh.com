@@ -7,6 +7,12 @@ import { Separator } from '@/components/ui/separator'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
+import type { MediaItem } from '@/lib/schema'
+
+// Helper function to get URL from media item
+function getMediaUrl(item: string | MediaItem): string {
+  return typeof item === 'string' ? item : item.url
+}
 
 export default function CartOverlay() {
   const { items, updateQuantity, removeFromCart, getTotalPrice, selectAllItems, getItemKey } = useCartStore()
@@ -34,7 +40,7 @@ export default function CartOverlay() {
                 {/* Thumb */}
                 <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-muted">
                   {item.images?.[0] ? (
-                    <Image src={item.images[0]} alt={item.title} fill className="object-cover" />
+                    <Image src={getMediaUrl(item.images[0])} alt={item.title} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full" />
                   )}

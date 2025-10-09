@@ -2,8 +2,13 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { ProductPageClient } from '@/components/product-page-client'
 import { db } from '@/lib/db'
-import { products, productVariants, productOptions, productOptionValues, variantSelectedOptions } from '@/lib/schema'
+import { products, productVariants, productOptions, productOptionValues, variantSelectedOptions, MediaItem } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
+
+// Helper function to get URL from media item
+function getMediaUrl(item: string | MediaItem): string {
+  return typeof item === 'string' ? item : item.url
+}
 
 export async function generateStaticParams() {
   const allProducts = await db.select({ handle: products.handle }).from(products)
@@ -26,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const prod = product[0]
   const productUrl = `https://kidstoysbangladesh.com/product/${prod.handle}`
   const imageUrl = prod.images && prod.images.length > 0 
-    ? prod.images[0] 
+    ? getMediaUrl(prod.images[0])
     : 'https://kidstoysbangladesh.com/og-image.png'
 
   return {

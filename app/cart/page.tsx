@@ -13,6 +13,12 @@ import { Minus, Plus, Trash2, ShoppingBag, ShoppingCart } from "lucide-react";
 import { useOverlayStore } from "@/lib/ui-store";
 import { Analytics, type CartViewItem } from "@/lib/analytics";
 import { fbPixelEvents } from "@/lib/facebook-pixel-events";
+import type { MediaItem } from "@/lib/schema";
+
+// Helper function to get URL from media item
+function getMediaUrl(item: string | MediaItem): string {
+  return typeof item === 'string' ? item : item.url
+}
 
 export default function CartPage() {
   const router = useRouter();
@@ -140,7 +146,7 @@ export default function CartPage() {
                     <div className="relative w-20 h-20 flex-shrink-0">
                       {item.images && item.images[0] ? (
                         <Image
-                          src={item.images[0]}
+                          src={getMediaUrl(item.images[0])}
                           alt={item.title}
                           fill
                           className="object-cover rounded-lg"

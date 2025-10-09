@@ -1,8 +1,17 @@
-import { Product, ProductVariant } from '@/lib/schema'
+import { Product, ProductVariant, MediaItem } from '@/lib/schema'
 
 interface ProductStructuredDataProps {
   product: Product
   variants?: ProductVariant[]
+}
+
+// Helper function to extract image URLs from media items
+function extractImageUrls(mediaItems: (string | MediaItem)[] | null | undefined): string[] | undefined {
+  if (!mediaItems || mediaItems.length === 0) return undefined
+
+  return mediaItems
+    .map(item => typeof item === 'string' ? item : item.url)
+    .filter(url => url) // Remove any undefined/null values
 }
 
 export function ProductStructuredData({ product, variants = [] }: ProductStructuredDataProps) {
@@ -33,12 +42,15 @@ export function ProductStructuredData({ product, variants = [] }: ProductStructu
     ? { ...baseOffers, "highPrice": compareAtPrice, "lowPrice": price }
     : baseOffers
 
+  // Extract image URLs for structured data
+  const imageUrls = extractImageUrls(product.images)
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": product.title,
     "description": product.description || `High quality ${product.title} for children`,
-    "image": product.images && product.images.length > 0 ? product.images : undefined,
+    "image": imageUrls,
     "sku": product.handle,
     "brand": {
       "@type": "Brand",
