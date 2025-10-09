@@ -1,6 +1,6 @@
 # KidsToysBangladesh - E-commerce Website
 
-A modern, fast, and SEO-optimized e-commerce website for selling kids toys in Bangladesh. Built with Next.js 15, featuring static site generation, real-time cart management, and integrated email notifications.
+A Modern, fast, and SEO-optimized e-commerce website for selling kids toys in Bangladesh. Built with Next.js 15, featuring static site generation, real-time cart management, and integrated email notifications.
 
 ## 🌟 Features
 
@@ -60,7 +60,7 @@ kid/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - pnpm (recommended package manager)
 - PostgreSQL database (Neon recommended)
 - Resend API key for emails
@@ -68,18 +68,21 @@ kid/
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd kid
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Environment Setup**
    Create a `.env.local` file:
+
    ```env
    DATABASE_URL="postgresql://..."
    RESEND_API_KEY="re_..."
@@ -87,19 +90,21 @@ kid/
    ```
 
 4. **Database Setup**
+
    ```bash
    # Generate and run migrations
    pnpm db:generate
    pnpm db:migrate
-   
+
    # Seed initial admin user
    pnpm seed:admin
-   
+
    # Optional: Seed with sample data
    # Use the sample-products.sql file to populate products
    ```
 
 5. **Development Server**
+
    ```bash
    pnpm dev
    ```
@@ -109,19 +114,23 @@ kid/
 ## 📦 Build & Deploy
 
 ### Static Generation
+
 ```bash
 pnpm build
 ```
 
 This will:
+
 - Pre-render all product pages as static HTML
 - Generate optimized bundles
 - Create sitemap.xml and robots.txt
 
 ### Production Deployment
+
 The app is optimized for deployment on Vercel, Netlify, or any Node.js hosting platform.
 
 **Environment Variables Required:**
+
 - `DATABASE_URL` - PostgreSQL connection string
 - `RESEND_API_KEY` - For email notifications
 - `RESEND_FROM_EMAIL` - Sender email address
@@ -129,22 +138,26 @@ The app is optimized for deployment on Vercel, Netlify, or any Node.js hosting p
 ## 🎯 Key Features Explained
 
 ### Product Management
+
 - Products are stored in PostgreSQL with Drizzle ORM
 - Handle-based URLs for SEO-friendly routing (`/product/toy-car`)
 - Support for multiple images, pricing, and markdown descriptions
 
 ### Shopping Cart
+
 - Persistent cart state with Zustand
 - Item selection for partial checkout
 - Quantity management with real-time updates
 - Support for both cart-based and direct "Buy Now" purchases
 
 ### Order Processing
+
 - Automated email notifications (customer + owner)
 - Order tracking with unique IDs
 - Integration with WhatsApp for customer support
 
 ### SEO Optimization
+
 - Dynamic metadata generation for all pages
 - Open Graph and Twitter Card support
 - Structured data (JSON-LD) for rich snippets
@@ -161,6 +174,7 @@ The app is optimized for deployment on Vercel, Netlify, or any Node.js hosting p
 ## 📝 Database Schema
 
 ### Products Table
+
 - `id` - Primary key
 - `handle` - URL-friendly unique identifier
 - `name` - Product name (supports Bengali)
@@ -171,6 +185,7 @@ The app is optimized for deployment on Vercel, Netlify, or any Node.js hosting p
 - `description` - Markdown-supported description
 
 ### Users Table (Admin Authentication)
+
 - `id` - Primary key
 - `username` - Admin username
 - `hashedPassword` - Encrypted password
@@ -178,6 +193,7 @@ The app is optimized for deployment on Vercel, Netlify, or any Node.js hosting p
 - `createdAt` - Account creation timestamp
 
 ### Sessions Table
+
 - `id` - Session identifier
 - `userId` - Reference to users table
 - `expiresAt` - Session expiration
@@ -186,10 +202,12 @@ The app is optimized for deployment on Vercel, Netlify, or any Node.js hosting p
 ## 🔐 Admin Access
 
 **Default Admin Credentials:**
+
 - **Username:** `admin`
 - **Password:** `Admin12345&`
 
 **Important Security Notes:**
+
 - Change the default admin password immediately after first login
 - Admin credentials are automatically seeded when running `pnpm seed:admin`
 - Admin dashboard available at `/admin` (barebone layout)
@@ -208,73 +226,6 @@ This project is proprietary software for KidsToysBangladesh.
 
 ---
 
-**Contact**: +8801337411948 | apu.sns@gmail.com
+**Contact**: +8801337411948 | <apu.sns@gmail.com>
 
-Built with ❤️ for kids and parents in Bangladesh. 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+Built with ❤️ for kids and parents in Bangladesh.
