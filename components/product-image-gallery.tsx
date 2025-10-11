@@ -33,30 +33,78 @@ function normalizeMediaItem(item: string | MediaItem): MediaItem {
   return item;
 }
 
-// Helper function to ensure video URL is properly formatted
+// Helper function to ensure video URL is properly formatted for Cloudinary
 function forceCloudinaryMp4(url: string): string {
   try {
     if (!url.includes('res.cloudinary.com') || !url.includes('/video/upload/')) return url;
-    const [prefix, restRaw] = url.split('/upload/');
-    let rest = restRaw || '';
-    // Insert f_mp4 transformation if not present
-    if (!rest.startsWith('f_mp4/')) {
-      rest = `f_mp4/${rest}`;
+
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/upload/');
+    if (pathParts.length < 2) return url;
+
+    const prefix = pathParts[0];
+    let assetPath = pathParts[1];
+
+    // Remove existing transformations (everything before the version or actual filename)
+    // Cloudinary format: /upload/[transformations]/[v1234567890]/filename.ext
+    const versionMatch = assetPath.match(/\/(v\d+\/.+)$/);
+    if (versionMatch) {
+      assetPath = versionMatch[1]; // Keep version and filename only
     }
+
+    // Add proper video transformations for web playback
+    const transformations = 'f_mp4,vc_h264,q_auto:good';
+    assetPath = `${transformations}/${assetPath}`;
+
     // Ensure .mp4 extension
-    rest = rest.replace(/\.(mov|webm|mkv|avi|mpg|mpeg|3gp|wmv)(\?.*)?$/i, '.mp4$2');
-    if (!/\.mp4(\?|$)/i.test(rest)) {
-      // Add extension before querystring
-      const qIndex = rest.indexOf('?');
+    assetPath = assetPath.replace(/\.(mov|webm|mkv|avi|mpg|mpeg|3gp|wmv)(\?.*)?$/i, '.mp4$2');
+    if (!/\.mp4(\?|$)/i.test(assetPath)) {
+      const qIndex = assetPath.indexOf('?');
       if (qIndex >= 0) {
-        rest = `${rest.slice(0, qIndex)}.mp4${rest.slice(qIndex)}`;
+        assetPath = `${assetPath.slice(0, qIndex)}.mp4${assetPath.slice(qIndex)}`;
       } else {
-        rest = `${rest}.mp4`;
+        assetPath = `${assetPath}.mp4`;
       }
     }
-    return `${prefix}/upload/${rest}`;
-  } catch {
+
+    return `${urlObj.origin}${prefix}/upload/${assetPath}`;
+  } catch (err) {
+    console.error('Error formatting video URL:', err);
     return url;
+  }
+}
+
+// Helper function to generate thumbnail from video URL
+function generateCloudinaryThumbnail(videoUrl: string): string {
+  try {
+    if (!videoUrl.includes('res.cloudinary.com') || !videoUrl.includes('/video/upload/')) {
+      return videoUrl;
+    }
+
+    const urlObj = new URL(videoUrl);
+    const pathParts = urlObj.pathname.split('/upload/');
+    if (pathParts.length < 2) return videoUrl;
+
+    const prefix = pathParts[0];
+    let assetPath = pathParts[1];
+
+    // Remove existing transformations (everything before the version or actual filename)
+    const versionMatch = assetPath.match(/\/(v\d+\/.+)$/);
+    if (versionMatch) {
+      assetPath = versionMatch[1];
+    }
+
+    // Get frame at 1 second, convert to jpg thumbnail
+    const thumbTransform = 'so_1.0,w_200,h_200,c_fill,f_jpg,q_auto';
+    assetPath = `${thumbTransform}/${assetPath}`;
+
+    // Replace extension with .jpg
+    assetPath = assetPath.replace(/\.[^.]+$/, '.jpg');
+
+    return `${urlObj.origin}${prefix}/upload/${assetPath}`;
+  } catch (err) {
+    console.error('Error generating thumbnail:', err);
+    return videoUrl;
   }
 }
 
@@ -137,6 +185,7 @@ export function ProductImageGallery({
           <CarouselContent>
             {displayMedia.map((media, index) => {
               const isVideo = media.type === 'video';
+              const videoSrc = isVideo ? forceCloudinaryMp4(media.url) : '';
 
               return (
                 <CarouselItem key={index}>
@@ -149,11 +198,14 @@ export function ProductImageGallery({
                         muted
                         preload="metadata"
                         className="w-full h-full object-cover"
-                        src={`/api/media/proxy?u=${encodeURIComponent(forceCloudinaryMp4(media.url))}`}
+                        src={videoSrc}
                         onPlay={() => plugin.current.stop()}
                         onPause={() => plugin.current.reset()}
                         onEnded={() => plugin.current.reset()}
-                      />
+                      >
+                        <source src={videoSrc} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
                     ) : (
                       <Zoom>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -207,6 +259,11 @@ export function ProductImageGallery({
             const carouselIndex = variantImage ? index + 1 : index;
             const isVideo = media.type === 'video';
 
+            // For videos, use thumbnail if available, otherwise generate from Cloudinary
+            const thumbnailSrc = isVideo
+              ? (media.thumbnail || generateCloudinaryThumbnail(media.url))
+              : media.url;
+
             return (
               <button
                 key={index}
@@ -218,28 +275,20 @@ export function ProductImageGallery({
                     : "border-gray-200 hover:border-gray-400",
                 )}
               >
-                {isVideo ? (
-                  <>
-                    <video
-                      src={`/api/media/proxy?u=${encodeURIComponent(forceCloudinaryMp4(media.url))}`}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      preload="metadata"
-                      muted
-                      playsInline
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/30">
-                      <div className="bg-white/90 rounded-full p-1.5">
-                        <Play className="h-3 w-3 text-black fill-black" />
-                      </div>
+                {/* Always use img for thumbnails - much lighter on mobile */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbnailSrc}
+                  alt={`${productTitle} thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                {isVideo && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/30">
+                    <div className="bg-white/90 rounded-full p-1.5">
+                      <Play className="h-3 w-3 text-black fill-black" />
                     </div>
-                  </>
-                ) : (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={media.url}
-                    alt={`${productTitle} thumbnail ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  </div>
                 )}
               </button>
             );
