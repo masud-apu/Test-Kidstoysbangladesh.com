@@ -36,6 +36,7 @@ export const productVariants = pgTable('product_variants', {
   compareAtPrice: decimal('compare_at_price', { precision: 10, scale: 2 }),
   inventoryQuantity: integer('inventory_quantity').default(0).notNull(),
   inventoryPolicy: varchar('inventory_policy', { length: 50 }).default('deny').notNull(), // deny, continue
+  packingCharge: decimal('packing_charge', { precision: 10, scale: 2 }).default('20.00').notNull(), // Per-product packing charge
   position: integer('position').default(1).notNull(),
   image: varchar('image', { length: 500 }),
   availableForSale: boolean('available_for_sale').default(true).notNull(),
@@ -71,6 +72,20 @@ export const variantSelectedOptions = pgTable('variant_selected_options', {
   optionValueId: integer('option_value_id').references(() => productOptionValues.id, { onDelete: 'cascade' }).notNull(),
 })
 
+// Inventory batches for FIFO tracking
+export const inventoryBatches = pgTable('inventory_batches', {
+  id: serial('id').primaryKey(),
+  variantId: integer('variant_id').references(() => productVariants.id, { onDelete: 'cascade' }).notNull(),
+  batchNumber: varchar('batch_number', { length: 100 }).notNull(), // Auto-generated or manual
+  purchasePrice: decimal('purchase_price', { precision: 10, scale: 2 }).notNull(), // Cost per unit
+  quantity: integer('quantity').notNull(), // Original quantity
+  remainingQuantity: integer('remaining_quantity').notNull(), // Available quantity (decreases with sales)
+  purchaseDate: timestamp('purchase_date').defaultNow().notNull(),
+  notes: text('notes'), // Optional notes about the batch
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   username: varchar('username', { length: 255 }).notNull().unique(),
@@ -93,24 +108,29 @@ export const orders = pgTable('orders', {
   id: serial('id').primaryKey(),
   orderId: varchar('order_id', { length: 50 }).notNull().unique(),
   status: varchar('status', { length: 50 }).default('order_placed').notNull(),
-  
+
   // Customer information
   customerName: varchar('customer_name', { length: 255 }).notNull(),
   customerEmail: varchar('customer_email', { length: 255 }),
   customerPhone: varchar('customer_phone', { length: 50 }).notNull(),
   customerAddress: text('customer_address').notNull(),
-  
+
   // Order totals
   itemsTotal: decimal('items_total', { precision: 10, scale: 2 }).notNull(),
-  shippingCost: decimal('shipping_cost', { precision: 10, scale: 2 }).notNull(),
+  shippingCost: decimal('shipping_cost', { precision: 10, scale: 2 }).notNull(), // What customer pays
   totalAmount: decimal('total_amount', { precision: 10, scale: 2 }).notNull(),
-  
+
+  // Shipping charges (editable per order)
+  shippingChargeInsideDhaka: decimal('shipping_charge_inside_dhaka', { precision: 10, scale: 2 }).default('60.00'),
+  shippingChargeOutsideDhaka: decimal('shipping_charge_outside_dhaka', { precision: 10, scale: 2 }).default('120.00'),
+  actualShippingCost: decimal('actual_shipping_cost', { precision: 10, scale: 2 }), // What you actually pay (nullable for old orders)
+
   // Delivery information
   deliveryType: varchar('delivery_type', { length: 20 }).notNull(),
-  
+
   // Additional information from customer
   specialNote: text('special_note'),
-  
+
   // Payment status
   paymentStatus: varchar('payment_status', { length: 50 }).default('pending').notNull(),
 
@@ -118,6 +138,11 @@ export const orders = pgTable('orders', {
   promoCodeId: integer('promo_code_id').references(() => promoCodes.id),
   promoCode: varchar('promo_code', { length: 50 }),
   promoCodeDiscount: decimal('promo_code_discount', { precision: 10, scale: 2 }),
+
+  // Expense and income tracking (nullable for old orders)
+  totalPackingCharges: decimal('total_packing_charges', { precision: 10, scale: 2 }), // Sum of all packing charges
+  totalPurchaseCost: decimal('total_purchase_cost', { precision: 10, scale: 2 }), // Total cost from inventory batches
+  totalProfit: decimal('total_profit', { precision: 10, scale: 2 }), // totalAmount - totalPurchaseCost - totalPackingCharges - shippingCost
 
   // Invoice PDF URL
   invoiceUrl: varchar('invoice_url', { length: 500 }),
@@ -152,6 +177,11 @@ export const orderItems = pgTable('order_items', {
 
   quantity: integer('quantity').notNull(),
   itemTotal: decimal('item_total', { precision: 10, scale: 2 }).notNull(),
+
+  // Cost tracking (nullable for old orders)
+  packingCharge: decimal('packing_charge', { precision: 10, scale: 2 }), // Packing charge per unit
+  purchaseCost: decimal('purchase_cost', { precision: 10, scale: 2 }), // Cost from inventory batch (FIFO)
+  batchAllocations: json('batch_allocations').$type<Array<{ batchId: number; quantity: number; costPerUnit: string }>>(), // Track which batches were used
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
@@ -194,6 +224,8 @@ export type ProductOptionValue = typeof productOptionValues.$inferSelect
 export type NewProductOptionValue = typeof productOptionValues.$inferInsert
 export type VariantSelectedOption = typeof variantSelectedOptions.$inferSelect
 export type NewVariantSelectedOption = typeof variantSelectedOptions.$inferInsert
+export type InventoryBatch = typeof inventoryBatches.$inferSelect
+export type NewInventoryBatch = typeof inventoryBatches.$inferInsert
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Session = typeof sessions.$inferSelect

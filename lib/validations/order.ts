@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
 export const orderStatusSchema = z.enum([
-  'order_placed', 
-  'confirmed', 
-  'shipped', 
-  'delivered', 
+  'order_placed',
+  'confirmed',
+  'shipped',
+  'delivered',
   'returned',
   'canceled'
 ])
@@ -15,6 +15,13 @@ export const paymentStatusSchema = z.enum([
   'failed',
   'refunded'
 ])
+
+// MediaItem schema to match database schema
+const mediaItemSchema = z.object({
+  url: z.string(),
+  type: z.enum(['image', 'video']),
+  thumbnail: z.string().optional(),
+})
 
 // This matches the existing CartItemType structure from validations.ts
 export const selectedOptionSchema = z.object({
@@ -30,7 +37,7 @@ export const cartItemForOrderSchema = z.object({
   price: z.string().optional(), // Legacy field, optional since price is now in variants
   comparePrice: z.string().optional().nullable(),
   tags: z.array(z.string()).optional().default([]),
-  images: z.array(z.string()).optional().default([]),
+  images: z.array(z.union([z.string(), mediaItemSchema])).optional().default([]),
   description: z.string().optional().nullable(),
   quantity: z.number().min(1),
   // Variant-specific fields

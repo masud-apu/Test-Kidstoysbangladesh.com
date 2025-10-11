@@ -57,13 +57,21 @@ export async function POST(request: NextRequest) {
         const effectivePrice = item.variantPrice || item.price || '0'
         const itemTotal = parseFloat(effectivePrice) * item.quantity
 
+        // Extract image URL from either string or MediaItem object
+        const firstImage = item.images?.[0]
+        const productImage = firstImage
+          ? typeof firstImage === 'string'
+            ? firstImage
+            : firstImage.url
+          : null
+
         return {
           orderId: newOrder.id,
           productId: item.id,
           variantId: item.variantId || null,
           productName: item.title || item.name || 'Unknown Product',
           productPrice: effectivePrice,
-          productImage: item.images?.[0] || null,
+          productImage,
           variantTitle: item.variantTitle || null,
           variantSku: item.variantSku || null,
           selectedOptions: item.selectedOptions || null,
@@ -125,18 +133,23 @@ export async function POST(request: NextRequest) {
     })
 
     // 4. Prepare data for email service (items are already in the correct CartItemType format)
-    // Normalize items to CartItemType shape (ensure Date types)
+    // Normalize items to CartItemType shape (ensure Date types and convert MediaItem objects to strings)
     const normalizedItems: CartItemType[] = validatedData.items.map((item) => {
       const createdAt =
         typeof item.createdAt === 'string' ? new Date(item.createdAt) : item.createdAt
       const updatedAt =
         typeof item.updatedAt === 'string' ? new Date(item.updatedAt) : item.updatedAt
 
+      // Convert MediaItem objects to string URLs for email compatibility
+      const normalizedImages = (item.images ?? []).map(img =>
+        typeof img === 'string' ? img : img.url
+      )
+
       return {
         ...item,
         handle: item.handle ?? `product-${item.id}`,
         tags: item.tags ?? [],
-        images: item.images ?? [],
+        images: normalizedImages,
         createdAt,
         updatedAt,
       }
