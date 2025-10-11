@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useOverlayStore } from '@/lib/ui-store'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer'
@@ -54,6 +54,7 @@ export function GlobalOverlays() {
   const { cartOpen, checkoutOpen, checkoutMode, successDialogOpen, orderId, closeCart, closeCheckout, hideSuccessDialog } = useOverlayStore()
   const totalItems = useCartStore((s) => s.getTotalItems())
   const isMobile = useIsMobile()
+  const [checkoutSnapPoint, setCheckoutSnapPoint] = useState<number | string | null>(0.7)
 
   // Close cart when checkout opens to prevent stacking
   useEffect(() => {
@@ -61,6 +62,13 @@ export function GlobalOverlays() {
       closeCart()
     }
   }, [checkoutOpen, cartOpen, closeCart])
+
+  // Reset snap point when checkout closes
+  useEffect(() => {
+    if (!checkoutOpen) {
+      setCheckoutSnapPoint(0.7)
+    }
+  }, [checkoutOpen])
 
   return (
     <>
@@ -91,18 +99,26 @@ export function GlobalOverlays() {
         </div>
       </ResponsiveOverlay>
 
-      {/* Checkout Drawer - Simple scrollable bottom sheet */}
+      {/* Checkout Drawer - Mobile: expandable to fullscreen, Desktop: fixed 70vh */}
       <Drawer
         open={checkoutOpen}
         onOpenChange={(open) => (open ? undefined : closeCheckout())}
         direction="bottom"
+        snapPoints={isMobile ? [0.7, 1] : undefined}
+        activeSnapPoint={isMobile ? checkoutSnapPoint : undefined}
+        setActiveSnapPoint={isMobile ? setCheckoutSnapPoint : undefined}
       >
-        <DrawerContent className="max-h-[70vh] flex flex-col">
+        <DrawerContent className={isMobile ? "flex flex-col [&[data-vaul-snap-points]]:h-full" : "max-h-[70vh] flex flex-col"}>
           <DrawerHeader className="border-b flex-shrink-0">
             <DrawerTitle>Checkout</DrawerTitle>
             <DrawerClose />
           </DrawerHeader>
-          <div className="flex-1 overflow-y-auto">
+          <div
+            className="flex-1"
+            style={{
+              overflow: isMobile && checkoutSnapPoint !== 1 ? 'hidden' : 'auto'
+            }}
+          >
             <CheckoutPage />
           </div>
         </DrawerContent>
