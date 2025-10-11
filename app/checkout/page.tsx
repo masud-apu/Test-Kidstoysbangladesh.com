@@ -518,9 +518,9 @@ function CheckoutContent() {
 
   return (
     <>
-      <div className="container mx-auto max-w-6xl py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Checkout</h1>
+      <div className="container mx-auto max-w-6xl px-4 py-4 pb-24 md:pb-4">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Checkout</h1>
           <div className="text-sm text-muted-foreground">
             {checkoutType === "direct"
               ? "Direct Purchase"
@@ -838,7 +838,7 @@ function CheckoutContent() {
                 <CardTitle>Shipping Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="space-y-4">
                   <div>
                     <Label htmlFor="name">Full Name</Label>
                     <Input id="name" {...register("name")} />
@@ -937,14 +937,34 @@ function CheckoutContent() {
                     </CollapsibleContent>
                   </Collapsible>
 
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Processing..." : "Place Order"}
-                  </Button>
-                </form>
+                  {/* Desktop Place Order Button - in normal flow */}
+                  <div className="hidden md:block">
+                    <Button
+                      onClick={handleSubmit(onSubmit)}
+                      className="w-full h-12 text-base font-semibold"
+                      size="lg"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Processing..." : "Place Order"}
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
+      </div>
+
+      {/* Fixed Footer with Place Order Button - Mobile Only */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background px-4 py-3 z-50">
+        <Button
+          onClick={handleSubmit(onSubmit)}
+          className="w-full h-12 text-base font-semibold"
+          size="lg"
+          disabled={isLoading}
+        >
+          {isLoading ? "Processing..." : "Place Order"}
+        </Button>
       </div>
     </>
   );

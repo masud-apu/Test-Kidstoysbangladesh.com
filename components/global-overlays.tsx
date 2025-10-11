@@ -90,15 +90,18 @@ export function GlobalOverlays() {
         </div>
       </ResponsiveOverlay>
 
-      {/* Checkout Bottom Sheet (also bottom on desktop per requirement) */}
-      <ResponsiveOverlay
-        open={checkoutOpen}
-        onOpenChange={(open) => (open ? undefined : closeCheckout())}
-        side="bottom"
-        title="Checkout"
-      >
-        <CheckoutPage />
-      </ResponsiveOverlay>
+      {/* Checkout Drawer - Direct shadcn drawer component */}
+      <Drawer open={checkoutOpen} onOpenChange={(open) => (open ? undefined : closeCheckout())} direction="bottom">
+        <DrawerContent className="max-h-[90vh] flex flex-col">
+          <DrawerHeader className="border-b flex-shrink-0">
+            <DrawerTitle>Checkout</DrawerTitle>
+            <DrawerClose />
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto">
+            <CheckoutPage />
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       {/* Order Success Dialog */}
       <Dialog open={successDialogOpen} onOpenChange={hideSuccessDialog}>
