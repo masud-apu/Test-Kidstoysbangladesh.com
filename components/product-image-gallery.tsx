@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Zoom from "react-medium-image-zoom";
-import { ZoomIn, Play } from "lucide-react";
-// Removed custom VideoPlayer
+import { Play } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -17,35 +16,9 @@ import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 import type { MediaItem } from "@/lib/schema";
 
-// Client-only video component
-const ClientVideo = dynamic(
-  () =>
-    Promise.resolve(
-      ({
-        src,
-        videoRef,
-        onPlay,
-        onPause,
-        onEnded,
-      }: {
-        src: string;
-        videoRef: (el: HTMLVideoElement | null) => void;
-        onPlay: () => void;
-        onPause: () => void;
-        onEnded: () => void;
-      }) => (
-        <video
-          ref={videoRef}
-          src={src}
-          controls
-          playsInline
-          className="w-full h-full object-cover"
-          onPlay={onPlay}
-          onPause={onPause}
-          onEnded={onEnded}
-        />
-      )
-    ),
+// Client-only modern video player
+const ModernVideoPlayer = dynamic(
+  () => import("@/components/modern-video-player").then((mod) => ({ default: mod.ModernVideoPlayer })),
   { ssr: false }
 );
 
@@ -176,7 +149,7 @@ export function ProductImageGallery({
                 <CarouselItem key={index}>
                   <div className="aspect-square rounded-lg overflow-hidden bg-muted relative group">
                     {isVideo ? (
-                      <ClientVideo
+                      <ModernVideoPlayer
                         src={media.url}
                         videoRef={(el) => { videoRefs.current[index] = el }}
                         onPlay={() => plugin.current.stop()}
