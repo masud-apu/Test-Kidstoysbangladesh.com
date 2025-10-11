@@ -115,13 +115,20 @@ function CheckoutContent() {
           if (data.products) {
             const cartItems = data.products.map(
               (product: Product & { variants?: ProductVariant[] }): CartItem => {
-                // Find the minimum price variant (default to first variant)
                 const variants = product.variants || [];
-                const minPriceVariant = variants.reduce((min, v) => {
-                  const price = parseFloat(v.price);
-                  const minPrice = parseFloat(min.price);
-                  return price < minPrice ? v : min;
-                }, variants[0]);
+
+                // Filter only by availableForSale (ignore stock - customers can order even if out of stock)
+                const availableVariants = variants.filter(v => v.availableForSale);
+                const variantsToConsider = availableVariants.length > 0 ? availableVariants : variants;
+
+                // Find the minimum price variant from available variants
+                const minPriceVariant = variantsToConsider.length > 0
+                  ? variantsToConsider.reduce((min, v) => {
+                      const price = parseFloat(v.price);
+                      const minPrice = parseFloat(min.price);
+                      return price < minPrice ? v : min;
+                    }, variantsToConsider[0])
+                  : variants[0];
 
                 return {
                   ...product,

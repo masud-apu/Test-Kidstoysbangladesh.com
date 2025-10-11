@@ -41,14 +41,17 @@ export function VariantSelector({
   const [currentVariant, setCurrentVariant] =
     useState<VariantWithOptions | null>(null);
 
+  // Filter only by availableForSale (ignore stock levels - customers can order even if out of stock)
+  const variantsToUse = variants.filter(v => v.availableForSale);
+
   // Initialize with default variant or first available variant
   useEffect(() => {
-    if (variants.length === 0) return;
+    if (variantsToUse.length === 0) return;
     if (Object.keys(selectedValues).length > 0) return; // Already initialized
 
     const defaultVariant = defaultVariantId
-      ? variants.find((v) => v.id === defaultVariantId)
-      : variants[0];
+      ? variantsToUse.find((v) => v.id === defaultVariantId)
+      : variantsToUse[0];
 
     if (defaultVariant) {
       const initialValues: Record<string, string> = {};
@@ -67,11 +70,11 @@ export function VariantSelector({
       onVariantChange(defaultVariant, selectedOpts);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variants.length, defaultVariantId]);
+  }, [variantsToUse.length, defaultVariantId]);
 
-  // Find matching variant based on selected options
+  // Find matching variant based on selected options (only search available variants)
   const findMatchingVariant = (selections: Record<string, string>) => {
-    return variants.find((variant) => {
+    return variantsToUse.find((variant) => {
       return variant.selectedOptions.every(
         (opt) => selections[opt.optionName] === opt.valueName,
       );
@@ -104,19 +107,19 @@ export function VariantSelector({
     }
   };
 
-  // Check if a value is available (exists in at least one variant)
+  // Check if a value is available (exists in at least one available variant)
   const isValueAvailable = (optionName: string, valueName: string) => {
     const otherSelections = { ...selectedValues };
     otherSelections[optionName] = valueName;
 
-    return variants.some((variant) => {
+    return variantsToUse.some((variant) => {
       return variant.selectedOptions.every(
         (opt) => otherSelections[opt.optionName] === opt.valueName,
       );
     });
   };
 
-  if (options.length === 0 || variants.length === 0) {
+  if (options.length === 0 || variantsToUse.length === 0) {
     return null;
   }
 

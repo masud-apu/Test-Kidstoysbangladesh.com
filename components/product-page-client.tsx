@@ -62,10 +62,13 @@ export function ProductPageClient({
 
   const hasVariants = !product.hasOnlyDefaultVariant && variants.length > 0;
 
-  // For products with only default variant, auto-select the first variant
+  // For products with only default variant, auto-select the first available variant
   useEffect(() => {
     if (!hasVariants && variants.length > 0 && !selectedVariant) {
-      setSelectedVariant(variants[0]);
+      // Filter only by availableForSale (ignore stock - customers can order even if out of stock)
+      const availableVariants = variants.filter(v => v.availableForSale);
+      const variantToSelect = availableVariants.length > 0 ? availableVariants[0] : variants[0];
+      setSelectedVariant(variantToSelect);
     }
   }, [hasVariants, variants, selectedVariant]);
 
@@ -255,7 +258,8 @@ export function ProductPageClient({
     setSelectedOptions(selectedOpts);
 
     // Update variant image to show variant-specific image
-    if (variantImg) {
+    // Only set if it's a valid non-empty string
+    if (variantImg && variantImg.trim()) {
       setVariantImage(variantImg);
     } else {
       setVariantImage(null);
@@ -375,7 +379,10 @@ export function ProductPageClient({
                 options={options}
                 variants={variants}
                 onVariantChange={handleVariantChange}
-                defaultVariantId={variants[0]?.id}
+                defaultVariantId={
+                  // Pass first available variant's ID as default (ignore stock levels)
+                  variants.filter(v => v.availableForSale)[0]?.id || variants[0]?.id
+                }
               />
             )}
 
