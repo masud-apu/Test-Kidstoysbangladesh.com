@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useOverlayStore } from '@/lib/ui-store'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer'
@@ -53,7 +53,7 @@ function ResponsiveOverlay(props: {
 export function GlobalOverlays() {
   const { cartOpen, checkoutOpen, checkoutMode, successDialogOpen, orderId, closeCart, closeCheckout, hideSuccessDialog } = useOverlayStore()
   const totalItems = useCartStore((s) => s.getTotalItems())
-  const [checkoutSnapPoint, setCheckoutSnapPoint] = useState<number | string | null>(0.9)
+  const isMobile = useIsMobile()
 
   // Close cart when checkout opens to prevent stacking
   useEffect(() => {
@@ -61,13 +61,6 @@ export function GlobalOverlays() {
       closeCart()
     }
   }, [checkoutOpen, cartOpen, closeCart])
-
-  // Reset snap point when checkout closes
-  useEffect(() => {
-    if (!checkoutOpen) {
-      setCheckoutSnapPoint(0.9)
-    }
-  }, [checkoutOpen])
 
   return (
     <>
@@ -98,17 +91,13 @@ export function GlobalOverlays() {
         </div>
       </ResponsiveOverlay>
 
-      {/* Checkout Drawer - Pull up to full screen */}
+      {/* Checkout Drawer - Simple scrollable bottom sheet */}
       <Drawer
         open={checkoutOpen}
         onOpenChange={(open) => (open ? undefined : closeCheckout())}
         direction="bottom"
-        snapPoints={[0.9, 1]}
-        activeSnapPoint={checkoutSnapPoint}
-        setActiveSnapPoint={setCheckoutSnapPoint}
-        modal={true}
       >
-        <DrawerContent className="flex flex-col [&[data-vaul-snap-points]]:h-full">
+        <DrawerContent className="max-h-[70vh] flex flex-col">
           <DrawerHeader className="border-b flex-shrink-0">
             <DrawerTitle>Checkout</DrawerTitle>
             <DrawerClose />
