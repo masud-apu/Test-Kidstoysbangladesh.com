@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import Zoom from "react-medium-image-zoom";
 import { ZoomIn, Play } from "lucide-react";
 // Removed custom VideoPlayer
@@ -16,6 +17,38 @@ import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 import type { MediaItem } from "@/lib/schema";
 
+// Client-only video component
+const ClientVideo = dynamic(
+  () =>
+    Promise.resolve(
+      ({
+        src,
+        videoRef,
+        onPlay,
+        onPause,
+        onEnded,
+      }: {
+        src: string;
+        videoRef: (el: HTMLVideoElement | null) => void;
+        onPlay: () => void;
+        onPause: () => void;
+        onEnded: () => void;
+      }) => (
+        <video
+          ref={videoRef}
+          src={src}
+          controls
+          playsInline
+          className="w-full h-full object-cover"
+          onPlay={onPlay}
+          onPause={onPause}
+          onEnded={onEnded}
+        />
+      )
+    ),
+  { ssr: false }
+);
+
 interface ProductImageGalleryProps {
   images: (string | MediaItem)[];
   productTitle: string;
@@ -26,82 +59,28 @@ interface ProductImageGalleryProps {
 function normalizeMediaItem(item: string | MediaItem): MediaItem {
   if (typeof item === 'string') {
     // Check if it's a video URL
-    const isVideo = item.includes('.mp4') || item.includes('.webm') || item.includes('.mov') || 
+    const isVideo = item.includes('.mp4') || item.includes('.webm') || item.includes('.mov') ||
                    item.includes('video/upload') || item.includes('resource_type=video');
     return { url: item, type: isVideo ? 'video' : 'image' };
   }
   return item;
 }
 
-// Helper function to ensure video URL is properly formatted for Cloudinary
-function forceCloudinaryMp4(url: string): string {
-  try {
-    if (!url.includes('res.cloudinary.com') || !url.includes('/video/upload/')) return url;
-
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/upload/');
-    if (pathParts.length < 2) return url;
-
-    const prefix = pathParts[0];
-    let assetPath = pathParts[1];
-
-    // Remove existing transformations (everything before the version or actual filename)
-    // Cloudinary format: /upload/[transformations]/[v1234567890]/filename.ext
-    const versionMatch = assetPath.match(/\/(v\d+\/.+)$/);
-    if (versionMatch) {
-      assetPath = versionMatch[1]; // Keep version and filename only
-    }
-
-    // Add proper video transformations for web playback
-    const transformations = 'f_mp4,vc_h264,q_auto:good';
-    assetPath = `${transformations}/${assetPath}`;
-
-    // Ensure .mp4 extension
-    assetPath = assetPath.replace(/\.(mov|webm|mkv|avi|mpg|mpeg|3gp|wmv)(\?.*)?$/i, '.mp4$2');
-    if (!/\.mp4(\?|$)/i.test(assetPath)) {
-      const qIndex = assetPath.indexOf('?');
-      if (qIndex >= 0) {
-        assetPath = `${assetPath.slice(0, qIndex)}.mp4${assetPath.slice(qIndex)}`;
-      } else {
-        assetPath = `${assetPath}.mp4`;
-      }
-    }
-
-    return `${urlObj.origin}${prefix}/upload/${assetPath}`;
-  } catch (err) {
-    console.error('Error formatting video URL:', err);
-    return url;
-  }
-}
-
-// Helper function to generate thumbnail from video URL
+// Helper function to generate thumbnail from video URL for static images
 function generateCloudinaryThumbnail(videoUrl: string): string {
   try {
     if (!videoUrl.includes('res.cloudinary.com') || !videoUrl.includes('/video/upload/')) {
       return videoUrl;
     }
 
-    const urlObj = new URL(videoUrl);
-    const pathParts = urlObj.pathname.split('/upload/');
-    if (pathParts.length < 2) return videoUrl;
+    // Simple approach: replace /video/upload/ with /video/upload/so_0,w_200,h_200,c_fill/
+    const thumbUrl = videoUrl.replace('/video/upload/', '/video/upload/so_0,w_200,h_200,c_fill,f_jpg/');
 
-    const prefix = pathParts[0];
-    let assetPath = pathParts[1];
+    // Remove video extension and add .jpg
+    const finalThumbUrl = thumbUrl.replace(/\.(mp4|mov|webm|avi)(\?.*)?$/i, '.jpg$2');
 
-    // Remove existing transformations (everything before the version or actual filename)
-    const versionMatch = assetPath.match(/\/(v\d+\/.+)$/);
-    if (versionMatch) {
-      assetPath = versionMatch[1];
-    }
-
-    // Get frame at 1 second, convert to jpg thumbnail
-    const thumbTransform = 'so_1.0,w_200,h_200,c_fill,f_jpg,q_auto';
-    assetPath = `${thumbTransform}/${assetPath}`;
-
-    // Replace extension with .jpg
-    assetPath = assetPath.replace(/\.[^.]+$/, '.jpg');
-
-    return `${urlObj.origin}${prefix}/upload/${assetPath}`;
+    console.log('Thumbnail URL generated:', finalThumbUrl);
+    return finalThumbUrl;
   } catch (err) {
     console.error('Error generating thumbnail:', err);
     return videoUrl;
@@ -122,10 +101,17 @@ export function ProductImageGallery({
   );
 
   // Display media: show variant image first if available, then product media
-  const displayMedia = variantImage 
-    ? [normalizeMediaItem(variantImage), ...images.map(normalizeMediaItem)] 
-    : images.map(normalizeMediaItem);
-  const thumbnailMedia = images.map(normalizeMediaItem); // Always show only product media in thumbnails
+  const displayMedia = useMemo(() =>
+    variantImage
+      ? [normalizeMediaItem(variantImage), ...images.map(normalizeMediaItem)]
+      : images.map(normalizeMediaItem),
+    [variantImage, images]
+  );
+
+  const thumbnailMedia = useMemo(() =>
+    images.map(normalizeMediaItem),
+    [images]
+  ); // Always show only product media in thumbnails
 
   // Update current slide when carousel changes
   const handleSelect = () => {
@@ -185,27 +171,18 @@ export function ProductImageGallery({
           <CarouselContent>
             {displayMedia.map((media, index) => {
               const isVideo = media.type === 'video';
-              const videoSrc = isVideo ? forceCloudinaryMp4(media.url) : '';
 
               return (
                 <CarouselItem key={index}>
                   <div className="aspect-square rounded-lg overflow-hidden bg-muted relative group">
                     {isVideo ? (
-                      <video
-                        ref={(el) => { videoRefs.current[index] = el }}
-                        controls
-                        playsInline
-                        muted
-                        preload="metadata"
-                        className="w-full h-full object-cover"
-                        src={videoSrc}
+                      <ClientVideo
+                        src={media.url}
+                        videoRef={(el) => { videoRefs.current[index] = el }}
                         onPlay={() => plugin.current.stop()}
                         onPause={() => plugin.current.reset()}
                         onEnded={() => plugin.current.reset()}
-                      >
-                        <source src={videoSrc} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
+                      />
                     ) : (
                       <Zoom>
                         {/* eslint-disable-next-line @next/next/no-img-element */}

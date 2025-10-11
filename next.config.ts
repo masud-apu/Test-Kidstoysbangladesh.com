@@ -24,8 +24,9 @@ const nextConfig: NextConfig = {
             value: `
               default-src 'self';
               script-src 'self' 'unsafe-eval' 'unsafe-inline' https://connect.facebook.net https://us-assets.i.posthog.com https://us.i.posthog.com;
-              connect-src 'self' https://connect.facebook.net https://www.facebook.com https://us-assets.i.posthog.com https://us.i.posthog.com;
+              connect-src 'self' https://connect.facebook.net https://www.facebook.com https://us-assets.i.posthog.com https://us.i.posthog.com https://res.cloudinary.com;
               img-src 'self' blob: data: https: http:;
+              media-src 'self' https://res.cloudinary.com;
               style-src 'self' 'unsafe-inline';
               font-src 'self';
               object-src 'none';
