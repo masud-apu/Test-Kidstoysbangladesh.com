@@ -24,6 +24,7 @@ import { fbPixelEvents } from "@/lib/facebook-pixel-events";
 import { Product, ProductVariant, MediaItem } from "@/lib/schema";
 import { CartItem } from "@/lib/store";
 import { isFreeDeliveryActive, FREE_DELIVERY_MESSAGE, FREE_DELIVERY_SUBTITLE } from "@/lib/free-delivery";
+import { useCheckoutFormTracking } from "@/hooks/use-form-tracking";
 
 // Helper function to get URL from media item
 function getMediaUrl(item: string | MediaItem): string {
@@ -66,6 +67,9 @@ function CheckoutContent() {
     // Set initial loading state if we have URL products to load
     !overlayCheckoutOpen && !!hasUrlProducts,
   );
+
+  // Initialize form tracking hook
+  const { trackCheckoutField, trackCheckoutFormState, trackCheckoutReady, updatePersonProfile } = useCheckoutFormTracking();
 
   // Promo code state
   const [promoCode, setPromoCode] = useState("");
@@ -351,6 +355,59 @@ function CheckoutContent() {
       }
     }
   }, [mounted, name, phone, address, email, specialNote]);
+
+  // Track form field changes progressively (for PostHog analytics)
+  useEffect(() => {
+    if (mounted && name !== undefined) {
+      trackCheckoutField("name", name);
+    }
+  }, [mounted, name, trackCheckoutField]);
+
+  useEffect(() => {
+    if (mounted && phone !== undefined) {
+      trackCheckoutField("phone", phone);
+    }
+  }, [mounted, phone, trackCheckoutField]);
+
+  useEffect(() => {
+    if (mounted && address !== undefined) {
+      trackCheckoutField("address", address);
+    }
+  }, [mounted, address, trackCheckoutField]);
+
+  useEffect(() => {
+    if (mounted && email !== undefined) {
+      trackCheckoutField("email", email);
+    }
+  }, [mounted, email, trackCheckoutField]);
+
+  useEffect(() => {
+    if (mounted && specialNote !== undefined) {
+      trackCheckoutField("specialNote", specialNote);
+    }
+  }, [mounted, specialNote, trackCheckoutField]);
+
+  // Track delivery type changes
+  useEffect(() => {
+    if (mounted) {
+      trackCheckoutField("deliveryType", deliveryType);
+    }
+  }, [mounted, deliveryType, trackCheckoutField]);
+
+  // Track overall form state periodically
+  useEffect(() => {
+    if (mounted) {
+      const formData = { name, phone, address, email, specialNote, deliveryType };
+      trackCheckoutFormState(formData);
+
+      // Check if all required fields are completed
+      if (name && phone && address && !errors.name && !errors.phone && !errors.address) {
+        trackCheckoutReady();
+        // Update complete person profile when form is ready
+        updatePersonProfile(formData);
+      }
+    }
+  }, [mounted, name, phone, address, email, specialNote, deliveryType, errors.name, errors.phone, errors.address, trackCheckoutFormState, trackCheckoutReady, updatePersonProfile]);
 
   // Only show optional fields when all required fields are valid (no errors)
   const showOptionalFields = Boolean(
