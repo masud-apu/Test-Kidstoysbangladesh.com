@@ -10,6 +10,99 @@ import { R2StorageService } from '@/lib/r2-storage'
 import { convertBanglaToEnglishNumerals } from '@/lib/bangla-utils'
 import { eq, sql } from 'drizzle-orm'
 
+/**
+ * Handles background tasks (PDF generation and email sending) asynchronously
+ * This function runs after the order is saved and response is sent to the client
+ */
+async function handleBackgroundTasks(
+  orderId: number,
+  validatedData: ReturnType<typeof createOrderSchema.parse>,
+  itemsTotal: number
+) {
+  console.log('🔄 Starting background tasks for order:', validatedData.orderId)
+
+  try {
+    // Prepare normalized items for email and PDF
+    const normalizedItems: CartItemType[] = validatedData.items.map((item) => {
+      const createdAt =
+        typeof item.createdAt === 'string' ? new Date(item.createdAt) : item.createdAt
+      const updatedAt =
+        typeof item.updatedAt === 'string' ? new Date(item.updatedAt) : item.updatedAt
+
+      // Convert MediaItem objects to string URLs for email compatibility
+      const normalizedImages = (item.images ?? []).map((img) =>
+        typeof img === 'string' ? img : img.url
+      )
+
+      return {
+        ...item,
+        handle: item.handle ?? `product-${item.id}`,
+        tags: item.tags ?? [],
+        images: normalizedImages,
+        createdAt,
+        updatedAt,
+      }
+    })
+
+    const emailOrderData: OrderData = {
+      customerName: validatedData.customerName,
+      customerEmail: validatedData.customerEmail,
+      customerPhone: validatedData.customerPhone,
+      customerAddress: validatedData.customerAddress,
+      specialNote: validatedData.specialNote || undefined,
+      items: normalizedItems,
+      itemsTotal: itemsTotal,
+      shippingCost: validatedData.shippingCost,
+      totalAmount: validatedData.totalAmount,
+      orderId: validatedData.orderId,
+      promoCode: validatedData.promoCode || undefined,
+      promoCodeDiscount: validatedData.promoCodeDiscount || undefined,
+    }
+
+    // Generate and upload PDF invoice
+    let invoiceUrl: string | null = null
+    try {
+      console.log('📄 Generating PDF for order:', validatedData.orderId)
+      const pdfBuffer = await generatePDFBuffer(emailOrderData)
+      console.log('✅ PDF generated, size:', pdfBuffer.length, 'bytes')
+
+      const fileName = R2StorageService.generateFileName(validatedData.orderId)
+      invoiceUrl = await R2StorageService.uploadPDF(pdfBuffer, fileName)
+      console.log('📤 PDF uploaded successfully:', invoiceUrl)
+
+      // Update order with invoice URL
+      await db
+        .update(orders)
+        .set({ invoiceUrl })
+        .where(eq(orders.id, orderId))
+
+      console.log('✅ Order updated with invoice URL')
+    } catch (pdfError) {
+      console.error('❌ PDF generation/upload failed for order:', validatedData.orderId, pdfError)
+      // Continue to send email even if PDF fails
+    }
+
+    // Send confirmation emails
+    try {
+      console.log('📧 Sending confirmation emails for order:', validatedData.orderId)
+      const emailResult = await sendOrderConfirmationEmails(emailOrderData, invoiceUrl)
+
+      if (emailResult.success) {
+        console.log('✅ Emails sent successfully for order:', validatedData.orderId)
+      } else {
+        console.error('⚠️ Email sending failed for order:', validatedData.orderId, emailResult.error)
+      }
+    } catch (emailError) {
+      console.error('❌ Email sending error for order:', validatedData.orderId, emailError)
+    }
+
+    console.log('✅ Background tasks completed for order:', validatedData.orderId)
+  } catch (error) {
+    console.error('❌ Background tasks error for order:', validatedData.orderId, error)
+    throw error
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -132,90 +225,20 @@ export async function POST(request: NextRequest) {
       return newOrder
     })
 
-    // 4. Prepare data for email service (items are already in the correct CartItemType format)
-    // Normalize items to CartItemType shape (ensure Date types and convert MediaItem objects to strings)
-    const normalizedItems: CartItemType[] = validatedData.items.map((item) => {
-      const createdAt =
-        typeof item.createdAt === 'string' ? new Date(item.createdAt) : item.createdAt
-      const updatedAt =
-        typeof item.updatedAt === 'string' ? new Date(item.updatedAt) : item.updatedAt
-
-      // Convert MediaItem objects to string URLs for email compatibility
-      const normalizedImages = (item.images ?? []).map(img =>
-        typeof img === 'string' ? img : img.url
-      )
-
-      return {
-        ...item,
-        handle: item.handle ?? `product-${item.id}`,
-        tags: item.tags ?? [],
-        images: normalizedImages,
-        createdAt,
-        updatedAt,
-      }
-    })
-
-    const emailOrderData: OrderData = {
-      customerName: validatedData.customerName,
-      customerEmail: validatedData.customerEmail,
-      customerPhone: validatedData.customerPhone,
-      customerAddress: validatedData.customerAddress,
-      specialNote: validatedData.specialNote || undefined,
-      items: normalizedItems, // Ensure correct types for email service
-      itemsTotal: itemsTotal,
-      shippingCost: validatedData.shippingCost,
-      totalAmount: validatedData.totalAmount,
-      orderId: validatedData.orderId,
-      // Promo code data for email
-      promoCode: validatedData.promoCode || undefined,
-      promoCodeDiscount: validatedData.promoCodeDiscount || undefined,
-    }
-
-    // 5. Generate and upload PDF invoice
-    let invoiceUrl: string | null = null
-    try {
-      console.log('🔄 Starting PDF generation for order:', validatedData.orderId)
-      const pdfBuffer = await generatePDFBuffer(emailOrderData)
-      console.log('✅ PDF generated successfully, size:', pdfBuffer.length)
-      const fileName = R2StorageService.generateFileName(validatedData.orderId)
-      invoiceUrl = await R2StorageService.uploadPDF(pdfBuffer, fileName)
-      console.log('📤 PDF uploaded successfully, URL:', invoiceUrl)
-      
-      // Update order with invoice URL
-      await db
-        .update(orders)
-        .set({ invoiceUrl })
-        .where(eq(orders.id, result.id))
-        
-    } catch (pdfError) {
-      console.error('PDF generation/upload error:', pdfError)
-      // Continue without failing the order - PDF generation is optional
-    }
-
-    // 6. Send confirmation emails with PDF attachment
-    console.log('📧 Starting email sending process for order:', validatedData.orderId)
-    console.log('📧 Email data:', {
-      customerEmail: emailOrderData.customerEmail,
-      customerName: emailOrderData.customerName,
-      orderId: emailOrderData.orderId,
-      invoiceUrl: invoiceUrl ? 'Present' : 'Not available',
-      promoCode: emailOrderData.promoCode || 'None',
-      promoCodeDiscount: emailOrderData.promoCodeDiscount || 0
-    })
-
-    const emailResult = await sendOrderConfirmationEmails(emailOrderData, invoiceUrl)
-
-    console.log('📧 Email sending result:', emailResult)
-
-    return NextResponse.json({
+    // 4. Return success response immediately to make it feel instant
+    const response = NextResponse.json({
       success: true,
       orderId: result.orderId,
-      message: emailResult.success
-        ? 'Order placed successfully and confirmation emails sent!'
-        : 'Order placed successfully but email sending failed',
-      emailSent: emailResult.success,
-      invoiceUrl,
+      message: 'Order placed successfully!',
     })
+
+    // 5. Handle PDF generation and email sending in the background
+    // This runs asynchronously without blocking the response
+    handleBackgroundTasks(result.id, validatedData, itemsTotal).catch((error) => {
+      console.error('❌ Background tasks failed for order:', validatedData.orderId, error)
+    })
+
+    return response
 
   } catch (error) {
     console.error('Order processing error:', error)

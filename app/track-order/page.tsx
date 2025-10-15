@@ -35,6 +35,7 @@ interface OrderTrackingData {
   order: {
     orderId: string
     status: string
+    paymentStatus: string
     customerName: string
     customerPhone: string
     customerAddress: string
@@ -70,6 +71,20 @@ const statusLabels: Record<string, string> = {
   delivered: 'Delivered',
   cancelled: 'Cancelled',
   returned: 'Returned',
+}
+
+const paymentStatusLabels: Record<string, string> = {
+  pending: 'Pending',
+  paid: 'Paid',
+  failed: 'Failed',
+  refunded: 'Refunded',
+}
+
+const paymentStatusColors: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  paid: 'bg-green-100 text-green-800 border-green-200',
+  failed: 'bg-red-100 text-red-800 border-red-200',
+  refunded: 'bg-blue-100 text-blue-800 border-blue-200',
 }
 
 function TrackOrderContent() {
@@ -210,9 +225,19 @@ function TrackOrderContent() {
                   </p>
                 </div>
               </div>
-              <Badge variant="secondary" className="rounded-full px-4 py-1 text-sm font-medium capitalize">
-                {statusLabels[trackingData.order.status] || trackingData.order.status}
-              </Badge>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="rounded-full px-4 py-1 text-sm font-medium capitalize">
+                  {statusLabels[trackingData.order.status] || trackingData.order.status}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={`rounded-full px-4 py-1 text-sm font-medium capitalize border ${
+                    paymentStatusColors[trackingData.order.paymentStatus] || 'bg-gray-100 text-gray-800 border-gray-200'
+                  }`}
+                >
+                  {paymentStatusLabels[trackingData.order.paymentStatus] || trackingData.order.paymentStatus}
+                </Badge>
+              </div>
             </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -229,7 +254,9 @@ function TrackOrderContent() {
                 </p>
               </div>
               <div className="rounded-xl border border-dashed p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Total paid</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {trackingData.order.paymentStatus === 'paid' ? 'Total paid' : 'Total payable'}
+                </p>
                 <p className="mt-2 text-base font-semibold">
                   TK {formatCurrency(trackingData.order.totalAmount)}
                 </p>
@@ -309,7 +336,7 @@ function TrackOrderContent() {
               </div>
               <div className="h-px bg-border" />
               <div className="flex items-center justify-between text-base font-semibold">
-                <span>Total paid</span>
+                <span>{trackingData.order.paymentStatus === 'paid' ? 'Total paid' : 'Total payable'}</span>
                 <span>TK {formatCurrency(trackingData.order.totalAmount)}</span>
               </div>
             </div>
@@ -342,7 +369,7 @@ function TrackOrderContent() {
                       <p className="mt-1 font-medium text-foreground">{rider.name}</p>
                     </div>
                   )}
-                  {rider?.phone && (
+                  {rider?.name && rider?.phone && (
                     <Button asChild variant="outline" className="mt-2 w-full sm:w-auto">
                       <a href={`tel:${rider.phone}`}>
                         <Phone className="mr-2 h-4 w-4" />

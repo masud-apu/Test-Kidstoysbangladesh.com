@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
       order: {
         orderId: order.orderId,
         status: order.status,
+        paymentStatus: order.paymentStatus,
         customerName: order.customerName,
         customerPhone: order.customerPhone,
         customerAddress: order.customerAddress,
