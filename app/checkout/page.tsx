@@ -47,6 +47,8 @@ function CheckoutContent() {
 
   const {
     directBuyItem,
+    items,
+    selectedItems,
     getSelectedItems,
     getSelectedTotal,
     updateQuantity,
@@ -172,7 +174,7 @@ function CheckoutContent() {
       return getSelectedItems();
     }
     return [];
-  }, [checkoutType, directBuyItem, getSelectedItems, urlProducts]);
+  }, [checkoutType, directBuyItem, getSelectedItems, urlProducts, items, selectedItems]);
 
   const itemsTotal =
     checkoutType === "direct" && directBuyItem
