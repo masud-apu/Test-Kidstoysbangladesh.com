@@ -38,7 +38,7 @@ export const checkoutSchema = z.object({
   email: z.string().email('Invalid email address').optional().or(z.literal('')).optional(),
   phone: z
     .string()
-    .regex(/^[0-9]{11}$/, 'Phone number must be exactly 11 digits'),
+    .regex(/^[0-9০-৯]{11}$/, 'Phone number must be exactly 11 digits'),
   address: z.string().min(10, 'Address must be at least 10 characters'),
   // Special note is optional; allow empty string
   specialNote: z

@@ -415,7 +415,7 @@ function CheckoutContent() {
     name.length >= 2 &&
     phone &&
     phone.length === 11 &&
-    /^[0-9]{11}$/.test(phone) &&
+    /^[0-9০-৯]{11}$/.test(phone) &&
     address &&
     address.length >= 10 &&
     !errors.name &&
