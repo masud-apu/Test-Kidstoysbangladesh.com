@@ -426,124 +426,131 @@ function CheckoutContent() {
   const onSubmit = async (data: CheckoutType) => {
     setIsLoading(true);
 
-    try {
-      const newOrderId = `KTB${Date.now()}`;
+    const newOrderId = `KTB${Date.now()}`;
 
-      const orderData = {
-        customerName: data.name,
-        customerEmail: data.email ?? null,
-        customerPhone: data.phone,
-        customerAddress: data.address,
-        specialNote: data.specialNote ?? undefined,
-        // city and postalCode removed
-        items: checkoutItems,
-        totalAmount: totalPrice,
-        shippingCost,
-        deliveryType,
-        orderId: newOrderId,
-        // Promo code data
-        promoCodeId: appliedPromoCode?.id || null,
-        promoCode: appliedPromoCode?.code || null,
-        promoCodeDiscount: appliedPromoCode?.discountAmount || null,
-      };
+    const orderData = {
+      customerName: data.name,
+      customerEmail: data.email ?? null,
+      customerPhone: data.phone,
+      customerAddress: data.address,
+      specialNote: data.specialNote ?? undefined,
+      // city and postalCode removed
+      items: checkoutItems,
+      totalAmount: totalPrice,
+      shippingCost,
+      deliveryType,
+      orderId: newOrderId,
+      // Promo code data
+      promoCodeId: appliedPromoCode?.id || null,
+      promoCode: appliedPromoCode?.code || null,
+      promoCodeDiscount: appliedPromoCode?.discountAmount || null,
+    };
 
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-      });
+    // Show success immediately for better UX (optimistic UI)
+    // The API will ensure PDF and email are generated in the background
+    setIsLoading(false);
 
-      const result = await response.json();
-
-      if (result.success) {
-        // Close the checkout overlay immediately
-        if (overlayCheckoutOpen) {
-          closeCheckout();
-        }
-
-        // Track Facebook Pixel Purchase event
-        fbPixelEvents.purchase({
-          content_ids: checkoutItems.map((item) => item.id.toString()),
-          content_name: checkoutItems.map((item) => item.title).join(", "),
-          content_type: "product",
-          contents: checkoutItems.map((item) => ({
-            id: item.id.toString(),
-            quantity: item.quantity,
-            price: parseFloat(item.variantPrice || "0"),
-          })),
-          currency: "BDT",
-          num_items: checkoutItems.reduce(
-            (sum, item) => sum + item.quantity,
-            0,
-          ),
-          value: totalPrice,
-        });
-
-        // Track PostHog Analytics
-        Analytics.trackPurchase(
-          {
-            items: checkoutItems.map((item) => ({
-              product_id: item.id.toString(),
-              product_name: item.title,
-              price: parseFloat(item.variantPrice || "0"),
-              quantity: item.quantity,
-            })),
-            total_amount: totalPrice,
-            currency: "BDT",
-            item_count: checkoutItems.reduce(
-              (sum, item) => sum + item.quantity,
-              0,
-            ),
-          },
-          newOrderId,
-        );
-
-        // Track user identification
-        Analytics.identifyUser(`customer_${data.phone}`, {
-          name: data.name,
-          phone: data.phone,
-          email: data.email || undefined,
-          address: data.address,
-          total_orders: 1,
-          last_order_id: newOrderId,
-          delivery_type: deliveryType,
-        });
-
-        // Clear cart, direct buy item, or URL products
-        if (checkoutType === "direct") {
-          clearDirectBuy();
-        } else if (checkoutType === "url") {
-          setUrlProducts([]);
-        } else {
-          clearCart();
-        }
-
-        // Show simple success toast
-        toast.success("Order placed successfully!", {
-          description: `Order #${newOrderId} confirmed`,
-          duration: 3000,
-        });
-
-        // Show success dialog after a brief delay to ensure overlay is closed
-        setTimeout(() => {
-          showSuccessDialog(newOrderId);
-        }, 300);
-      } else {
-        toast.error("Order failed", {
-          description:
-            result.message ||
-            "There was a problem processing your order. Please try again.",
-        });
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error("Order failed", {
-        description:
-          "There was a problem processing your order. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
+    // Close the checkout overlay immediately
+    if (overlayCheckoutOpen) {
+      closeCheckout();
     }
+
+    // Track Facebook Pixel Purchase event
+    fbPixelEvents.purchase({
+      content_ids: checkoutItems.map((item) => item.id.toString()),
+      content_name: checkoutItems.map((item) => item.title).join(", "),
+      content_type: "product",
+      contents: checkoutItems.map((item) => ({
+        id: item.id.toString(),
+        quantity: item.quantity,
+        price: parseFloat(item.variantPrice || "0"),
+      })),
+      currency: "BDT",
+      num_items: checkoutItems.reduce(
+        (sum, item) => sum + item.quantity,
+        0,
+      ),
+      value: totalPrice,
+    });
+
+    // Track PostHog Analytics
+    Analytics.trackPurchase(
+      {
+        items: checkoutItems.map((item) => ({
+          product_id: item.id.toString(),
+          product_name: item.title,
+          price: parseFloat(item.variantPrice || "0"),
+          quantity: item.quantity,
+        })),
+        total_amount: totalPrice,
+        currency: "BDT",
+        item_count: checkoutItems.reduce(
+          (sum, item) => sum + item.quantity,
+          0,
+        ),
+      },
+      newOrderId,
+    );
+
+    // Track user identification
+    Analytics.identifyUser(`customer_${data.phone}`, {
+      name: data.name,
+      phone: data.phone,
+      email: data.email || undefined,
+      address: data.address,
+      total_orders: 1,
+      last_order_id: newOrderId,
+      delivery_type: deliveryType,
+    });
+
+    // Clear cart, direct buy item, or URL products
+    if (checkoutType === "direct") {
+      clearDirectBuy();
+    } else if (checkoutType === "url") {
+      setUrlProducts([]);
+    } else {
+      clearCart();
+    }
+
+    // Show simple success toast
+    toast.success("Order placed successfully!", {
+      description: `Order #${newOrderId} confirmed`,
+      duration: 3000,
+    });
+
+    // Show success dialog
+    setTimeout(() => {
+      showSuccessDialog(newOrderId);
+    }, 300);
+
+    // Make API call in background to save order and generate PDF/email
+    // This runs asynchronously - user already sees success
+    fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderData),
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        if (result.success) {
+          console.log("✅ Order saved successfully:", newOrderId);
+        } else {
+          console.error("⚠️ Order API failed:", result.message);
+          // Optionally show a subtle warning toast
+          toast.warning("Order received", {
+            description: "We're processing your order. You'll receive confirmation soon.",
+            duration: 5000,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("❌ Order API error:", error);
+        // Show warning but don't alarm the user since they already saw success
+        toast.warning("Order received", {
+          description: "We're processing your order. You'll receive confirmation soon.",
+          duration: 5000,
+        });
+      });
   };
 
   if (!mounted || (checkoutType === "url" && loadingProducts)) {

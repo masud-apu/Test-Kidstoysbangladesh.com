@@ -199,11 +199,22 @@ export function GlobalOverlays() {
             
             {/* Actions */}
             <div className="mt-6 flex flex-col gap-2">
-              <Button 
+              <Button
+                onClick={() => {
+                  hideSuccessDialog()
+                  window.location.href = `/track-order?orderId=${orderId}`
+                }}
+                className="w-full"
+                size="lg"
+              >
+                Track Your Order
+              </Button>
+              <Button
                 onClick={() => {
                   hideSuccessDialog()
                   window.location.href = '/'
                 }}
+                variant="outline"
                 className="w-full"
                 size="lg"
               >

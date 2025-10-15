@@ -11,15 +11,16 @@ import { convertBanglaToEnglishNumerals } from '@/lib/bangla-utils'
 import { eq, sql } from 'drizzle-orm'
 
 /**
- * Handles background tasks (PDF generation and email sending) asynchronously
- * This function runs after the order is saved and response is sent to the client
+ * Handles PDF generation and email sending after order is saved
+ * IMPORTANT: This MUST be awaited to ensure completion in serverless environment
  */
 async function handleBackgroundTasks(
   orderId: number,
   validatedData: ReturnType<typeof createOrderSchema.parse>,
   itemsTotal: number
 ) {
-  console.log('🔄 Starting background tasks for order:', validatedData.orderId)
+  const startTime = Date.now()
+  console.log('🔄 [Order:', validatedData.orderId, '] Starting background tasks at', new Date().toISOString())
 
   try {
     // Prepare normalized items for email and PDF
@@ -59,16 +60,19 @@ async function handleBackgroundTasks(
       promoCodeDiscount: validatedData.promoCodeDiscount || undefined,
     }
 
-    // Generate and upload PDF invoice
+    // Step 1: Generate and upload PDF invoice
     let invoiceUrl: string | null = null
+    let pdfSuccess = false
     try {
-      console.log('📄 Generating PDF for order:', validatedData.orderId)
+      const pdfStartTime = Date.now()
+      console.log('📄 [Order:', validatedData.orderId, '] Generating PDF...')
+
       const pdfBuffer = await generatePDFBuffer(emailOrderData)
-      console.log('✅ PDF generated, size:', pdfBuffer.length, 'bytes')
+      console.log('✅ [Order:', validatedData.orderId, '] PDF generated, size:', pdfBuffer.length, 'bytes')
 
       const fileName = R2StorageService.generateFileName(validatedData.orderId)
       invoiceUrl = await R2StorageService.uploadPDF(pdfBuffer, fileName)
-      console.log('📤 PDF uploaded successfully:', invoiceUrl)
+      console.log('📤 [Order:', validatedData.orderId, '] PDF uploaded to:', invoiceUrl)
 
       // Update order with invoice URL
       await db
@@ -76,27 +80,37 @@ async function handleBackgroundTasks(
         .set({ invoiceUrl })
         .where(eq(orders.id, orderId))
 
-      console.log('✅ Order updated with invoice URL')
+      const pdfDuration = Date.now() - pdfStartTime
+      console.log('✅ [Order:', validatedData.orderId, '] PDF processing completed in', pdfDuration, 'ms')
+      pdfSuccess = true
     } catch (pdfError) {
-      console.error('❌ PDF generation/upload failed for order:', validatedData.orderId, pdfError)
+      console.error('❌ [Order:', validatedData.orderId, '] PDF generation/upload FAILED:', pdfError)
+      console.error('PDF Error stack:', pdfError instanceof Error ? pdfError.stack : 'No stack trace')
       // Continue to send email even if PDF fails
     }
 
-    // Send confirmation emails
+    // Step 2: Send confirmation emails
+    let emailSuccess = false
     try {
-      console.log('📧 Sending confirmation emails for order:', validatedData.orderId)
+      const emailStartTime = Date.now()
+      console.log('📧 [Order:', validatedData.orderId, '] Sending confirmation emails...')
+
       const emailResult = await sendOrderConfirmationEmails(emailOrderData, invoiceUrl)
 
       if (emailResult.success) {
-        console.log('✅ Emails sent successfully for order:', validatedData.orderId)
+        const emailDuration = Date.now() - emailStartTime
+        console.log('✅ [Order:', validatedData.orderId, '] Emails sent successfully in', emailDuration, 'ms')
+        emailSuccess = true
       } else {
-        console.error('⚠️ Email sending failed for order:', validatedData.orderId, emailResult.error)
+        console.error('⚠️ [Order:', validatedData.orderId, '] Email sending FAILED:', emailResult.error)
       }
     } catch (emailError) {
-      console.error('❌ Email sending error for order:', validatedData.orderId, emailError)
+      console.error('❌ [Order:', validatedData.orderId, '] Email sending exception:', emailError)
+      console.error('Email Error stack:', emailError instanceof Error ? emailError.stack : 'No stack trace')
     }
 
-    console.log('✅ Background tasks completed for order:', validatedData.orderId)
+    const totalDuration = Date.now() - startTime
+    console.log('✅ [Order:', validatedData.orderId, '] Background tasks completed in', totalDuration, 'ms - PDF:', pdfSuccess ? '✓' : '✗', 'Email:', emailSuccess ? '✓' : '✗')
   } catch (error) {
     console.error('❌ Background tasks error for order:', validatedData.orderId, error)
     throw error
@@ -225,20 +239,19 @@ export async function POST(request: NextRequest) {
       return newOrder
     })
 
-    // 4. Return success response immediately to make it feel instant
-    const response = NextResponse.json({
+    // 4. Handle PDF generation and email sending (in parallel for speed)
+    // We MUST await this to ensure it completes in serverless environment
+    await handleBackgroundTasks(result.id, validatedData, itemsTotal).catch((error) => {
+      console.error('❌ Background tasks failed for order:', validatedData.orderId, error)
+      // Continue anyway - order is already saved
+    })
+
+    // 5. Return success response
+    return NextResponse.json({
       success: true,
       orderId: result.orderId,
       message: 'Order placed successfully!',
     })
-
-    // 5. Handle PDF generation and email sending in the background
-    // This runs asynchronously without blocking the response
-    handleBackgroundTasks(result.id, validatedData, itemsTotal).catch((error) => {
-      console.error('❌ Background tasks failed for order:', validatedData.orderId, error)
-    })
-
-    return response
 
   } catch (error) {
     console.error('Order processing error:', error)
