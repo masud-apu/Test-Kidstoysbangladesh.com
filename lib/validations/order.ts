@@ -1,5 +1,27 @@
 import { z } from 'zod'
 
+// Helper function to convert Bangla numerals to English
+const banglaToEnglish = (str: string): string => {
+  const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
+  const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+  let result = str
+  banglaDigits.forEach((bangla, index) => {
+    result = result.replace(new RegExp(bangla, 'g'), englishDigits[index])
+  })
+  return result
+}
+
+// Phone number validation: exactly 11 digits, supports English and Bangla numerals
+const phoneNumberSchema = z.string()
+  .refine((val) => {
+    const normalized = banglaToEnglish(val.trim())
+    const digitsOnly = normalized.replace(/[^0-9]/g, '')
+    return digitsOnly.length === 11
+  }, {
+    message: 'Phone number must be exactly 11 digits (English or Bangla numerals)',
+  })
+
 export const orderStatusSchema = z.enum([
   'order_placed',
   'confirmed',
@@ -55,7 +77,7 @@ export const cartItemForOrderSchema = z.object({
 export const createOrderSchema = z.object({
   customerName: z.string().min(2),
   customerEmail: z.string().email().optional().or(z.literal('')).optional().nullable(),
-  customerPhone: z.string().min(10),
+  customerPhone: phoneNumberSchema,
   customerAddress: z.string().min(10),
   specialNote: z.string().optional().nullable(),
   items: z.array(cartItemForOrderSchema).min(1),
@@ -68,6 +90,8 @@ export const createOrderSchema = z.object({
   promoCodeId: z.number().optional().nullable(),
   promoCode: z.string().optional().nullable(),
   promoCodeDiscount: z.number().optional().nullable(),
+  // Order source tracking
+  createdBy: z.string().default('website'),
 })
 
 // Internal schema for database operations
@@ -91,15 +115,28 @@ export const updateOrderPaymentStatusSchema = z.object({
 export const updateOrderCustomerInfoSchema = z.object({
   customerName: z.string().min(2),
   customerEmail: z.string().email().optional().nullable(),
-  customerPhone: z.string().min(10),
+  customerPhone: phoneNumberSchema,
   customerAddress: z.string().min(10),
   specialNote: z.string().optional().nullable(),
 })
 
+export const deliveryPartnerSchema = z.enum(['steadfast', 'self'])
+
+export const updateOrderCostsSchema = z.object({
+  actualShippingCost: z.number().min(0).optional(),
+  totalPackingCharges: z.number().min(0).optional(),
+  codCost: z.number().min(0).optional(),
+  totalPurchaseCost: z.number().min(0).optional(),
+  totalWeight: z.number().min(0).optional(),
+  deliveryPartner: deliveryPartnerSchema.optional(),
+})
+
 export type OrderStatus = z.infer<typeof orderStatusSchema>
 export type PaymentStatus = z.infer<typeof paymentStatusSchema>
+export type DeliveryPartner = z.infer<typeof deliveryPartnerSchema>
 export type CreateOrderData = z.infer<typeof createOrderSchema>
 export type UpdateOrderStatusData = z.infer<typeof updateOrderStatusSchema>
 export type UpdateOrderPaymentStatusData = z.infer<typeof updateOrderPaymentStatusSchema>
 export type UpdateOrderCustomerInfoData = z.infer<typeof updateOrderCustomerInfoSchema>
+export type UpdateOrderCostsData = z.infer<typeof updateOrderCostsSchema>
 export type OrderItemData = z.infer<typeof orderItemSchema>

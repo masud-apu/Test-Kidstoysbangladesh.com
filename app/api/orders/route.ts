@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
         deliveryType: validatedData.deliveryType,
         paymentStatus: validatedData.paymentStatus || 'pending',
         status: 'order_placed',
+        createdBy: validatedData.createdBy || 'website',
         // Promo code fields
         promoCodeId: validatedData.promoCodeId,
         promoCode: validatedData.promoCode,

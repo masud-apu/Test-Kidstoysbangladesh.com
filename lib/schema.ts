@@ -124,12 +124,18 @@ export const orders = pgTable('orders', {
   shippingChargeInsideDhaka: decimal('shipping_charge_inside_dhaka', { precision: 10, scale: 2 }).default('60.00'),
   shippingChargeOutsideDhaka: decimal('shipping_charge_outside_dhaka', { precision: 10, scale: 2 }).default('120.00'),
   actualShippingCost: decimal('actual_shipping_cost', { precision: 10, scale: 2 }), // What you actually pay (nullable for old orders)
+  codCost: decimal('cod_cost', { precision: 10, scale: 2 }), // Cash on Delivery charge (1% of total amount)
 
   // Delivery information
   deliveryType: varchar('delivery_type', { length: 20 }).notNull(),
+  deliveryPartner: varchar('delivery_partner', { length: 20 }).default('steadfast').notNull(), // 'steadfast' or 'self'
+  totalWeight: decimal('total_weight', { precision: 10, scale: 2 }), // Total weight in kg (editable by admin)
 
   // Additional information from customer
   specialNote: text('special_note'),
+
+  // Order creation source
+  createdBy: varchar('created_by', { length: 100 }).default('website').notNull(), // 'website', 'admin', or Telegram user's full name
 
   // Payment status
   paymentStatus: varchar('payment_status', { length: 50 }).default('pending').notNull(),
