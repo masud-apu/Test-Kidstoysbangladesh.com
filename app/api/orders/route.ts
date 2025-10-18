@@ -8,7 +8,7 @@ import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
 import { generatePDFBuffer } from '@/lib/pdf-generator'
 import { R2StorageService } from '@/lib/r2-storage'
 import { convertBanglaToEnglishNumerals } from '@/lib/bangla-utils'
-import { calculatePackingFromVariants } from '@/lib/services/order-service'
+import { calculatePackingFromVariants, calculateActualShippingCost } from '@/lib/services/order-service'
 import { eq, sql } from 'drizzle-orm'
 
 /**
@@ -137,8 +137,37 @@ export async function POST(request: NextRequest) {
       return total + (parseFloat(price) * item.quantity)
     }, 0)
 
+    // Calculate actual shipping cost based on weight and delivery type
+    const shippingCalculation = await calculateActualShippingCost(
+      validatedData.items,
+      validatedData.deliveryType as 'inside' | 'outside'
+    )
+
+    // Use calculated shipping cost, unless free shipping from promo code (shippingCost = 0)
+    const actualShippingCost = validatedData.shippingCost === 0
+      ? 0  // Free shipping from promo code
+      : shippingCalculation.actualShippingCost
+
+    // Recalculate total amount with actual shipping cost
+    const discountAmount = validatedData.promoCodeDiscount || 0
+    const recalculatedTotalAmount = Math.max(0, itemsTotal + actualShippingCost - discountAmount)
+
     // Calculate COD cost (1% of total amount) upfront for visibility
-    const codCost = validatedData.totalAmount * 0.01
+    const codCost = recalculatedTotalAmount * 0.01
+
+    console.log('📦 Website Shipping calculation:', {
+      deliveryType: validatedData.deliveryType,
+      totalWeight: `${shippingCalculation.totalWeightKg}kg (${shippingCalculation.totalWeightGrams}g)`,
+      calculatedShippingCost: shippingCalculation.actualShippingCost,
+      promoShippingCost: validatedData.shippingCost,
+      actualShippingCost,
+      isFreeShipping: actualShippingCost === 0,
+      itemsTotal,
+      discountAmount,
+      originalTotalAmount: validatedData.totalAmount,
+      recalculatedTotalAmount,
+      totalAmountDifference: recalculatedTotalAmount - validatedData.totalAmount
+    })
 
     // Auto-calculate packing from variant defaults BEFORE creating order
     const packingCalculation = await calculatePackingFromVariants(validatedData.items)
@@ -162,8 +191,8 @@ export async function POST(request: NextRequest) {
         customerAddress: validatedData.customerAddress,
         specialNote: validatedData.specialNote || null,
         itemsTotal: itemsTotal.toString(),
-        shippingCost: validatedData.shippingCost.toString(),
-        totalAmount: validatedData.totalAmount.toString(),
+        shippingCost: actualShippingCost.toString(),
+        totalAmount: recalculatedTotalAmount.toString(),
         deliveryType: validatedData.deliveryType,
         paymentStatus: validatedData.paymentStatus || 'pending',
         status: 'order_placed',
@@ -177,6 +206,9 @@ export async function POST(request: NextRequest) {
         totalPackingCharges: packingCalculation.totalPackingCost,
         totalPurchaseCost: '0', // Will be calculated via FIFO when status changes to "shipped"
         totalProfit: '0', // Will be calculated when shipped
+        // Shipping cost tracking
+        actualShippingCost: shippingCalculation.actualShippingCost.toString(),
+        totalWeight: shippingCalculation.totalWeightKg.toString()
       }).returning()
 
       // 2. Transform cart items to order items and insert
