@@ -36,7 +36,12 @@ export const productVariants = pgTable('product_variants', {
   compareAtPrice: decimal('compare_at_price', { precision: 10, scale: 2 }),
   inventoryQuantity: integer('inventory_quantity').default(0).notNull(),
   inventoryPolicy: varchar('inventory_policy', { length: 50 }).default('deny').notNull(), // deny, continue
-  packingCharge: decimal('packing_charge', { precision: 10, scale: 2 }).default('20.00').notNull(), // Per-product packing charge
+
+  // Default packing configuration (auto-filled for single-product orders)
+  defaultBoxTypeId: integer('default_box_type_id').references(() => boxTypes.id),
+  // Dynamic material defaults - array of {materialId, name, cost}
+  defaultMaterials: json('default_materials').$type<Array<{ materialId: number; name: string; cost: string }>>().default([]),
+
   position: integer('position').default(1).notNull(),
   image: varchar('image', { length: 500 }),
   availableForSale: boolean('available_for_sale').default(true).notNull(),
@@ -82,6 +87,83 @@ export const inventoryBatches = pgTable('inventory_batches', {
   remainingQuantity: integer('remaining_quantity').notNull(), // Available quantity (decreases with sales)
   purchaseDate: timestamp('purchase_date').defaultNow().notNull(),
   notes: text('notes'), // Optional notes about the batch
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+// Box types for packing (unit cost tracked at batch level for FIFO)
+export const boxTypes = pgTable('box_types', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 100 }).notNull().unique(),
+  dimensions: varchar('dimensions', { length: 100 }),
+  currentStock: integer('current_stock').default(0).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+// Box inventory transactions (audit trail)
+export const boxTransactions = pgTable('box_transactions', {
+  id: serial('id').primaryKey(),
+  boxTypeId: integer('box_type_id').references(() => boxTypes.id).notNull(),
+  transactionType: varchar('transaction_type', { length: 50 }).notNull(), // 'purchase', 'order_use', 'damage', 'adjustment', 'revert'
+  quantity: integer('quantity').notNull(), // Positive for add, negative for use
+  stockBefore: integer('stock_before').notNull(),
+  stockAfter: integer('stock_after').notNull(),
+  orderId: integer('order_id').references(() => orders.id),
+  notes: text('notes'),
+  createdBy: integer('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// Box inventory batches (FIFO tracking)
+export const boxInventoryBatches = pgTable('box_inventory_batches', {
+  id: serial('id').primaryKey(),
+  boxTypeId: integer('box_type_id').references(() => boxTypes.id, { onDelete: 'cascade' }).notNull(),
+  batchNumber: varchar('batch_number', { length: 100 }).notNull(), // Auto-generated or manual
+  purchasePrice: decimal('purchase_price', { precision: 10, scale: 2 }).notNull(), // Price PER UNIT (not total batch cost)
+  quantity: integer('quantity').notNull(), // Number of units purchased
+  remainingQuantity: integer('remaining_quantity').notNull(), // Available units (decreases with FIFO deduction)
+  purchaseDate: timestamp('purchase_date').defaultNow().notNull(),
+  notes: text('notes'), // Optional notes (supplier, invoice, etc.)
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+// Packing materials (cost tracked at batch level for FIFO)
+export const packingMaterials = pgTable('packing_materials', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 100 }).notNull().unique(),
+  unitOfMeasure: varchar('unit_of_measure', { length: 50 }),
+  currentBalance: decimal('current_balance', { precision: 10, scale: 2 }).default('0.00').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+// Packing material transactions (audit trail)
+export const packingMaterialTransactions = pgTable('packing_material_transactions', {
+  id: serial('id').primaryKey(),
+  materialId: integer('material_id').references(() => packingMaterials.id).notNull(),
+  transactionType: varchar('transaction_type', { length: 50 }).notNull(), // 'purchase', 'order_use', 'damage', 'adjustment', 'revert'
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(), // Positive for add, negative for use
+  balanceBefore: decimal('balance_before', { precision: 10, scale: 2 }).notNull(),
+  balanceAfter: decimal('balance_after', { precision: 10, scale: 2 }).notNull(),
+  orderId: integer('order_id').references(() => orders.id),
+  notes: text('notes'),
+  createdBy: integer('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// Packing material inventory batches (FIFO tracking)
+export const packingMaterialBatches = pgTable('packing_material_batches', {
+  id: serial('id').primaryKey(),
+  materialId: integer('material_id').references(() => packingMaterials.id, { onDelete: 'cascade' }).notNull(),
+  batchNumber: varchar('batch_number', { length: 100 }).notNull(), // Auto-generated or manual
+  purchaseAmount: decimal('purchase_amount', { precision: 10, scale: 2 }).notNull(), // TOTAL monetary value of this purchase
+  remainingAmount: decimal('remaining_amount', { precision: 10, scale: 2 }).notNull(), // Remaining value (decreases with FIFO deduction)
+  purchaseDate: timestamp('purchase_date').defaultNow().notNull(),
+  notes: text('notes'), // Optional notes (supplier, invoice, etc.)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
@@ -185,11 +267,48 @@ export const orderItems = pgTable('order_items', {
   itemTotal: decimal('item_total', { precision: 10, scale: 2 }).notNull(),
 
   // Cost tracking (nullable for old orders)
-  packingCharge: decimal('packing_charge', { precision: 10, scale: 2 }), // Packing charge per unit
   purchaseCost: decimal('purchase_cost', { precision: 10, scale: 2 }), // Cost from inventory batch (FIFO)
   batchAllocations: json('batch_allocations').$type<Array<{ batchId: number; quantity: number; costPerUnit: string }>>(), // Track which batches were used
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// Type for box usage in order
+export type BoxUsage = {
+  boxTypeId: number
+  boxName: string
+  quantity: number
+  costPerBox: string
+  totalCost: string
+}
+
+// Type for material usage in order
+export type MaterialUsage = {
+  materialId: number
+  materialName: string
+  costUsed: string
+}
+
+// Detailed packing breakdown per order
+export const orderPackingDetails = pgTable('order_packing_details', {
+  id: serial('id').primaryKey(),
+  orderId: integer('order_id').references(() => orders.id, { onDelete: 'cascade' }).notNull().unique(),
+
+  // Boxes used (can be multiple)
+  boxesUsed: json('boxes_used').$type<BoxUsage[]>().default([]),
+
+  // Packing materials used
+  materialsUsed: json('materials_used').$type<MaterialUsage[]>().default([]),
+
+  // Totals
+  totalBoxCost: decimal('total_box_cost', { precision: 10, scale: 2 }).default('0.00').notNull(),
+  totalMaterialCost: decimal('total_material_cost', { precision: 10, scale: 2 }).default('0.00').notNull(),
+  totalPackingCost: decimal('total_packing_cost', { precision: 10, scale: 2 }).default('0.00').notNull(),
+
+  // Tracking
+  isInventoryDeducted: boolean('is_inventory_deducted').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
 export const promoCodes = pgTable('promo_codes', {
@@ -232,6 +351,18 @@ export type VariantSelectedOption = typeof variantSelectedOptions.$inferSelect
 export type NewVariantSelectedOption = typeof variantSelectedOptions.$inferInsert
 export type InventoryBatch = typeof inventoryBatches.$inferSelect
 export type NewInventoryBatch = typeof inventoryBatches.$inferInsert
+export type BoxType = typeof boxTypes.$inferSelect
+export type NewBoxType = typeof boxTypes.$inferInsert
+export type BoxTransaction = typeof boxTransactions.$inferSelect
+export type NewBoxTransaction = typeof boxTransactions.$inferInsert
+export type BoxInventoryBatch = typeof boxInventoryBatches.$inferSelect
+export type NewBoxInventoryBatch = typeof boxInventoryBatches.$inferInsert
+export type PackingMaterial = typeof packingMaterials.$inferSelect
+export type NewPackingMaterial = typeof packingMaterials.$inferInsert
+export type PackingMaterialTransaction = typeof packingMaterialTransactions.$inferSelect
+export type NewPackingMaterialTransaction = typeof packingMaterialTransactions.$inferInsert
+export type PackingMaterialBatch = typeof packingMaterialBatches.$inferSelect
+export type NewPackingMaterialBatch = typeof packingMaterialBatches.$inferInsert
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Session = typeof sessions.$inferSelect
@@ -240,5 +371,44 @@ export type Order = typeof orders.$inferSelect
 export type NewOrder = typeof orders.$inferInsert
 export type OrderItem = typeof orderItems.$inferSelect
 export type NewOrderItem = typeof orderItems.$inferInsert
+export type OrderPackingDetail = typeof orderPackingDetails.$inferSelect
+export type NewOrderPackingDetail = typeof orderPackingDetails.$inferInsert
+// Financial Transactions - Track all money movements
+export const financialTransactions = pgTable('financial_transactions', {
+  id: serial('id').primaryKey(),
+  transactionType: varchar('transaction_type', { length: 50 }).notNull(), // 'CASH_IN', 'EXPENSE', 'INVENTORY_PURCHASE', 'ORDER_REVENUE', 'ORDER_EXPENSE'
+  category: varchar('category', { length: 100 }), // For expenses: 'office', 'utilities', 'salaries', 'marketing', 'inventory', etc.
+  amount: decimal('amount', { precision: 12, scale: 2 }).notNull(), // Positive for income, negative for expenses
+
+  // Separate tracking of cash and assets
+  cashBalanceAfter: decimal('cash_balance_after', { precision: 12, scale: 2 }).notNull(), // Cash balance after this transaction
+  assetBalanceAfter: decimal('asset_balance_after', { precision: 12, scale: 2 }).notNull(), // Asset balance after this transaction
+  balanceAfter: decimal('balance_after', { precision: 12, scale: 2 }).notNull(), // Total balance (cash + assets) after transaction
+
+  description: text('description').notNull(),
+
+  // References to related entities
+  orderId: integer('order_id').references(() => orders.id),
+  inventoryBatchId: integer('inventory_batch_id').references(() => inventoryBatches.id),
+  boxBatchId: integer('box_batch_id').references(() => boxInventoryBatches.id),
+  materialBatchId: integer('material_batch_id').references(() => packingMaterialBatches.id),
+
+  // User who created this transaction
+  createdBy: integer('created_by').references(() => users.id),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// Cash Balance - Single row table to track current balance
+export const cashBalance = pgTable('cash_balance', {
+  id: serial('id').primaryKey(),
+  balance: decimal('balance', { precision: 12, scale: 2 }).default('0.00').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
 export type PromoCode = typeof promoCodes.$inferSelect
 export type NewPromoCode = typeof promoCodes.$inferInsert
+export type FinancialTransaction = typeof financialTransactions.$inferSelect
+export type NewFinancialTransaction = typeof financialTransactions.$inferInsert
+export type CashBalance = typeof cashBalance.$inferSelect
+export type NewCashBalance = typeof cashBalance.$inferInsert

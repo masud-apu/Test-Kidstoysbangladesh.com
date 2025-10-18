@@ -3,7 +3,7 @@ import { HeroCarousel } from '@/components/hero-carousel'
 import { NewArrivalsCarousel } from '@/components/new-arrivals-carousel'
 import { db } from '@/lib/db'
 import { products, productVariants } from '@/lib/schema'
-import { eq } from 'drizzle-orm'
+import { inArray } from 'drizzle-orm'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -26,24 +26,35 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 
+// Revalidate homepage every 5 minutes to keep it fresh while serving static
+export const revalidate = 300
+
 export default async function Home() {
   // Fetch products then sort by latest in JS to avoid DB-specific orderBy typing issues
-  const fetched = await db.select().from(products).limit(100)
+  // Keep the payload small for TTFB: fetch only fields we need for cards
+  const fetched = await db
+    .select()
+    .from(products)
+    .limit(60)
 
   // Fetch variants for all products to calculate price ranges
-  const productsWithVariants = await Promise.all(
-    fetched.map(async (product) => {
-      const variants = await db
-        .select()
-        .from(productVariants)
-        .where(eq(productVariants.productId, product.id))
+  // Batch fetch variants for all product ids in one query to reduce roundtrips
+  const productIds = fetched.map((p) => p.id)
+  const variantsAll = productIds.length
+    ? await db.select().from(productVariants).where(inArray(productVariants.productId, productIds))
+    : []
 
-      return {
-        ...product,
-        variants
-      }
-    })
-  )
+  const productIdToVariants = new Map<number, typeof variantsAll>()
+  for (const v of variantsAll) {
+    const arr = productIdToVariants.get(v.productId) || []
+    arr.push(v)
+    productIdToVariants.set(v.productId, arr)
+  }
+
+  const productsWithVariants = fetched.map((product) => ({
+    ...product,
+    variants: productIdToVariants.get(product.id) || []
+  }))
 
   const allProducts = [...productsWithVariants]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())

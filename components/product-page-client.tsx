@@ -1,8 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Markdown } from "@/components/markdown";
 import { useCartStore } from "@/lib/store";
 import { useOverlayStore } from "@/lib/ui-store";
 import {
@@ -21,13 +21,28 @@ import {
   ProductOption,
   ProductOptionValue,
 } from "@/lib/schema";
-import { ProductStructuredData } from "./structured-data";
 import { fbPixelEvents } from "@/lib/facebook-pixel-events";
 import { Analytics } from "@/lib/analytics";
-import { VariantSelector } from "./variant-selector";
 import { SelectedOption } from "@/lib/store";
-import { ProductImageGallery } from "./product-image-gallery";
-import { isFreeDeliveryActive, FREE_DELIVERY_MESSAGE, FREE_DELIVERY_SUBTITLE } from "@/lib/free-delivery";
+
+// Dynamically import heavy components to reduce initial bundle size
+const Markdown = dynamic(() => import("@/components/markdown").then(mod => ({ default: mod.Markdown })), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-32 rounded-lg" />,
+});
+
+const ProductStructuredData = dynamic(() => import("./structured-data").then(mod => ({ default: mod.ProductStructuredData })));
+
+const VariantSelector = dynamic(() => import("./variant-selector").then(mod => ({ default: mod.VariantSelector })), {
+  loading: () => <div className="animate-pulse bg-gray-100 h-20 rounded-lg" />,
+});
+
+const ProductImageGallery = dynamic(() => import("./product-image-gallery").then(mod => ({ default: mod.ProductImageGallery })), {
+  loading: () => <div className="animate-pulse bg-gray-200 aspect-square rounded-lg" />,
+});
+
+const DeliveryInfo = dynamic(() => import("./delivery-info").then(mod => ({ default: mod.DeliveryInfo })), {
+  loading: () => <div className="animate-pulse bg-gray-100 h-16 rounded-lg" />,
+});
 
 interface VariantWithOptions extends ProductVariant {
   selectedOptions: Array<{
@@ -448,53 +463,7 @@ export function ProductPageClient({
               </div>
 
               {/* Delivery & Return Information */}
-              <div className="bg-muted/30 rounded-lg p-4 space-y-4 mt-4">
-                {isFreeDeliveryActive() && (
-                  <div className="relative bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 rounded-lg p-4 -mt-2 mb-3 overflow-hidden">
-                    {/* Background decoration */}
-                    <div className="absolute inset-0 opacity-20">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-2xl"></div>
-                    </div>
-
-                    <div className="relative z-10 space-y-1">
-                      <div className="flex items-center gap-2 text-white">
-                        <Sparkles className="h-5 w-5 animate-pulse" />
-                        <span className="text-base font-bold">{FREE_DELIVERY_MESSAGE}</span>
-                      </div>
-                      <p className="text-xs text-white/90 ml-7">{FREE_DELIVERY_SUBTITLE}</p>
-                    </div>
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <Truck className="h-4 w-4 text-blue-600" />
-                    <span>Delivery Options</span>
-                  </div>
-                  <div className="ml-6 space-y-1 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-3 w-3" />
-                      <span>Inside Dhaka: Same day delivery, Max 1 day</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Package className="h-3 w-3" />
-                      <span>Outside Dhaka: 3–5 business days</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <RotateCcw className="h-4 w-4 text-green-600" />
-                    <span>Return Policy</span>
-                  </div>
-                  <div className="ml-6 space-y-1 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-3 w-3" />
-                      <span>7-day return guarantee</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <DeliveryInfo />
             </div>
           </div>
         </div>

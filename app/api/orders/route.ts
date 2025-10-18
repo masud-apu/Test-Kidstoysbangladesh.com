@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 import { db } from '@/lib/db'
-import { orders, orderItems, products, productVariants, promoCodes } from '@/lib/schema'
+import { orders, orderItems, products, productVariants, promoCodes, orderPackingDetails } from '@/lib/schema'
 import { createOrderSchema } from '@/lib/validations/order'
 import { CartItemType } from '@/lib/validations'
 import { sendOrderConfirmationEmails, type OrderData } from '@/lib/email'
 import { generatePDFBuffer } from '@/lib/pdf-generator'
 import { R2StorageService } from '@/lib/r2-storage'
 import { convertBanglaToEnglishNumerals } from '@/lib/bangla-utils'
+import { calculatePackingFromVariants } from '@/lib/services/order-service'
 import { eq, sql } from 'drizzle-orm'
 
 /**
@@ -136,9 +137,23 @@ export async function POST(request: NextRequest) {
       return total + (parseFloat(price) * item.quantity)
     }, 0)
 
+    // Calculate COD cost (1% of total amount) upfront for visibility
+    const codCost = validatedData.totalAmount * 0.01
+
+    // Auto-calculate packing from variant defaults BEFORE creating order
+    const packingCalculation = await calculatePackingFromVariants(validatedData.items)
+
+    console.log('📦 Frontend Packing calculation:', {
+      totalBoxCost: packingCalculation.totalBoxCost,
+      totalMaterialCost: packingCalculation.totalMaterialCost,
+      totalPackingCost: packingCalculation.totalPackingCost,
+      boxesCount: packingCalculation.boxesUsed.length,
+      materialsCount: packingCalculation.materialsUsed.length,
+    })
+
     // Start database transaction
     const result = await db.transaction(async (tx) => {
-      // 1. Insert order
+      // 1. Insert order WITH calculated packing charges
       const [newOrder] = await tx.insert(orders).values({
         orderId: validatedData.orderId,
         customerName: validatedData.customerName,
@@ -157,6 +172,11 @@ export async function POST(request: NextRequest) {
         promoCodeId: validatedData.promoCodeId,
         promoCode: validatedData.promoCode,
         promoCodeDiscount: validatedData.promoCodeDiscount?.toString() || null,
+        // Cost tracking - packing and COD calculated upfront, purchase cost calculated when shipped
+        codCost: codCost.toString(), // COD cost (1% of total) - calculated upfront for visibility
+        totalPackingCharges: packingCalculation.totalPackingCost,
+        totalPurchaseCost: '0', // Will be calculated via FIFO when status changes to "shipped"
+        totalProfit: '0', // Will be calculated when shipped
       }).returning()
 
       // 2. Transform cart items to order items and insert
@@ -190,7 +210,20 @@ export async function POST(request: NextRequest) {
 
       await tx.insert(orderItems).values(orderItemsData)
 
-      // 3. Update variant inventory (subtract ordered quantities) and product totals
+      // 3. Create order packing details if any packing was calculated
+      if (parseFloat(packingCalculation.totalPackingCost) > 0) {
+        await tx.insert(orderPackingDetails).values({
+          orderId: newOrder.id,
+          boxesUsed: packingCalculation.boxesUsed,
+          materialsUsed: packingCalculation.materialsUsed,
+          totalBoxCost: packingCalculation.totalBoxCost,
+          totalMaterialCost: packingCalculation.totalMaterialCost,
+          totalPackingCost: packingCalculation.totalPackingCost,
+          isInventoryDeducted: false, // Will be deducted when status changes to "shipped"
+        })
+      }
+
+      // 4. Update variant inventory (subtract ordered quantities) and product totals
       for (const item of validatedData.items) {
         // Only update inventory if variantId is provided
         if (item.variantId) {
@@ -226,7 +259,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // 4. Handle promo code usage tracking and expiry
+      // 5. Handle promo code usage tracking and expiry
       if (validatedData.promoCodeId) {
         await tx
           .update(promoCodes)
@@ -240,7 +273,7 @@ export async function POST(request: NextRequest) {
       return newOrder
     })
 
-    // 4. Handle PDF generation and email sending (in parallel for speed)
+    // 5. Handle PDF generation and email sending (in parallel for speed)
     // We MUST await this to ensure it completes in serverless environment
     await handleBackgroundTasks(result.id, validatedData, itemsTotal).catch((error) => {
       console.error('❌ Background tasks failed for order:', validatedData.orderId, error)

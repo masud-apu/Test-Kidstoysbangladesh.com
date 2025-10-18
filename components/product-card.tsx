@@ -199,7 +199,7 @@ export function ProductCard({ product }: ProductCardProps) {
         className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 overflow-hidden cursor-pointer"
         aria-label={`View product ${product.title}`}
       >
-        <Link href={`/product/${product.handle}`} onClick={handleProductClick} className="block focus:outline-none focus:ring-2 focus:ring-orange-200/70">
+        <Link href={`/product/${product.handle}`} prefetch={false} onClick={handleProductClick} className="block focus:outline-none focus:ring-2 focus:ring-orange-200/70">
           {/* Product Image */}
           <div className="p-1.5">
             <div className="relative rounded-lg overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">

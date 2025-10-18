@@ -13,6 +13,8 @@ const nunito = Nunito({
   variable: "--font-nunito",
   subsets: ["latin"],
   display: 'swap',
+  preload: false,
+  fallback: ['system-ui', 'sans-serif'],
 });
 
 const amatic = Amatic_SC({
@@ -20,11 +22,16 @@ const amatic = Amatic_SC({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: 'swap',
+  preload: false,
+  fallback: ['cursive', 'sans-serif'],
 });
 
 const notoSansBengali = Noto_Sans_Bengali({
   variable: "--font-bengali",
   subsets: ["bengali"],
+  display: 'swap',
+  preload: false,
+  fallback: ['system-ui', 'sans-serif'],
 });
 
 export const metadata: Metadata = {
@@ -88,6 +95,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <head>
+        {/* Performance preconnects for critical third-parties */}
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://us.i.posthog.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://us.i.posthog.com" />
+        <link rel="preconnect" href="https://us-assets.i.posthog.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://us-assets.i.posthog.com" />
+        <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://connect.facebook.net" />
         <OrganizationStructuredData />
         <WebsiteStructuredData />
         <meta name="google-site-verification" content="6DJ_1MrTl9d74WV42luKp3HRmdWfHZOh1OfHY-9thFs" />
