@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // REQUIRED FOR CAPACITOR: Export as static site
+  output: 'export',
+
   images: {
+    // Static export requires unoptimized images
+    unoptimized: true,
     // Prefer modern formats for better compression where supported
     formats: ["image/avif", "image/webp"],
     // Allow images from any domain for product descriptions

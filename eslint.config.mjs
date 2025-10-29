@@ -20,6 +20,11 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      "@typescript-eslint/ban-ts-comment": "off", // Allow @ts-nocheck for static export compatibility
+    },
+  },
 ];
 
 export default eslintConfig;

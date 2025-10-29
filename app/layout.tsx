@@ -45,6 +45,31 @@ export const metadata: Metadata = {
   authors: [{ name: "KidsToysBangladesh" }],
   creator: "KidsToysBangladesh",
   publisher: "KidsToysBangladesh",
+  // Mobile-optimized viewport settings for Capacitor
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    viewportFit: 'cover', // Safe area support for notched devices
+  },
+  // Theme color for mobile browsers and status bar
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#14B8A6' },
+    { media: '(prefers-color-scheme: dark)', color: '#0D9488' },
+  ],
+  // Apple Web App configuration
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'KidsToys BD',
+  },
+  // Format detection
+  formatDetection: {
+    telephone: true,
+    email: true,
+    address: true,
+  },
   robots: {
     index: true,
     follow: true,

@@ -1,5 +1,9 @@
 import { MetadataRoute } from 'next'
 
+// Required for static export
+export const dynamic = 'force-static'
+export const revalidate = false
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://kidstoysbangladesh.com'
 

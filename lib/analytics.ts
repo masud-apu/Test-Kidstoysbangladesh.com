@@ -26,7 +26,7 @@ export interface RemoveFromCartEvent {
 }
 
 export type CartViewItem = {
-  id: number;
+  id: number | string; // Support both numeric IDs and string handles
   name: string;
   quantity: number;
   price: string;

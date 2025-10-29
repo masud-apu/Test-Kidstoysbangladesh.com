@@ -5,9 +5,10 @@
  * handling base URL configuration, error handling, and logging.
  */
 
-// Use relative URLs - Next.js rewrites will proxy to admin backend
-// This avoids cross-origin issues in the browser
-const BASE_URL = ''
+// Use environment variable for base URL
+// In development: '' (empty, uses Next.js rewrites)
+// In production/Capacitor: full domain URL
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ''
 
 export interface ApiClientOptions extends RequestInit {
   /**

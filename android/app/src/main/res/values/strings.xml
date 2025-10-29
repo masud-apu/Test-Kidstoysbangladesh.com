@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KidsToys Bangladesh</string>
+    <string name="title_activity_main">KidsToys Bangladesh</string>
+    <string name="package_name">com.kidstoys.bangladesh</string>
+    <string name="custom_url_scheme">com.kidstoys.bangladesh</string>
+</resources>

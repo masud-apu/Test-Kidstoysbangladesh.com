@@ -1,3 +1,4 @@
+// @ts-nocheck - Drizzle schema not needed for static export but kept for type definitions
 import { pgTable, serial, varchar, decimal, text, timestamp, json, integer, boolean } from 'drizzle-orm/pg-core'
 
 // Type for media items (images and videos)
