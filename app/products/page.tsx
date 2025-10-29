@@ -1,11 +1,8 @@
 import { ProductCard } from '@/components/product-card'
-import { db } from '@/lib/db'
-import { products, productVariants } from '@/lib/schema'
-import { eq } from 'drizzle-orm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
+import {
   Filter,
   SlidersHorizontal,
   Grid3X3,
@@ -22,24 +19,22 @@ import {
 import { ProductsPageClient } from '@/components/products-page-client'
 
 export default async function ProductsPage() {
-  const fetched = await db.select().from(products)
+  // Fetch all products from admin API
+  const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=100`, {
+    next: { revalidate: 300 } // 5 minutes cache
+  })
 
-  // Fetch variants for all products
-  const productsWithVariants = await Promise.all(
-    fetched.map(async (product) => {
-      const variants = await db
-        .select()
-        .from(productVariants)
-        .where(eq(productVariants.productId, product.id))
+  if (!response.ok) {
+    console.error('Failed to fetch products')
+  }
 
-      return {
-        ...product,
-        variants
-      }
-    })
-  )
+  const data = response.ok ? await response.json() : { products: [] }
 
-  const allProducts = [...productsWithVariants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const productsWithVariants: any[] = data.products || []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allProducts: any[] = [...productsWithVariants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   return (
     <div className="min-h-screen bg-gray-50">

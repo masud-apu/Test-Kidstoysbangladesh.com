@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
             value: `
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://us-assets.i.posthog.com https://us.i.posthog.com;
-              connect-src 'self' https://connect.facebook.net https://www.facebook.com https://us-assets.i.posthog.com https://us.i.posthog.com https://res.cloudinary.com;
+              connect-src 'self' http://localhost:3001 https://connect.facebook.net https://www.facebook.com https://us-assets.i.posthog.com https://us.i.posthog.com https://res.cloudinary.com;
               font-src 'self' https://fonts.gstatic.com;
               img-src 'self' blob: data: https: http:;
               media-src 'self' https://res.cloudinary.com;
@@ -66,6 +66,14 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
+      // Proxy API requests to admin backend (for development cross-origin workaround)
+      {
+        source: "/api/:path*",
+        destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
+          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/:path*`
+          : "http://localhost:3001/api/:path*",
+      },
+      // PostHog analytics
       {
         source: "/ingest/static/:path*",
         destination: "https://us-assets.i.posthog.com/static/:path*",

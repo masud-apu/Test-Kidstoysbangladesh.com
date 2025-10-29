@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Loader2, Phone } from 'lucide-react'
 import { toast } from 'sonner'
+import { apiGet } from '@/lib/api-client'
 
 interface TrackingEvent {
   id?: string | number
@@ -103,8 +104,7 @@ function TrackOrderContent() {
 
     setLoading(true)
     try {
-      const response = await fetch(`/api/orders/track?orderId=${encodeURIComponent(targetOrderId.trim())}`)
-      const data = await response.json()
+      const data = await apiGet(`/api/orders/track?orderId=${encodeURIComponent(targetOrderId.trim())}`)
 
       if (data.success) {
         setTrackingData(data)

@@ -1,9 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { ProductPageClient } from '@/components/product-page-client'
-import { db } from '@/lib/db'
-import { products, productVariants, productOptions, productOptionValues, variantSelectedOptions, MediaItem } from '@/lib/schema'
-import { eq } from 'drizzle-orm'
+import { MediaItem } from '@/lib/schema'
 
 // Helper function to get URL from media item
 function getMediaUrl(item: string | MediaItem): string {
@@ -11,24 +9,39 @@ function getMediaUrl(item: string | MediaItem): string {
 }
 
 export async function generateStaticParams() {
-  const allProducts = await db.select({ handle: products.handle }).from(products)
-  
-  return allProducts.map((product) => ({
+  // Fetch all product handles from admin API for static generation
+  const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=100`, {
+    next: { revalidate: 3600 } // 1 hour cache
+  })
+
+  if (!response.ok) {
+    return []
+  }
+
+  const data = await response.json()
+  const allProducts = data.products || []
+
+  return allProducts.map((product: { handle: string }) => ({
     slug: product.handle,
   }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const product = await db.select().from(products).where(eq(products.handle, slug)).limit(1)
-  
-  if (!product.length) {
+
+  // Fetch product from admin API
+  const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products/${slug}`, {
+    next: { revalidate: 300 } // 5 minutes cache
+  })
+
+  if (!response.ok) {
     return {
       title: 'Product Not Found',
     }
   }
 
-  const prod = product[0]
+  const data = await response.json()
+  const prod = data.product
   const productUrl = `https://kidstoysbangladesh.com/product/${prod.handle}`
   const imageUrl = prod.images && prod.images.length > 0 
     ? getMediaUrl(prod.images[0])
@@ -76,78 +89,24 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const [product] = await db.select().from(products).where(eq(products.handle, slug)).limit(1)
 
-  if (!product) {
+  // Fetch product with all related data from admin API
+  const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products/${slug}`, {
+    next: { revalidate: 300 } // 5 minutes cache
+  })
+
+  if (!response.ok) {
     notFound()
   }
 
-  // Fetch variants
-  const variants = await db
-    .select()
-    .from(productVariants)
-    .where(eq(productVariants.productId, product.id))
-    .orderBy(productVariants.position)
-
-  // Fetch options
-  const options = await db
-    .select()
-    .from(productOptions)
-    .where(eq(productOptions.productId, product.id))
-    .orderBy(productOptions.position)
-
-  // Fetch option values for each option (including images)
-  const optionsWithValues = await Promise.all(
-    options.map(async (option) => {
-      const values = await db
-        .select({
-          id: productOptionValues.id,
-          optionId: productOptionValues.optionId,
-          value: productOptionValues.value,
-          image: productOptionValues.image,
-          position: productOptionValues.position,
-          createdAt: productOptionValues.createdAt,
-        })
-        .from(productOptionValues)
-        .where(eq(productOptionValues.optionId, option.id))
-        .orderBy(productOptionValues.position)
-
-      return { ...option, values }
-    })
-  )
-
-  // Fetch selected options for each variant
-  const variantsWithOptions = await Promise.all(
-    variants.map(async (variant) => {
-      const selectedOpts = await db
-        .select({
-          id: variantSelectedOptions.id,
-          variantId: variantSelectedOptions.variantId,
-          optionId: variantSelectedOptions.optionId,
-          optionValueId: variantSelectedOptions.optionValueId,
-          optionName: productOptions.name,
-          valueName: productOptionValues.value,
-        })
-        .from(variantSelectedOptions)
-        .innerJoin(productOptions, eq(variantSelectedOptions.optionId, productOptions.id))
-        .innerJoin(productOptionValues, eq(variantSelectedOptions.optionValueId, productOptionValues.id))
-        .where(eq(variantSelectedOptions.variantId, variant.id))
-
-      return {
-        ...variant,
-        selectedOptions: selectedOpts.map(opt => ({
-          optionName: opt.optionName,
-          valueName: opt.valueName,
-        })),
-      }
-    })
-  )
+  const data = await response.json()
+  const { product, variants, options } = data
 
   return (
     <ProductPageClient
       product={product}
-      variants={variantsWithOptions}
-      options={optionsWithValues}
+      variants={variants}
+      options={options}
     />
   )
 }

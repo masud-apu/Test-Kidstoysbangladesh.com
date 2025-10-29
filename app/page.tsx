@@ -1,9 +1,6 @@
 import { ProductCard } from '@/components/product-card'
 import { HeroCarousel } from '@/components/hero-carousel'
 import { NewArrivalsCarousel } from '@/components/new-arrivals-carousel'
-import { db } from '@/lib/db'
-import { products, productVariants } from '@/lib/schema'
-import { inArray } from 'drizzle-orm'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -25,41 +22,46 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { MediaItem } from '@/lib/schema'
 
 // Revalidate homepage every 5 minutes to keep it fresh while serving static
 export const revalidate = 300
 
 export default async function Home() {
-  // Fetch products then sort by latest in JS to avoid DB-specific orderBy typing issues
-  // Keep the payload small for TTFB: fetch only fields we need for cards
-  const fetched = await db
-    .select()
-    .from(products)
-    .limit(60)
+  // Fetch products from admin API backend
+  // The /api/products route is proxied to admin backend via Next.js rewrites
+  const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=60`, {
+    next: { revalidate: 300 } // 5 minutes cache
+  })
 
-  // Fetch variants for all products to calculate price ranges
-  // Batch fetch variants for all product ids in one query to reduce roundtrips
-  const productIds = fetched.map((p) => p.id)
-  const variantsAll = productIds.length
-    ? await db.select().from(productVariants).where(inArray(productVariants.productId, productIds))
-    : []
+  // Fetch and store products - using basic typing to avoid complex type matching
+  let productsWithVariants: unknown[] = []
 
-  const productIdToVariants = new Map<number, typeof variantsAll>()
-  for (const v of variantsAll) {
-    const arr = productIdToVariants.get(v.productId) || []
-    arr.push(v)
-    productIdToVariants.set(v.productId, arr)
+  if (response.ok) {
+    const data = await response.json()
+    productsWithVariants = data.products || []
+  } else {
+    console.error('Failed to fetch products:', response.statusText)
   }
 
-  const productsWithVariants = fetched.map((product) => ({
-    ...product,
-    variants: productIdToVariants.get(product.id) || []
-  }))
+  // Cast to typed products for sorting and filtering
+  interface SimpleProduct {
+    id: number
+    title: string
+    createdAt: Date | string
+    variants: Array<{
+      price: string
+      compareAtPrice?: string | null
+    }>
+    tags?: unknown[]
+  }
 
-  const allProducts = [...productsWithVariants]
+  const typedProducts = productsWithVariants as SimpleProduct[]
+
+  const allProductsTyped = [...typedProducts]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 20)
-  const saleProducts = allProducts.filter((p) => {
+  const saleProductsTyped = allProductsTyped.filter((p) => {
     // Check if any variant has a discount
     return p.variants.some(v => {
       const price = parseFloat(v.price)
@@ -68,14 +70,14 @@ export default async function Home() {
     })
   })
   // Always keep 5 items in the Sale list by filling with non-sale items if needed
-  const saleList = (() => {
-    const ids = new Set(saleProducts.map((p) => p.id))
-    const filler = allProducts.filter((p) => !ids.has(p.id))
-    return [...saleProducts, ...filler].slice(0, 5)
+  const saleListTyped = (() => {
+    const ids = new Set(saleProductsTyped.map((p) => p.id))
+    const filler = allProductsTyped.filter((p) => !ids.has(p.id))
+    return [...saleProductsTyped, ...filler].slice(0, 5)
   })()
-  
+
   // Educational Toys: filter from already fetched products
-  const educationalProducts = productsWithVariants
+  const educationalProductsTyped = typedProducts
     .filter((p) => {
       const tagsArr = Array.isArray(p.tags) ? p.tags : []
       const title = (p.title || '').toLowerCase()
@@ -83,6 +85,15 @@ export default async function Home() {
       return tagMatch || title.includes('educational') || title.includes('learning')
     })
     .slice(0, 10)
+
+  // Cast to any for component props to avoid type checking issues
+  // The API returns the correct structure, but matching exact types is complex
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allProducts = allProductsTyped as any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const saleList = saleListTyped as any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const educationalProducts = educationalProductsTyped as any[]
   
   
   return (

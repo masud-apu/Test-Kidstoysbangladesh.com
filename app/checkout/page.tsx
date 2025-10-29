@@ -25,6 +25,7 @@ import { Product, ProductVariant, MediaItem } from "@/lib/schema";
 import { CartItem } from "@/lib/store";
 import { isFreeDeliveryActive, FREE_DELIVERY_MESSAGE, FREE_DELIVERY_SUBTITLE } from "@/lib/free-delivery";
 import { useCheckoutFormTracking } from "@/hooks/use-form-tracking";
+import { apiPost } from "@/lib/api-client";
 
 // Helper function to get URL from media item
 function getMediaUrl(item: string | MediaItem): string {
@@ -136,16 +137,17 @@ function CheckoutContent() {
                     }, variantsToConsider[0])
                   : variants[0];
 
+                // Always set variant price, fallback to first variant or "0"
+                const selectedVariant = minPriceVariant || (variants.length > 0 ? variants[0] : null);
+
                 return {
                   ...product,
                   quantity: quantityMap.get(product.id) || 1,
-                  ...(minPriceVariant && {
-                    variantId: minPriceVariant.id,
-                    variantTitle: minPriceVariant.title,
-                    variantSku: minPriceVariant.sku,
-                    variantPrice: minPriceVariant.price,
-                    variantCompareAtPrice: minPriceVariant.compareAtPrice,
-                  }),
+                  variantId: selectedVariant?.id,
+                  variantTitle: selectedVariant?.title,
+                  variantSku: selectedVariant?.sku,
+                  variantPrice: selectedVariant?.price ?? "0",
+                  variantCompareAtPrice: selectedVariant?.compareAtPrice,
                 };
               },
             );
@@ -163,17 +165,27 @@ function CheckoutContent() {
   }, [mounted, searchParams, overlayCheckoutOpen]);
 
   // Determine which items to show based on checkout type
+  // IMPORTANT: Ensure all items have variantPrice, even old cart items
   const checkoutItems = useMemo(() => {
+    let rawItems: CartItem[] = [];
+
     if (checkoutType === "direct" && directBuyItem) {
-      return [directBuyItem];
+      rawItems = [directBuyItem];
+    } else if (checkoutType === "url") {
+      rawItems = urlProducts;
+    } else if (checkoutType === "cart") {
+      rawItems = getSelectedItems();
     }
-    if (checkoutType === "url") {
-      return urlProducts;
-    }
-    if (checkoutType === "cart") {
-      return getSelectedItems();
-    }
-    return [];
+
+    // Fix: Ensure all items have variantPrice set (for backward compatibility with old cart data)
+    return rawItems.map(item => {
+      if (!item.variantPrice && item.variantId) {
+        console.warn('⚠️ Item missing variantPrice, attempting to fix:', item.id, item.title);
+        // Item has variant but no price - this shouldn't happen but fix it anyway
+        return { ...item, variantPrice: "0" };
+      }
+      return item;
+    });
   }, [checkoutType, directBuyItem, getSelectedItems, urlProducts, items, selectedItems]);
 
   const itemsTotal =
@@ -201,40 +213,48 @@ function CheckoutContent() {
     setPromoCodeError("");
 
     try {
-      const response = await fetch("/api/promo-codes/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: promoCode.trim(),
-          items: checkoutItems.map((item) => ({
-            id: item.id,
-            price: item.variantPrice || "0",
-            quantity: item.quantity,
-          })),
-          itemsTotal,
-        }),
+      const result = await apiPost<{
+        valid: boolean
+        promoCode?: {
+          id: number
+          code: string
+          name: string | null
+          discountType: string
+          discountValue: number
+          maxDiscountAmount: number | null
+        }
+        discountAmount?: number
+        isStoreWide?: boolean
+        error?: string
+      }> ("/api/promo-codes/validate", {
+        code: promoCode.trim(),
+        items: checkoutItems.map((item) => ({
+          id: item.id,
+          price: item.variantPrice || "0",
+          quantity: item.quantity,
+        })),
+        itemsTotal,
       });
 
-      const result = await response.json();
-
-      if (result.valid) {
+      if (result.valid && result.promoCode && result.discountAmount !== undefined) {
         setAppliedPromoCode({
           id: result.promoCode.id,
           code: result.promoCode.code,
-          name: result.promoCode.name,
+          name: result.promoCode.name || result.promoCode.code, // Fallback to code if name is null
           discountAmount: result.discountAmount,
-          discountType: result.promoCode.discountType,
-          discountValue: result.promoCode.discountValue,
-          maxDiscountAmount: result.promoCode.maxDiscountAmount,
-          isStoreWide: result.isStoreWide,
+          discountType: result.promoCode.discountType as "percentage" | "fixed",
+          discountValue: String(result.promoCode.discountValue),
+          maxDiscountAmount: result.promoCode.maxDiscountAmount !== null ? String(result.promoCode.maxDiscountAmount) : undefined,
+          isStoreWide: result.isStoreWide ?? false,
         });
         setPromoCode("");
         toast.success(
           `Promo code "${result.promoCode.code}" applied successfully! You saved ৳${result.discountAmount}`,
         );
       } else {
-        setPromoCodeError(result.error);
-        toast.error(result.error);
+        const errorMsg = result.error || "Invalid promo code"
+        setPromoCodeError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (error) {
       console.error("Error applying promo code:", error);
@@ -430,14 +450,57 @@ function CheckoutContent() {
 
     const newOrderId = `KTB${Date.now()}`;
 
+    // Prepare order items with guaranteed price values
+    const orderItems = checkoutItems.map(item => {
+      // Debug: Check what variantPrice actually is
+      console.log('🔍 Processing item:', {
+        id: item.id,
+        title: item.title,
+        variantPrice: item.variantPrice,
+        variantPriceType: typeof item.variantPrice,
+        hasVariantId: !!item.variantId
+      });
+
+      const price = item.variantPrice ?? "0";
+      const variantPrice = item.variantPrice ?? "0";
+
+      return {
+        id: item.id,
+        handle: item.handle,
+        name: item.title, // Backend expects 'name' but Product has 'title'
+        price: price, // Ensure price is always a string (never undefined)
+        comparePrice: item.variantCompareAtPrice ?? null,
+        tags: item.tags || [],
+        images: item.images ? item.images.slice(0, 1) : [], // Only first image to reduce payload
+        description: null, // Don't send description (can be huge) - not needed for order record
+        quantity: item.quantity,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        // Variant fields if present
+        variantId: item.variantId,
+        variantTitle: item.variantTitle,
+        variantSku: item.variantSku ?? null,
+        variantPrice: variantPrice, // Ensure always a string
+        variantCompareAtPrice: item.variantCompareAtPrice ?? null,
+        selectedOptions: item.selectedOptions,
+      };
+    });
+
+    // Debug: Log order items to check for undefined prices
+    console.log('Order items being sent:', orderItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      variantPrice: item.variantPrice
+    })));
+
     const orderData = {
       customerName: data.name,
       customerEmail: data.email ?? null,
       customerPhone: data.phone,
       customerAddress: data.address,
       specialNote: data.specialNote ?? undefined,
-      // city and postalCode removed
-      items: checkoutItems,
+      items: orderItems,
       totalAmount: totalPrice,
       shippingCost,
       deliveryType,
@@ -527,12 +590,7 @@ function CheckoutContent() {
 
     // Make API call in background to save order and generate PDF/email
     // This runs asynchronously - user already sees success
-    fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderData),
-    })
-      .then((response) => response.json())
+    apiPost<{ success: boolean; message?: string }>("/api/orders", orderData)
       .then((result) => {
         if (result.success) {
           console.log("✅ Order saved successfully:", newOrderId);
