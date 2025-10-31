@@ -161,8 +161,8 @@ export function Header() {
               isScrolled ? 'space-x-2' : 'space-x-4'
             )}
           >
-            {/* Account / Sign In */}
-            <HeaderAuth isScrolled={isScrolled} />
+            {/* Account / Sign In - TEMPORARILY COMMENTED OUT */}
+            {/* <HeaderAuth isScrolled={isScrolled} /> */}
 
             {/* Cart */}
             <Button
