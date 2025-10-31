@@ -18,13 +18,13 @@ import { useOverlayStore } from "@/lib/ui-store";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { checkoutSchema, type CheckoutType } from "@/lib/validations";
-import { Minus, Plus, Trash2, ShoppingBag, Tag, Loader2, Sparkles } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, Tag, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Analytics } from "@/lib/analytics";
 import { fbPixelEvents } from "@/lib/facebook-pixel-events";
 import { Product, ProductVariant, MediaItem } from "@/lib/schema";
 import { CartItem } from "@/lib/store";
-import { isFreeDeliveryActive, FREE_DELIVERY_MESSAGE, FREE_DELIVERY_SUBTITLE } from "@/lib/free-delivery";
+// Free delivery promotion removed - shipping costs always applied
 import { useCheckoutFormTracking } from "@/hooks/use-form-tracking";
 import { apiPost } from "@/lib/api-client";
 
@@ -591,8 +591,16 @@ function CheckoutContent() {
 
     // Make API call in background to save order and generate PDF/email
     // This runs asynchronously - user already sees success
+    console.log("📤 Sending order to API:", {
+      orderId: newOrderId,
+      endpoint: "/api/orders",
+      itemCount: orderItems.length,
+      totalAmount: totalPrice,
+    });
+
     apiPost<{ success: boolean; message?: string }>("/api/orders", orderData)
       .then((result) => {
+        console.log("📥 API Response received:", result);
         if (result.success) {
           console.log("✅ Order saved successfully:", newOrderId);
         } else {
@@ -606,6 +614,11 @@ function CheckoutContent() {
       })
       .catch((error) => {
         console.error("❌ Order API error:", error);
+        console.error("❌ Error details:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
         // Show warning but don't alarm the user since they already saw success
         toast.warning("Order received", {
           description: "We're processing your order. You'll receive confirmation soon.",
@@ -655,31 +668,6 @@ function CheckoutContent() {
           </div>
         </div>
 
-        {/* Free Delivery Campaign Banner */}
-        {isFreeDeliveryActive() && (
-          <div className="relative bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 rounded-xl p-6 mb-8 overflow-hidden shadow-lg">
-            {/* Animated background decoration */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-0 left-1/4 w-48 h-48 bg-white rounded-full blur-3xl animate-pulse"></div>
-              <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse delay-1000"></div>
-            </div>
-
-            <div className="relative z-10">
-              <div className="flex flex-col items-center justify-center gap-3 text-white">
-                <div className="flex items-center gap-3">
-                  <Sparkles className="h-6 w-6 animate-bounce" />
-                  <p className="text-xl md:text-2xl font-bold text-center tracking-wide">
-                    {FREE_DELIVERY_MESSAGE}
-                  </p>
-                  <Sparkles className="h-6 w-6 animate-bounce" />
-                </div>
-                <p className="text-sm md:text-base font-medium opacity-95 text-center">
-                  {FREE_DELIVERY_SUBTITLE}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Order Summary */}
@@ -706,14 +694,7 @@ function CheckoutContent() {
                         <RadioGroupItem value="outside" id="checkout-outside" />
                         <span className="text-sm">Outside Dhaka</span>
                       </div>
-                      {isFreeDeliveryActive() ? (
-                        <div className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold text-sm">
-                          <Sparkles className="h-3 w-3" />
-                          FREE
-                        </div>
-                      ) : (
-                        <span className="text-sm font-medium">TK 120</span>
-                      )}
+                      <span className="text-sm font-medium">TK 120</span>
                     </label>
                     <label
                       htmlFor="checkout-inside"
@@ -723,14 +704,7 @@ function CheckoutContent() {
                         <RadioGroupItem value="inside" id="checkout-inside" />
                         <span className="text-sm">Inside Dhaka</span>
                       </div>
-                      {isFreeDeliveryActive() ? (
-                        <div className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold text-sm">
-                          <Sparkles className="h-3 w-3" />
-                          FREE
-                        </div>
-                      ) : (
-                        <span className="text-sm font-medium">TK 60</span>
-                      )}
+                      <span className="text-sm font-medium">TK 60</span>
                     </label>
                   </RadioGroup>
                 </div>
@@ -856,14 +830,7 @@ function CheckoutContent() {
                   </div>
                   <div className="flex justify-between text-sm items-center">
                     <span>Shipping:</span>
-                    {isFreeDeliveryActive() && shippingCost === 0 ? (
-                      <div className="flex items-center gap-1 text-green-600 font-bold">
-                        <Sparkles className="h-3 w-3" />
-                        <span>FREE</span>
-                      </div>
-                    ) : (
-                      <span>TK {shippingCost.toFixed(2)}</span>
-                    )}
+                    <span>TK {shippingCost.toFixed(2)}</span>
                   </div>
                   {appliedPromoCode && (
                     <div className="flex justify-between text-sm text-green-600">

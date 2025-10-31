@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // REQUIRED FOR CAPACITOR: Export as static site
-  output: 'export',
+  // NOTE: Static export disabled to support NextAuth authentication
+  // Re-enable 'output: export' only for Capacitor builds after removing auth
+  // output: 'export',
 
   images: {
     // Static export requires unoptimized images
@@ -71,12 +72,31 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
-      // Proxy API requests to admin backend (for development cross-origin workaround)
+      // Proxy API requests to admin backend (EXCEPT /api/auth/* which is handled by NextAuth)
       {
-        source: "/api/:path*",
+        source: "/api/products/:path*",
         destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
-          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/:path*`
-          : "http://localhost:3001/api/:path*",
+          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/products/:path*`
+          : "http://localhost:3001/api/products/:path*",
+      },
+      {
+        source: "/api/orders/:path*",
+        destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
+          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/orders/:path*`
+          : "http://localhost:3001/api/orders/:path*",
+      },
+      {
+        source: "/api/promo-codes/:path*",
+        destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
+          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/promo-codes/:path*`
+          : "http://localhost:3001/api/promo-codes/:path*",
+      },
+      // Customer authentication endpoints (handled by admin backend, NOT NextAuth)
+      {
+        source: "/api/auth/customer/:path*",
+        destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
+          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/auth/customer/:path*`
+          : "http://localhost:3001/api/auth/customer/:path*",
       },
       // PostHog analytics
       {

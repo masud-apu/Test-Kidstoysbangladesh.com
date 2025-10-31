@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Product, ProductVariant } from "./schema";
 import { Analytics } from "./analytics";
-import { getShippingCost as getFreeDeliveryShippingCost } from "./free-delivery";
+import { getShippingCost } from "./free-delivery";
 
 export type DeliveryType = "inside" | "outside";
 
@@ -226,7 +226,7 @@ export const useCartStore = create<CartStore>()(
 
       getShippingCost: () => {
         const { deliveryType } = get();
-        return getFreeDeliveryShippingCost(deliveryType);
+        return getShippingCost(deliveryType);
       },
 
       getSelectedTotalWithShipping: () => {

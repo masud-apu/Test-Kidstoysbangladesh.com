@@ -112,10 +112,13 @@ export async function apiPost<T = any>(
   data?: any,
   options?: Omit<ApiClientOptions, 'method' | 'body'>
 ): Promise<T> {
+  // Ensure data is at least an empty object if undefined
+  const bodyData = data !== undefined ? data : {}
+
   return apiRequest<T>(endpoint, {
     ...options,
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(bodyData),
   })
 }
 
@@ -129,10 +132,13 @@ export async function apiPut<T = any>(
   data?: any,
   options?: Omit<ApiClientOptions, 'method' | 'body'>
 ): Promise<T> {
+  // Ensure data is at least an empty object if undefined
+  const bodyData = data !== undefined ? data : {}
+
   return apiRequest<T>(endpoint, {
     ...options,
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(bodyData),
   })
 }
 

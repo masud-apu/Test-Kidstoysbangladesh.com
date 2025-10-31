@@ -5,11 +5,12 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ShoppingCart, Sparkles, Flame, Star, PackageSearch } from 'lucide-react'
+import { ShoppingCart, Sparkles, Flame, Star, PackageSearch, UserCircle } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 import { cn } from '@/lib/utils'
 import { Analytics } from '@/lib/analytics'
+import { HeaderAuth } from '@/components/header-auth'
 
 export function Header() {
   const totalItems = useCartStore((s) => s.getTotalItems())
@@ -160,6 +161,10 @@ export function Header() {
               isScrolled ? 'space-x-2' : 'space-x-4'
             )}
           >
+            {/* Account / Sign In */}
+            <HeaderAuth isScrolled={isScrolled} />
+
+            {/* Cart */}
             <Button
               aria-label="Cart"
               className={cn(

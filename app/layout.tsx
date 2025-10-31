@@ -7,6 +7,7 @@ import { OrganizationStructuredData, WebsiteStructuredData } from '@/components/
 import { Toaster } from '@/components/ui/sonner'
 import { FacebookPixel } from '@/components/FacebookPixel'
 import { PHProvider } from '@/components/posthog-provider'
+import { AuthProvider } from '@/components/auth-provider'
 import "./globals.css";
 
 const nunito = Nunito({
@@ -34,6 +35,19 @@ const notoSansBengali = Noto_Sans_Bengali({
   fallback: ['system-ui', 'sans-serif'],
 });
 
+// Viewport configuration (including themeColor as per Next.js 15)
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover' as const, // Safe area support for notched devices
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#14B8A6' },
+    { media: '(prefers-color-scheme: dark)', color: '#0D9488' },
+  ],
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://kidstoysbangladesh.com'),
   title: {
@@ -45,19 +59,6 @@ export const metadata: Metadata = {
   authors: [{ name: "KidsToysBangladesh" }],
   creator: "KidsToysBangladesh",
   publisher: "KidsToysBangladesh",
-  // Mobile-optimized viewport settings for Capacitor
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-    viewportFit: 'cover', // Safe area support for notched devices
-  },
-  // Theme color for mobile browsers and status bar
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#14B8A6' },
-    { media: '(prefers-color-scheme: dark)', color: '#0D9488' },
-  ],
   // Apple Web App configuration
   appleWebApp: {
     capable: true,
@@ -136,20 +137,22 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} ${amatic.variable} ${notoSansBengali.variable} font-sans antialiased`}
       >
-        <PHProvider>
-          {/* Wrap components using navigation hooks in Suspense */}
-          <Suspense fallback={null}>
-            <ConditionalLayout>
-              {children}
-            </ConditionalLayout>
-          </Suspense>
-          {/* Overlays rendered at the end of body to avoid stacking issues */}
-          <GlobalOverlays />
-          <Toaster />
-          <Suspense fallback={null}>
-            <FacebookPixel />
-          </Suspense>
-        </PHProvider>
+        <AuthProvider>
+          <PHProvider>
+            {/* Wrap components using navigation hooks in Suspense */}
+            <Suspense fallback={null}>
+              <ConditionalLayout>
+                {children}
+              </ConditionalLayout>
+            </Suspense>
+            {/* Overlays rendered at the end of body to avoid stacking issues */}
+            <GlobalOverlays />
+            <Toaster />
+            <Suspense fallback={null}>
+              <FacebookPixel />
+            </Suspense>
+          </PHProvider>
+        </AuthProvider>
       </body>
     </html>
   );
