@@ -8,7 +8,7 @@
 // Use environment variable for base URL
 // In development: '' (empty, uses Next.js rewrites)
 // In production/Capacitor: full domain URL
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ''
+const BASE_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || ''
 
 export interface ApiClientOptions extends RequestInit {
   /**

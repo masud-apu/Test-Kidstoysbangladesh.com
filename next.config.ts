@@ -72,32 +72,27 @@ const nextConfig: NextConfig = {
     ];
   },
   async rewrites() {
+    // Use environment variable or fall back to production URL
+    const adminApiUrl = process.env.NEXT_PUBLIC_ADMIN_API_URL || "https://admin.kidstoysbangladesh.com"
+
     return [
       // Proxy API requests to admin backend (EXCEPT /api/auth/* which is handled by NextAuth)
       {
         source: "/api/products/:path*",
-        destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
-          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/products/:path*`
-          : "http://localhost:3001/api/products/:path*",
+        destination: `${adminApiUrl}/api/products/:path*`,
       },
       {
         source: "/api/orders/:path*",
-        destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
-          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/orders/:path*`
-          : "http://localhost:3001/api/orders/:path*",
+        destination: `${adminApiUrl}/api/orders/:path*`,
       },
       {
         source: "/api/promo-codes/:path*",
-        destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
-          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/promo-codes/:path*`
-          : "http://localhost:3001/api/promo-codes/:path*",
+        destination: `${adminApiUrl}/api/promo-codes/:path*`,
       },
       // Customer authentication endpoints (handled by admin backend, NOT NextAuth)
       {
         source: "/api/auth/customer/:path*",
-        destination: process.env.NEXT_PUBLIC_ADMIN_API_URL
-          ? `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/api/auth/customer/:path*`
-          : "http://localhost:3001/api/auth/customer/:path*",
+        destination: `${adminApiUrl}/api/auth/customer/:path*`,
       },
       // PostHog analytics
       {
