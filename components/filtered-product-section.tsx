@@ -126,13 +126,4 @@ export function FilteredProductSection({ products }: FilteredProductSectionProps
                             <Search className="h-10 w-10 text-gray-300" />
                         </div>
                         <h3 className="text-xl font-bold mb-2 text-gray-900">No products found</h3>
-                        <p className="text-gray-500 mb-6 max-w-sm mx-auto">We couldn't find any products in this collection. Please check back later!</p>
-                        <Button variant="outline" className="h-11 border-gray-200 hover:bg-white hover:text-brand-navy hover:border-brand-navy transition-colors">
-                            Clear Filters
-                        </Button>
-                    </div>
-                )}
-            </div>
-        </section>
-    );
-}
+                    <p className="text-gray-500 mb-6 max-w-sm mx-auto">We couldn&apos;t find any products in this collection. Please check back later!</p>
