@@ -132,10 +132,10 @@ function CheckoutContent() {
                 // Find the minimum price variant from available variants
                 const minPriceVariant = variantsToConsider.length > 0
                   ? variantsToConsider.reduce((min, v) => {
-                      const price = parseFloat(v.price);
-                      const minPrice = parseFloat(min.price);
-                      return price < minPrice ? v : min;
-                    }, variantsToConsider[0])
+                    const price = parseFloat(v.price);
+                    const minPrice = parseFloat(min.price);
+                    return price < minPrice ? v : min;
+                  }, variantsToConsider[0])
                   : variants[0];
 
                 // Always set variant price, fallback to first variant or "0"
@@ -194,10 +194,10 @@ function CheckoutContent() {
       ? parseFloat(directBuyItem.variantPrice || "0") * directBuyItem.quantity
       : checkoutType === "url"
         ? urlProducts.reduce(
-            (total, item) =>
-              total + parseFloat(item.variantPrice || "0") * item.quantity,
-            0,
-          )
+          (total, item) =>
+            total + parseFloat(item.variantPrice || "0") * item.quantity,
+          0,
+        )
         : getSelectedTotal();
   const shippingCost = checkoutItems.length > 0 ? getShippingCost() : 0;
   const discountAmount = appliedPromoCode?.discountAmount || 0;
@@ -227,7 +227,7 @@ function CheckoutContent() {
         discountAmount?: number
         isStoreWide?: boolean
         error?: string
-      }> ("/api/promo-codes/validate", {
+      }>("/api/promo-codes/validate", {
         code: promoCode.trim(),
         items: checkoutItems.map((item) => ({
           id: item.id,
@@ -339,8 +339,8 @@ function CheckoutContent() {
         value: totalPrice,
         content_category:
           checkoutItems.length > 0 &&
-          Array.isArray(checkoutItems[0].tags) &&
-          checkoutItems[0].tags.length > 0
+            Array.isArray(checkoutItems[0].tags) &&
+            checkoutItems[0].tags.length > 0
             ? checkoutItems[0].tags[0]
             : undefined,
       });
@@ -670,259 +670,6 @@ function CheckoutContent() {
 
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Order Summary */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium mb-2">Delivery Location</p>
-                  <RadioGroup
-                    value={deliveryType}
-                    onValueChange={(val) =>
-                      setDeliveryType(val as DeliveryType)
-                    }
-                    className="grid gap-2"
-                  >
-                    <label
-                      htmlFor="checkout-outside"
-                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-green-500 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <RadioGroupItem value="outside" id="checkout-outside" />
-                        <span className="text-sm">Outside Dhaka</span>
-                      </div>
-                      <span className="text-sm font-medium">TK 120</span>
-                    </label>
-                    <label
-                      htmlFor="checkout-inside"
-                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-green-500 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <RadioGroupItem value="inside" id="checkout-inside" />
-                        <span className="text-sm">Inside Dhaka</span>
-                      </div>
-                      <span className="text-sm font-medium">TK 60</span>
-                    </label>
-                  </RadioGroup>
-                </div>
-
-                {checkoutItems.map((item) => {
-                  const itemKey = getItemKey(item);
-                  const displayPrice = item.variantPrice || "0";
-
-                  return (
-                    <div key={itemKey} className="flex gap-4">
-                      <div className="relative h-20 w-20 overflow-hidden rounded">
-                        {item.images && item.images[0] ? (
-                          <Image
-                            src={getMediaUrl(item.images[0])}
-                            alt={item.title}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
-                            No image
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-1 space-y-2">
-                        <h3 className="font-medium line-clamp-2">
-                          {item.title}
-                        </h3>
-
-                        {/* Display variant information - only if NOT a default variant product */}
-                        {!item.hasOnlyDefaultVariant &&
-                          item.variantTitle &&
-                          item.variantTitle !== "Default Title" && (
-                            <div className="text-sm text-muted-foreground">
-                              {item.selectedOptions &&
-                              item.selectedOptions.length > 0 ? (
-                                <span>
-                                  {item.selectedOptions
-                                    .map((opt) => opt.valueName)
-                                    .join(" / ")}
-                                </span>
-                              ) : (
-                                <span>{item.variantTitle}</span>
-                              )}
-                            </div>
-                          )}
-
-                        <p className="font-bold">TK {displayPrice}</p>
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                              checkoutType === "direct"
-                                ? updateDirectBuyQuantity(item.quantity - 1)
-                                : checkoutType === "url"
-                                  ? updateUrlProductQuantity(
-                                      item.id,
-                                      item.quantity - 1,
-                                    )
-                                  : updateQuantity(itemKey, item.quantity - 1)
-                            }
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="w-8 text-center">
-                            {item.quantity}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                              checkoutType === "direct"
-                                ? updateDirectBuyQuantity(item.quantity + 1)
-                                : checkoutType === "url"
-                                  ? updateUrlProductQuantity(
-                                      item.id,
-                                      item.quantity + 1,
-                                    )
-                                  : updateQuantity(itemKey, item.quantity + 1)
-                            }
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                          {checkoutType !== "direct" && (
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 ml-auto"
-                              onClick={() =>
-                                checkoutType === "url"
-                                  ? removeUrlProduct(item.id)
-                                  : removeFromCart(itemKey)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="font-bold">
-                          TK{" "}
-                          {(parseFloat(displayPrice) * item.quantity).toFixed(
-                            2,
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                <Separator />
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Items Total:</span>
-                    <span>TK {itemsTotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span>Shipping:</span>
-                    <span>TK {shippingCost.toFixed(2)}</span>
-                  </div>
-                  {appliedPromoCode && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span>Promo Discount ({appliedPromoCode.code}):</span>
-                      <span>-TK {discountAmount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Grand Total:</span>
-                    <span>TK {totalPrice.toFixed(2)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Promo Code Section */}
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Tag className="h-5 w-5" />
-                  Promo Code
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {appliedPromoCode ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div>
-                        <p className="font-medium text-green-800">
-                          {appliedPromoCode.code}
-                        </p>
-                        <p className="text-sm text-green-600">
-                          {appliedPromoCode.name}
-                        </p>
-                        <p className="text-sm text-green-600">
-                          You saved ৳
-                          {appliedPromoCode.discountAmount.toFixed(2)}
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={removePromoCode}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter promo code"
-                        value={promoCode}
-                        onChange={(e) => {
-                          setPromoCode(e.target.value.toUpperCase());
-                          setPromoCodeError("");
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            applyPromoCode();
-                          }
-                        }}
-                        className={promoCodeError ? "border-red-500" : ""}
-                        disabled={promoCodeLoading}
-                      />
-                      <Button
-                        onClick={applyPromoCode}
-                        disabled={promoCodeLoading || !promoCode.trim()}
-                        className="whitespace-nowrap"
-                      >
-                        {promoCodeLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            Applying...
-                          </>
-                        ) : (
-                          "Apply"
-                        )}
-                      </Button>
-                    </div>
-                    {promoCodeError && (
-                      <p className="text-sm text-red-600">{promoCodeError}</p>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Checkout Form */}
           <div>
             <Card>
@@ -1033,7 +780,7 @@ function CheckoutContent() {
                   <div className="hidden md:block">
                     <Button
                       onClick={handleSubmit(onSubmit)}
-                      className="w-full h-12 text-base font-semibold"
+                      className="w-full h-12 text-base font-semibold bg-brand-navy hover:bg-brand-navy/90"
                       size="lg"
                       disabled={isLoading}
                     >
@@ -1044,6 +791,258 @@ function CheckoutContent() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Order Summary */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-2">Delivery Location</p>
+                  <RadioGroup
+                    value={deliveryType}
+                    onValueChange={(val) =>
+                      setDeliveryType(val as DeliveryType)
+                    }
+                    className="grid grid-cols-2 gap-2"
+                  >
+                    <label
+                      htmlFor="checkout-outside"
+                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-yellow data-[state=checked]:bg-brand-yellow/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="outside" id="checkout-outside" />
+                        <span className="text-sm">Outside Dhaka</span>
+                      </div>
+                      <span className="text-sm font-medium text-brand-navy">TK 120</span>
+                    </label>
+                    <label
+                      htmlFor="checkout-inside"
+                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-yellow data-[state=checked]:bg-brand-yellow/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="inside" id="checkout-inside" />
+                        <span className="text-sm">Inside Dhaka</span>
+                      </div>
+                      <span className="text-sm font-medium text-brand-navy">TK 60</span>
+                    </label>
+                  </RadioGroup>
+                </div>
+
+                {checkoutItems.map((item) => {
+                  const itemKey = getItemKey(item);
+                  const displayPrice = item.variantPrice || "0";
+
+                  return (
+                    <div key={itemKey} className="flex gap-4 p-4 rounded-lg border border-border/50 hover:border-border transition-colors">
+                      <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border">
+                        {item.images && item.images[0] ? (
+                          <Image
+                            src={getMediaUrl(item.images[0])}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
+                            No image
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <h3 className="font-semibold text-base line-clamp-2 mb-1">
+                            {item.title}
+                          </h3>
+
+                          {/* Display variant information - only if NOT a default variant product */}
+                          {!item.hasOnlyDefaultVariant &&
+                            item.variantTitle &&
+                            item.variantTitle !== "Default Title" && (
+                              <div className="text-sm text-muted-foreground">
+                                {item.selectedOptions &&
+                                  item.selectedOptions.length > 0 ? (
+                                  <span>
+                                    {item.selectedOptions
+                                      .map((opt) => opt.valueName)
+                                      .join(" / ")}
+                                  </span>
+                                ) : (
+                                  <span>{item.variantTitle}</span>
+                                )}
+                              </div>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-between mt-3">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-full"
+                              onClick={() =>
+                                checkoutType === "direct"
+                                  ? updateDirectBuyQuantity(item.quantity - 1)
+                                  : checkoutType === "url"
+                                    ? updateUrlProductQuantity(
+                                      item.id,
+                                      item.quantity - 1,
+                                    )
+                                    : updateQuantity(itemKey, item.quantity - 1)
+                              }
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="min-w-[2rem] text-center font-medium">
+                              {item.quantity}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-full"
+                              onClick={() =>
+                                checkoutType === "direct"
+                                  ? updateDirectBuyQuantity(item.quantity + 1)
+                                  : checkoutType === "url"
+                                    ? updateUrlProductQuantity(
+                                      item.id,
+                                      item.quantity + 1,
+                                    )
+                                    : updateQuantity(itemKey, item.quantity + 1)
+                              }
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                            {checkoutType !== "direct" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 ml-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() =>
+                                  checkoutType === "url"
+                                    ? removeUrlProduct(item.id)
+                                    : removeFromCart(itemKey)
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-brand-navy">
+                              TK {(parseFloat(displayPrice) * item.quantity).toFixed(2)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              TK {displayPrice} × {item.quantity}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <Separator />
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm items-center">
+                    <span>Shipping:</span>
+                    <span className="font-medium">TK {shippingCost.toFixed(2)}</span>
+                  </div>
+                  {appliedPromoCode && (
+                    <div className="flex justify-between text-sm text-brand-green">
+                      <span>Promo Discount ({appliedPromoCode.code}):</span>
+                      <span className="font-medium">-TK {discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <Separator />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Grand Total:</span>
+                    <span className="text-brand-navy">TK {totalPrice.toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Promo Code Section */}
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Tag className="h-5 w-5" />
+                  Promo Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {appliedPromoCode ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-brand-green/5 border border-brand-green/20 rounded-lg">
+                      <div>
+                        <p className="font-medium text-brand-green">
+                          {appliedPromoCode.code}
+                        </p>
+                        <p className="text-sm text-brand-green/80">
+                          {appliedPromoCode.name}
+                        </p>
+                        <p className="text-sm text-brand-green">
+                          You saved ৳
+                          {appliedPromoCode.discountAmount.toFixed(2)}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={removePromoCode}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter promo code"
+                        value={promoCode}
+                        onChange={(e) => {
+                          setPromoCode(e.target.value.toUpperCase());
+                          setPromoCodeError("");
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            applyPromoCode();
+                          }
+                        }}
+                        className={promoCodeError ? "border-red-500" : ""}
+                        disabled={promoCodeLoading}
+                      />
+                      <Button
+                        onClick={applyPromoCode}
+                        disabled={promoCodeLoading || !promoCode.trim()}
+                        className="whitespace-nowrap"
+                      >
+                        {promoCodeLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Applying...
+                          </>
+                        ) : (
+                          "Apply"
+                        )}
+                      </Button>
+                    </div>
+                    {promoCodeError && (
+                      <p className="text-sm text-red-600">{promoCodeError}</p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
@@ -1051,7 +1050,7 @@ function CheckoutContent() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background px-4 py-3 z-50">
         <Button
           onClick={handleSubmit(onSubmit)}
-          className="w-full h-12 text-base font-semibold"
+          className="w-full h-12 text-base font-semibold bg-brand-navy hover:bg-brand-navy/90"
           size="lg"
           disabled={isLoading}
         >

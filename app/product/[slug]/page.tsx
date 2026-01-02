@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const data = await response.json()
   const prod = data.product
   const productUrl = `https://kidstoysbangladesh.com/product/${prod.handle}`
-  const imageUrl = prod.images && prod.images.length > 0 
+  const imageUrl = prod.images && prod.images.length > 0
     ? getMediaUrl(prod.images[0])
     : 'https://kidstoysbangladesh.com/og-image.png'
 
@@ -102,11 +102,27 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const data = await response.json()
   const { product, variants, options } = data
 
+  // Fetch recommended products
+  let recommendedProducts: any[] = []
+  try {
+    const recommendedResponse = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=5`, {
+      next: { revalidate: 3600 }
+    })
+
+    if (recommendedResponse.ok) {
+      const recommendedData = await recommendedResponse.json()
+      recommendedProducts = recommendedData.products || []
+    }
+  } catch (error) {
+    console.error('Failed to fetch recommended products:', error)
+  }
+
   return (
     <ProductPageClient
       product={product}
       variants={variants}
       options={options}
+      recommendedProducts={recommendedProducts}
     />
   )
 }

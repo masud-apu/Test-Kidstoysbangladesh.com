@@ -25,6 +25,9 @@ import {
 import { fbPixelEvents } from "@/lib/facebook-pixel-events";
 import { Analytics } from "@/lib/analytics";
 import { SelectedOption } from "@/lib/store";
+import { RecommendedProducts } from "@/components/recommended-products";
+import { FeaturesMarquee } from "@/components/features-marquee";
+
 
 // Dynamically import heavy components to reduce initial bundle size
 const Markdown = dynamic(() => import("@/components/markdown").then(mod => ({ default: mod.Markdown })), {
@@ -55,13 +58,17 @@ interface VariantWithOptions extends ProductVariant {
 interface ProductPageClientProps {
   product: Product;
   variants?: VariantWithOptions[];
+
   options?: Array<ProductOption & { values: ProductOptionValue[] }>;
+  recommendedProducts?: any[];
 }
 
 export function ProductPageClient({
   product,
   variants = [],
+
   options = [],
+  recommendedProducts = [],
 }: ProductPageClientProps) {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -364,7 +371,7 @@ export function ProductPageClient({
   return (
     <>
       <ProductStructuredData product={product} variants={variants} />
-      <div className="container mx-auto max-w-7xl py-8 pb-28 md:pb-8">
+      <div className="container mx-auto max-w-7xl py-8 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Column - Images */}
           <div className="px-4">
@@ -443,12 +450,12 @@ export function ProductPageClient({
 
                 <Button
                   onClick={handleBuyNow}
-                  className="flex-1 h-12 text-base font-semibold bg-black text-white hover:bg-black/90"
+                  className="flex-1 h-12 text-base font-semibold bg-brand-red text-white hover:bg-brand-red/90"
                   size="lg"
                   disabled={hasVariants && !selectedVariant}
                 >
                   <Zap className="mr-2 h-5 w-5" />
-                  Buy Now
+                  Order Now
                 </Button>
               </div>
               <div className="flex gap-3">
@@ -478,7 +485,7 @@ export function ProductPageClient({
             </span>
             <div className="flex-grow border-t border-border"></div>
           </div>
-          <div className="bg-muted/50 rounded-lg">
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
             <div className="prose prose-sm max-w-none">
               {product.description ? (
                 <Markdown content={product.description} />
@@ -490,6 +497,16 @@ export function ProductPageClient({
             </div>
           </div>
         </div>
+        {/* Recommended Products */}
+        <div className="mt-12">
+          <RecommendedProducts products={recommendedProducts} />
+        </div>
+
+      </div>
+
+      {/* Features Marquee Section - Full Width */}
+      <div className="pb-28 md:pb-0">
+        <FeaturesMarquee />
       </div>
 
       {/* Sticky Mobile Action Bar */}
@@ -509,12 +526,12 @@ export function ProductPageClient({
             <Button
               onClick={handleBuyNow}
               variant="default"
-              className="h-12 text-base font-semibold bg-black hover:bg-black/90 text-white"
+              className="h-12 text-base font-semibold bg-brand-red hover:bg-brand-red/90 text-white"
               size="lg"
               disabled={hasVariants && !selectedVariant}
             >
               <Zap className="mr-2 h-5 w-5" />
-              Buy Now
+              Order Now
             </Button>
           </div>
           <div className="mt-3">
@@ -530,7 +547,7 @@ export function ProductPageClient({
           </div>
           <div className="h-[env(safe-area-inset-bottom)]" />
         </div>
-      </div>
+      </div >
     </>
   );
 }

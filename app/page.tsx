@@ -1,16 +1,13 @@
 import { ProductCard } from '@/components/product-card'
-import { HeroCarousel } from '@/components/hero-carousel'
-import { NewArrivalsCarousel } from '@/components/new-arrivals-carousel'
+import { FilteredProductSection } from '@/components/filtered-product-section'
+import { FeaturesMarquee } from '@/components/features-marquee'
+
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
-  Truck,
-  Banknote,
-  Headset,
-  ShieldCheck,
-  Gift,
   ArrowRight
 } from 'lucide-react'
 import {
@@ -21,6 +18,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { MediaItem } from '@/lib/schema'
+
 
 // Revalidate homepage every 5 minutes to keep it fresh while serving static
 export const revalidate = 300
@@ -84,6 +82,32 @@ export default async function Home() {
     })
     .slice(0, 10)
 
+  // Vehicles: filter from already fetched products
+  const vehicleProductsTyped = typedProducts
+    .filter((p) => {
+      const tagsArr = Array.isArray(p.tags) ? p.tags : []
+      const title = (p.title || '').toLowerCase()
+      const keywords = ['vehicle', 'car', 'truck', 'bike', 'jeep']
+      const tagMatch = tagsArr.some((t) =>
+        keywords.some(keyword => String(t).toLowerCase().includes(keyword))
+      )
+      return tagMatch || keywords.some(keyword => title.includes(keyword))
+    })
+    .slice(0, 10)
+
+  // Building Blocks: filter from already fetched products
+  const buildingBlockProductsTyped = typedProducts
+    .filter((p) => {
+      const tagsArr = Array.isArray(p.tags) ? p.tags : []
+      const title = (p.title || '').toLowerCase()
+      const keywords = ['block', 'building', 'lego', 'construction', 'brick']
+      const tagMatch = tagsArr.some((t) =>
+        keywords.some(keyword => String(t).toLowerCase().includes(keyword))
+      )
+      return tagMatch || keywords.some(keyword => title.includes(keyword))
+    })
+    .slice(0, 10)
+
   // Cast to any for component props to avoid type checking issues
   // The API returns the correct structure, but matching exact types is complex
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,47 +116,86 @@ export default async function Home() {
   const saleList = saleListTyped as any[]
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const educationalProducts = educationalProductsTyped as any[]
-  
-  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const vehicleProducts = vehicleProductsTyped as any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buildingBlockProducts = buildingBlockProductsTyped as any[]
+
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Carousel Section */}
-      <HeroCarousel />
+    <div className="min-h-screen bg-white">
+      {/* Integrated Features Section - Moved to Top */}
+      {/* Integrated Features Section - Compact Design at Top */}
+      {/* Integrated Features Section - Scrolling Marquee with Brand Colors */}
+      <FeaturesMarquee />
 
-      {/* New Arrivals Section */}
-  <section id="new-arrivals" className="py-5 bg-white scroll-mt-24">
+      {/* Quick Filters - Modern Single Line Bar */}
+      <div className="top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm supports-[backdrop-filter]:bg-white/60">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <Badge className="mb-4 bg-teal-100 text-teal-800 border-teal-200">✨ Fresh & Latest</Badge>
-              <h2 className="text-4xl font-bold tracking-tight text-gray-800">New Arrivals</h2>
-              <p className="text-gray-600 mt-2">Discover the latest toys that kids are loving this week</p>
+          <div className="flex items-center justify-center gap-3 py-3 overflow-x-auto no-scrollbar">
+
+            {/* Age Group */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mr-1">Age</span>
+              {[
+                { label: '0-6m', val: '0-6' },
+                { label: '6m-1y', val: '6-12' },
+                { label: '1y-2y', val: '12-24' },
+                { label: '2y-3y', val: '24-36' },
+                { label: '3y-4y', val: '36-48' },
+                { label: '4y-5y', val: '48-60' },
+              ].map((age) => (
+                <Link
+                  key={age.label}
+                  href={`/products?age_min=${age.val.split('-')[0]}&age_max=${age.val.split('-')[1]}`}
+                  className="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-700 whitespace-nowrap transition-all hover:bg-brand-navy hover:text-white hover:border-brand-navy hover:shadow-md active:scale-95"
+                >
+                  {age.label}
+                </Link>
+              ))}
             </div>
-          </div>
 
-          <NewArrivalsCarousel products={allProducts.slice(0, 6)} />
+            {/* Divider */}
+            <div className="h-6 w-px bg-gray-200 mx-2 shrink-0"></div>
 
-          {/* Mobile anchor to all products */}
-          <div className="md:hidden mt-8 text-center">
-            <Link href="#all-products">
-              <Button className="px-8 h-12 text-base font-semibold">
-                Browse All Products
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            {/* Budget Group */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mr-1">Budget</span>
+              {[
+                { label: '< 300', min: 0, max: 300 },
+                { label: '300-700', min: 300, max: 700 },
+                { label: '700-1k', min: 700, max: 1000 },
+                { label: '1k-2k', min: 1000, max: 2000 },
+                { label: '2k-5k', min: 2000, max: 5000 },
+                { label: '> 5k', min: 5000, max: 100000 }
+              ].map((budget) => (
+                <Link
+                  key={budget.label}
+                  href={`/products?min_price=${budget.min}&max_price=${budget.max}`}
+                  className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-semibold text-gray-700 whitespace-nowrap transition-all hover:bg-brand-blue hover:text-white hover:border-brand-blue hover:shadow-md active:scale-95 shadow-sm"
+                >
+                  {budget.label}
+                </Link>
+              ))}
+            </div>
+
           </div>
         </div>
-      </section>
+      </div>
+
+
+
+
 
       {/* Sale Section */}
-      <section id="sale" className="py-20 bg-gradient-to-br from-orange-50 to-red-50 scroll-mt-24">
+      <section id="sale" className="py-8 bg-white scroll-mt-24">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="flex justify-between items-center mb-12">
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <Badge className="mb-4 bg-red-100 text-red-800 border-red-200">🔥 Limited Time</Badge>
+              <Badge className="mb-4 bg-brand-red/10 text-brand-red border-brand-red/20">🔥 Limited Time</Badge>
               <h2 className="text-4xl font-bold tracking-tight text-gray-800">
                 Sale Items
-                <span className="text-red-600 ml-3">Up to 80% Off</span>
+                <span className="text-brand-red ml-3">Up to 55% Off</span>
               </h2>
               <p className="text-gray-600 mt-2">Amazing deals on premium toys - grab them before they&apos;re gone!</p>
             </div>
@@ -164,40 +227,12 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* All Products Section */}
-      <section id="all-products" className="py-20 bg-white scroll-mt-24">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-green-100 text-green-800 border-green-200">⭐ All Products</Badge>
-            <h2 className="text-4xl font-bold tracking-tight text-gray-800">Browse Our Collection</h2>
-            <p className="text-gray-600 mt-2 max-w-2xl mx-auto">Up to 20 latest items, right here on the homepage.</p>
-          </div>
-          
-          {allProducts.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {allProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
-                <Gift className="h-12 w-12 text-gray-400" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-900">No products found</h3>
-              <p className="text-gray-600 mb-8">Add some products to your database to get started.</p>
-              <Button className="h-12 text-base font-semibold">Add Products</Button>
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* Educational Toys Collection Section */}
-      <section id="educational-toys" className="py-20 bg-gradient-to-br from-teal-50 to-emerald-50 scroll-mt-24">
+      <section id="educational-toys" className="py-8 bg-white scroll-mt-24">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="flex justify-between items-center mb-12">
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <Badge className="mb-4 bg-teal-100 text-teal-800 border-teal-200">🧠 Educational</Badge>
+              <Badge className="mb-4 bg-brand-green/10 text-brand-green border-brand-green/20">🧠 Educational</Badge>
               <h2 className="text-4xl font-bold tracking-tight text-gray-800">Educational Toys Collection</h2>
               <p className="text-gray-600 mt-2">Learn through play with our curated learning toys</p>
             </div>
@@ -226,73 +261,80 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Integrated Features Section */}
-    <div className="relative mt-2 md:mt-4 z-10">
-          <div className="container mx-auto max-w-7xl px-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-              {[
-                {
-                  icon: Truck,
-                  title: "Fast & Reliable Delivery",
-                  description: "24–48 hour delivery within Dhaka city.",
-                  color: "teal"
-                },
-                {
-                  icon: Banknote,
-                  title: "Easy Cash on Delivery",
-                  description: "No advance payment needed. Pay upon delivery.",
-                  color: "blue"
-                },
-                {
-                  icon: Headset,
-                  title: "Friendly Support",
-                  description: "Have a question? Our friendly team is here to help.",
-                  color: "orange"
-                },
-                {
-                  icon: ShieldCheck,
-                  title: "Authentic & Child‑Safe",
-                  description: "Every toy is quality-checked for your child’s safety.",
-                  color: "green"
-                }
-              ].map((feature, index) => (
-                <Card
-                  key={index}
-                  className="rounded-xl bg-white/90 backdrop-blur border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-                >
-                  <CardContent className="p-2.5 md:p-3.5">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center ring-1 ring-black/5 ${
-                          feature.color === 'teal' ? 'bg-teal-50' :
-                          feature.color === 'blue' ? 'bg-blue-50' :
-                          feature.color === 'orange' ? 'bg-orange-50' :
-                          'bg-green-50'
-                        }`}
-                      >
-                        <feature.icon
-                          className={`h-5 w-5 ${
-                            feature.color === 'teal' ? 'text-teal-600' :
-                            feature.color === 'blue' ? 'text-blue-600' :
-                            feature.color === 'orange' ? 'text-orange-600' :
-                            'text-green-600'
-                          }`}
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-[13px] md:text-sm leading-tight text-gray-900 truncate">{feature.title}</h3>
-                        <p className="text-gray-600 text-[10px] md:text-xs leading-snug hidden sm:block">{feature.description}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+      {/* Vehicles Collection Section */}
+      <section id="vehicles" className="py-8 bg-white scroll-mt-24">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <Badge className="mb-4 bg-brand-blue/10 text-brand-blue border-brand-blue/20">🚗 Vehicles</Badge>
+              <h2 className="text-4xl font-bold tracking-tight text-gray-800">Vehicles Collection</h2>
+              <p className="text-gray-600 mt-2">Zoom into fun with our amazing collection of toy vehicles</p>
             </div>
           </div>
-        </div>
 
-  {/* Footer appears globally via ConditionalLayout */}
+          {vehicleProducts.length > 0 ? (
+            <Carousel className="w-full" opts={{ align: "start", slidesToScroll: 1 }}>
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {vehicleProducts.map((product) => (
+                  <CarouselItem key={`veh-${product.id}`} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/5">
+                    <div className="h-full relative">
+                      <ProductCard product={product} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
+          ) : (
+            <div className="text-center py-16">
+              <h3 className="text-2xl font-bold mb-2 text-gray-900">No vehicle toys yet</h3>
+              <p className="text-gray-600">Tag products with “vehicle”, “car”, or “truck” to feature them here.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Building Blocks Collection Section */}
+      <section id="building-blocks" className="py-8 bg-white scroll-mt-24">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <Badge className="mb-4 bg-brand-yellow/10 text-brand-yellow border-brand-yellow/20">🧱 Building Blocks</Badge>
+              <h2 className="text-4xl font-bold tracking-tight text-gray-800">Building Blocks Collection</h2>
+              <p className="text-gray-600 mt-2">Construct your imagination with our building sets</p>
+            </div>
+          </div>
+
+          {buildingBlockProducts.length > 0 ? (
+            <Carousel className="w-full" opts={{ align: "start", slidesToScroll: 1 }}>
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {buildingBlockProducts.map((product) => (
+                  <CarouselItem key={`block-${product.id}`} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/5">
+                    <div className="h-full relative">
+                      <ProductCard product={product} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
+          ) : (
+            <div className="text-center py-16">
+              <h3 className="text-2xl font-bold mb-2 text-gray-900">No building blocks yet</h3>
+              <p className="text-gray-600">Tag products with “block”, “building”, or “lego” to feature them here.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* All Products Section */}
+      <FilteredProductSection products={allProducts} />
+
+
+
+      {/* Footer appears globally via ConditionalLayout */}
     </div>
   )
 }

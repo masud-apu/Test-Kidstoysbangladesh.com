@@ -18,9 +18,6 @@ import Image from 'next/image'
 const heroSlides = [
   {
     id: 1,
-    // title: "The Big Toy Sale Is On!",
-    // subtitle: "Unbeatable Prices, Unforgettable Fun.",
-    // description: "Don't miss out! Find the perfect toys to spark their imagination and create lasting memories.",
     buttonText: "Shop Sale Now",
     buttonLink: "#sale",
     badge: "🎉 Limited Time",
@@ -30,9 +27,6 @@ const heroSlides = [
   },
   {
     id: 2,
-    // title: "Educational Toys Collection",
-    // subtitle: "Learn Through Play",
-    // description: "Premium educational toys designed to boost creativity, problem-solving skills and cognitive development.",
     buttonText: "Explore Learning",
     buttonLink: "/#educational-toys",
     badge: "🧠 Smart Play",
@@ -42,10 +36,6 @@ const heroSlides = [
   },
   {
     id: 3,
-    // title: "This Week's Hottest Drops",
-    // subtitle: "Get Them Before They're Gone.",
-    // description: "Meet the new must-haves! We've just dropped the toys everyone's talking about, from viral trends to timeless treasures.",
-    // buttonText: "See New Toys",
     buttonLink: "/#new-arrivals",
     badge: "✨ Just Arrived",
     badgeColor: "bg-purple-100 text-purple-800",
@@ -90,8 +80,8 @@ export function HeroCarousel() {
 
   return (
     <section className="relative overflow-hidden bg-gray-50">
-      <Carousel 
-        className="w-full" 
+      <Carousel
+        className="w-full"
         opts={{ align: "start", loop: true }}
         setApi={setApi}
       >
@@ -129,10 +119,10 @@ export function HeroCarousel() {
                           {slide.badge}
                         </Badge>
                       </div>
-                      
+
                       {/* Spacer to push button to bottom */}
                       <div className="flex-grow"></div>
-                      
+
                       {/* Button at the bottom center */}
                       <div className="flex justify-center">
                         <Link href={slide.buttonLink}>
@@ -149,11 +139,11 @@ export function HeroCarousel() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        
+
         {/* Navigation Arrows - Hidden on mobile */}
         <CarouselPrevious className="hidden md:flex left-4 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30" />
         <CarouselNext className="hidden md:flex right-4 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30" />
-        
+
         {/* Dots Indicator */}
         <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-3">
           {heroSlides.map((_, index) => (

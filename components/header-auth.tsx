@@ -59,7 +59,7 @@ export function HeaderAuth({ isScrolled }: HeaderAuthProps) {
         disabled
         className={cn(
           'rounded-xl border border-gray-200 bg-white text-gray-700 flex items-center justify-center transition-all duration-500 ease-out',
-          isScrolled ? 'w-11 h-11 md:w-12 md:h-12' : 'w-11 h-11 md:w-12 md:h-12'
+          isScrolled ? 'w-10 h-10' : 'w-10 h-10'
         )}
       >
         <User className="h-5 w-5 animate-pulse" />
@@ -86,7 +86,7 @@ export function HeaderAuth({ isScrolled }: HeaderAuthProps) {
         onClick={() => setShowAuthDialog(true)}
         className={cn(
           'hidden md:flex items-center gap-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition-all duration-500 ease-out',
-          isScrolled ? 'h-11 px-4 text-sm' : 'h-12 px-4'
+          isScrolled ? 'h-10 px-4 text-sm' : 'h-10 px-4'
         )}
       >
         <LogIn className="h-4 w-4" />
@@ -99,7 +99,7 @@ export function HeaderAuth({ isScrolled }: HeaderAuthProps) {
         aria-label="Sign In"
         className={cn(
           'md:hidden rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-all duration-500 ease-out',
-          isScrolled ? 'w-11 h-11' : 'w-11 h-11'
+          isScrolled ? 'w-10 h-10' : 'w-10 h-10'
         )}
       >
         <User className="h-5 w-5" />

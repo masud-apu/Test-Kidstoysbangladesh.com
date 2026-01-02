@@ -4,7 +4,7 @@ import { Truck, RotateCcw, Shield } from "lucide-react";
 
 export function DeliveryInfo() {
   return (
-    <div className="bg-muted/30 rounded-lg p-4 space-y-4 mt-4">
+    <div className="bg-white rounded-lg p-4 space-y-4 mt-4 border border-gray-100 shadow-sm">
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <Truck className="h-4 w-4 text-blue-600" />
@@ -60,6 +60,10 @@ export function DeliveryInfo() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
             <span>Safe for children of all ages</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            <span>Imported from China</span>
           </div>
         </div>
       </div>

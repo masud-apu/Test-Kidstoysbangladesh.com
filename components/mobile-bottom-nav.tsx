@@ -52,10 +52,9 @@ export function MobileBottomNav() {
         <div className="grid grid-cols-4 text-center">
           {(
             [
-              { id: 'new-arrivals', href: '/#new-arrivals', label: 'New', Icon: Sparkles, hover: 'hover:text-teal-600' },
-              { id: 'sale', href: '/#sale', label: 'Sale', Icon: Flame, hover: 'hover:text-orange-600' },
-              { id: 'all-products', href: '/#all-products', label: 'Products', Icon: Star, hover: 'hover:text-gray-900' },
-              { id: 'track-order', href: '/track-order', label: 'Track', Icon: PackageSearch, hover: 'hover:text-blue-600' },
+              { id: 'sale', href: '/#sale', label: 'Sale', Icon: Flame, hover: 'hover:text-brand-red' },
+              { id: 'all-products', href: '/#all-products', label: 'Products', Icon: Star, hover: 'hover:text-brand-navy' },
+              { id: 'track-order', href: '/track-order', label: 'Track', Icon: PackageSearch, hover: 'hover:text-brand-blue' },
             ] as const
           ).map(({ id, href, label, Icon, hover }) => {
             const active = activeSection === id || (pathname === '/track-order' && id === 'track-order')
@@ -70,7 +69,7 @@ export function MobileBottomNav() {
               >
                 <span
                   className={cn(
-                    'pointer-events-none absolute top-0 left-3 right-3 h-0.5 rounded-full bg-yellow-400 transition-opacity',
+                    'pointer-events-none absolute top-0 left-3 right-3 h-0.5 rounded-full bg-brand-yellow transition-opacity',
                     active ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
                   )}
                 />
