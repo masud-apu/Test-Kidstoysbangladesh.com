@@ -65,7 +65,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 w-full transition-all duration-500 ease-out bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 shadow-sm',
+        'sticky top-0 z-50 w-full transition-all duration-500 ease-out bg-white shadow-sm',
         isScrolled && 'md:bg-transparent md:border-0 md:shadow-none md:pt-4'
       )}
     >
@@ -127,7 +127,7 @@ export function Header() {
             {/* Mobile & Desktop Navigation - Centered on mobile */}
             <nav
               className={cn(
-                'flex items-center gap-1 md:gap-2 transition-all duration-500 ease-out absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0',
+                'flex items-center gap-0.5 md:gap-2 transition-all duration-500 ease-out absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0',
                 isScrolled ? 'text-xs md:text-sm' : 'text-xs md:text-base'
               )}
             >
@@ -143,7 +143,7 @@ export function Header() {
                     href={href}
                     onClick={() => Analytics.trackCategoryView(label.toLowerCase().replace(' ', '_'))}
                     className={cn(
-                      'group/link relative flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 rounded-full font-medium transition-all duration-300',
+                      'group/link relative flex items-center gap-0.5 md:gap-2 px-1.5 md:px-3 py-1.5 rounded-full font-medium transition-all duration-300',
                       active ? 'text-gray-900' : 'text-gray-700 hover:text-gray-900'
                     )}
                   >
