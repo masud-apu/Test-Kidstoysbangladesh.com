@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/select"
 import { ProductsPageClient } from '@/components/products-page-client'
 
-export default async function ProductsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
+export default async function ProductsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  // Await searchParams (required in Next.js 15)
+  const searchParams = await props.searchParams
+
   // Fetch all products from admin API
   const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=100`, {
     next: { revalidate: 300 } // 5 minutes cache
