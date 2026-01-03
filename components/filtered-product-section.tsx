@@ -60,24 +60,24 @@ export function FilteredProductSection({ products }: FilteredProductSectionProps
                 </div>
 
                 {/* Stylish Filter Container */}
-                <div className="mb-8 relative z-10 px-2 md:px-0">
-                    <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-100/40 border border-gray-100 p-3 md:p-4 max-w-fit mx-auto relative overflow-hidden">
+                <div className="mb-8 relative z-10">
+                    <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-xl shadow-gray-100/40 border border-gray-100 p-3 md:p-4 w-full md:max-w-fit md:mx-auto relative overflow-visible">
 
-                        <div className="relative flex flex-wrap items-center justify-center gap-3 md:gap-6">
+                        <div className="relative flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center justify-center gap-4 md:gap-6">
 
                             {/* Age Group */}
-                            <div className="flex flex-wrap items-center justify-center gap-2">
-                                <div className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-brand-red/20 bg-white text-brand-red shadow-sm shrink-0">
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-start sm:justify-center gap-2 w-full md:w-auto">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-brand-red/20 bg-white text-brand-red shadow-sm shrink-0">
                                     <Baby className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold uppercase tracking-wider">Age</span>
                                 </div>
 
-                                <div className="flex flex-wrap justify-center gap-1.5">
+                                <div className="flex flex-wrap justify-start sm:justify-center gap-1.5 w-full sm:w-auto">
                                     {ageFilters.map((age, i) => (
                                         <Link
                                             key={age.label}
                                             href={`/products?age_min=${age.val.split('-')[0]}&age_max=${age.val.split('-')[1]}`}
-                                            className="px-4 py-2 rounded-full bg-gray-50 border border-transparent text-xs font-semibold text-gray-600 transition-all duration-300 hover:bg-brand-red hover:text-white hover:shadow-md hover:shadow-brand-red/20 hover:-translate-y-0.5 active:scale-95"
+                                            className="px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-gray-50 border border-transparent text-xs font-semibold text-gray-600 transition-all duration-300 hover:bg-brand-red hover:text-white hover:shadow-md hover:shadow-brand-red/20 hover:-translate-y-0.5 active:scale-95"
                                         >
                                             {age.label}
                                         </Link>
@@ -89,18 +89,18 @@ export function FilteredProductSection({ products }: FilteredProductSectionProps
                             <div className="hidden lg:block w-px h-8 bg-gray-100"></div>
 
                             {/* Budget Group */}
-                            <div className="flex flex-wrap items-center justify-center gap-2">
-                                <div className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-brand-blue/20 bg-white text-brand-blue shadow-sm shrink-0">
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-start sm:justify-center gap-2 w-full md:w-auto">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-brand-blue/20 bg-white text-brand-blue shadow-sm shrink-0">
                                     <Wallet className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold uppercase tracking-wider">Budget</span>
                                 </div>
 
-                                <div className="flex flex-wrap justify-center gap-1.5">
+                                <div className="flex flex-wrap justify-start sm:justify-center gap-1.5 w-full sm:w-auto">
                                     {budgetFilters.map((budget, i) => (
                                         <Link
                                             key={budget.label}
                                             href={`/products?min_price=${budget.min}&max_price=${budget.max}`}
-                                            className="px-4 py-2 rounded-full bg-gray-50 border border-transparent text-xs font-semibold text-gray-600 transition-all duration-300 hover:bg-brand-blue hover:text-white hover:shadow-md hover:shadow-brand-blue/20 hover:-translate-y-0.5 active:scale-95"
+                                            className="px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-gray-50 border border-transparent text-xs font-semibold text-gray-600 transition-all duration-300 hover:bg-brand-blue hover:text-white hover:shadow-md hover:shadow-brand-blue/20 hover:-translate-y-0.5 active:scale-95"
                                         >
                                             {budget.label}
                                         </Link>
