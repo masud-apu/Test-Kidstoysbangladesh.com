@@ -103,7 +103,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { product, variants, options } = data
 
   // Fetch recommended products
-  let recommendedProducts: any[] = []
+  type RecommendedProduct = { id: number; title: string; handle: string; images: unknown[]; variants: unknown[] }
+  let recommendedProducts: RecommendedProduct[] = []
   try {
     const recommendedResponse = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=5`, {
       next: { revalidate: 3600 }

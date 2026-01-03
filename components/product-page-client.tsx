@@ -60,7 +60,7 @@ interface ProductPageClientProps {
   variants?: VariantWithOptions[];
 
   options?: Array<ProductOption & { values: ProductOptionValue[] }>;
-  recommendedProducts?: any[];
+  recommendedProducts?: Array<{ id: number; title: string; handle: string; images: unknown[]; variants: unknown[] }>;
 }
 
 export function ProductPageClient({

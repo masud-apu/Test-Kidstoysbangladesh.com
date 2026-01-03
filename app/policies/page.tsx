@@ -107,7 +107,7 @@ export default function PoliciesPage() {
 
                                 <h3 className="text-gray-900 font-semibold mt-6 mb-3">Product Accuracy</h3>
                                 <p>
-                                    We strive to display the colors and images of our products as accurately as possible. However, we cannot guarantee that your computer monitor's display of any color will be accurate. We reserve the right to limit the sales of our products or Services to any person, geographic region, or jurisdiction.
+                                    We strive to display the colors and images of our products as accurately as possible. However, we cannot guarantee that your computer monitor&apos;s display of any color will be accurate. We reserve the right to limit the sales of our products or Services to any person, geographic region, or jurisdiction.
                                 </p>
 
                                 <h3 className="text-gray-900 font-semibold mt-6 mb-3">Pricing & Modifications</h3>
