@@ -65,30 +65,27 @@ export function Header() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 w-full transition-all duration-500 ease-out',
-        isScrolled
-          ? 'bg-transparent border-0 shadow-none pt-4'
-          : 'bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 shadow-sm'
+        'sticky top-0 z-50 w-full transition-all duration-500 ease-out bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 shadow-sm',
+        isScrolled && 'md:bg-transparent md:border-0 md:shadow-none md:pt-4'
       )}
     >
       <div
         className={cn(
-          'container mx-auto px-4 transition-all duration-500 ease-out',
-          isScrolled ? 'max-w-4xl' : 'max-w-7xl'
+          'container mx-auto px-4 transition-all duration-500 ease-out max-w-7xl',
+          isScrolled && 'md:max-w-4xl'
         )}
       >
         <div
           className={cn(
-            'relative transition-all duration-500 ease-out',
-            isScrolled
-              ? 'rounded-full border border-gray-200 bg-white/90 backdrop-blur-md shadow-md px-4 md:px-5'
-              : 'px-4 md:px-5'
+            'relative transition-all duration-500 ease-out px-4 md:px-5',
+            isScrolled && 'md:border md:border-gray-200 md:bg-white/90 md:backdrop-blur-md md:shadow-md md:rounded-full'
           )}
         >
           {/* Main navigation row */}
           <div className={cn(
             'flex items-center justify-between transition-all duration-500 ease-out',
-            isScrolled ? 'h-20 md:h-20' : 'h-24 md:h-24'
+            'h-20',
+            isScrolled ? 'md:h-20' : 'md:h-24'
           )}>
             {/* Logo */}
             <Link
@@ -100,7 +97,8 @@ export function Header() {
               <div
                 className={cn(
                   'relative transition-transform duration-500 ease-out group-hover:scale-105',
-                  isScrolled ? 'w-12 h-12 md:w-16 md:h-16' : 'w-16 h-16 md:w-20 md:h-20'
+                  'w-12 h-12',
+                  isScrolled ? 'md:w-16 md:h-16' : 'md:w-20 md:h-20'
                 )}
               >
                 {/* Mobile: always show the main logo */}
