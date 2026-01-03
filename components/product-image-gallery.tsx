@@ -15,6 +15,7 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 import type { MediaItem } from "@/lib/schema";
+import { normalizeMediaItem } from "@/lib/utils/media-helpers";
 
 // Client-only modern video player
 const ModernVideoPlayer = dynamic(
@@ -28,16 +29,6 @@ interface ProductImageGalleryProps {
   variantImage?: string | null;
 }
 
-// Helper function to normalize media items
-function normalizeMediaItem(item: string | MediaItem): MediaItem {
-  if (typeof item === 'string') {
-    // Check if it's a video URL
-    const isVideo = item.includes('.mp4') || item.includes('.webm') || item.includes('.mov') ||
-                   item.includes('video/upload') || item.includes('resource_type=video');
-    return { url: item, type: isVideo ? 'video' : 'image' };
-  }
-  return item;
-}
 
 // Helper function to generate thumbnail from video URL for static images
 function generateCloudinaryThumbnail(videoUrl: string): string {
@@ -95,7 +86,7 @@ export function ProductImageGallery({
     videoRefs.current.forEach((videoEl, idx) => {
       if (!videoEl) return;
       if (idx !== newIndex && !videoEl.paused) {
-        try { videoEl.pause(); } catch {}
+        try { videoEl.pause(); } catch { }
       }
     });
     // Auto-play active slide video (muted) if present
@@ -107,9 +98,9 @@ export function ProductImageGallery({
         plugin.current.stop();
         const playPromise = activeVideo.play();
         if (playPromise && typeof playPromise.then === 'function') {
-          playPromise.catch(() => {});
+          playPromise.catch(() => { });
         }
-      } catch {}
+      } catch { }
     } else {
       // Resume carousel autoplay when not on a video slide
       plugin.current.reset();

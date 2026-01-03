@@ -18,7 +18,11 @@ import {
 } from "@/components/ui/select"
 import { ProductsPageClient } from '@/components/products-page-client'
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
   // Fetch all products from admin API
   const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=100`, {
     next: { revalidate: 300 } // 5 minutes cache
@@ -34,11 +38,22 @@ export default async function ProductsPage() {
   const productsWithVariants: any[] = data.products || []
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allProducts: any[] = [...productsWithVariants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  let allProducts: any[] = [...productsWithVariants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  const searchQuery = typeof searchParams?.search === 'string' ? searchParams.search : undefined
+
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
+    allProducts = allProducts.filter((product) =>
+      product.name?.toLowerCase().includes(query) ||
+      product.description?.toLowerCase().includes(query) ||
+      product.category?.toLowerCase().includes(query)
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ProductsPageClient productCount={allProducts.length} category="All Products" />
+      <ProductsPageClient productCount={allProducts.length} category={searchQuery ? `Search: ${searchQuery}` : "All Products"} />
       <div className="container mx-auto max-w-7xl px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">
@@ -47,8 +62,14 @@ export default async function ProductsPage() {
             <span>/</span>
             <span className="text-gray-900 font-medium">All Products</span>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight mb-2">All Products</h1>
-          <p className="text-gray-600">Discover our complete collection of amazing toys</p>
+          <h1 className="text-4xl font-bold tracking-tight mb-2">
+            {searchQuery ? `Search Results for "${searchQuery}"` : 'All Products'}
+          </h1>
+          <p className="text-gray-600">
+            {searchQuery
+              ? `Found ${allProducts.length} results`
+              : 'Discover our complete collection of amazing toys'}
+          </p>
         </div>
 
         {/* Filters and Sorting */}
@@ -60,7 +81,7 @@ export default async function ProductsPage() {
                   <Filter className="h-4 w-4" />
                   <span>Filters</span>
                 </Button>
-                
+
                 <Select defaultValue="all">
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Category" />
@@ -87,10 +108,7 @@ export default async function ProductsPage() {
                   </SelectContent>
                 </Select>
 
-                <Badge variant="secondary" className="flex items-center space-x-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span>4+ Stars</span>
-                </Badge>
+
               </div>
 
               <div className="flex items-center space-x-4">
@@ -107,14 +125,7 @@ export default async function ProductsPage() {
                   </SelectContent>
                 </Select>
 
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
+
               </div>
             </div>
           </CardContent>
@@ -128,7 +139,7 @@ export default async function ProductsPage() {
                 Showing {allProducts.length} products
               </p>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {allProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />

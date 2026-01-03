@@ -11,39 +11,9 @@ import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 import { fbPixelEvents } from '@/lib/facebook-pixel-events'
 import { Analytics } from '@/lib/analytics'
+import { normalizeMediaItem, forceCloudinaryMp4 } from '@/lib/utils/media-helpers'
 
-// Helper function to normalize media items
-function normalizeMediaItem(item: string | MediaItem): MediaItem {
-  if (typeof item === 'string') {
-    const isVideo = item.includes('.mp4') || item.includes('.webm') || item.includes('.mov') || 
-                   item.includes('video/upload') || item.includes('resource_type=video');
-    return { url: item, type: isVideo ? 'video' : 'image' };
-  }
-  return item;
-}
 
-function forceCloudinaryMp4(url: string): string {
-  try {
-    if (!url.includes('res.cloudinary.com') || !url.includes('/video/upload/')) return url;
-    const [prefix, restRaw] = url.split('/upload/');
-    let rest = restRaw || '';
-    if (!rest.startsWith('f_mp4/')) {
-      rest = `f_mp4/${rest}`;
-    }
-    rest = rest.replace(/\.(mov|webm|mkv|avi|mpg|mpeg|3gp|wmv)(\?.*)?$/i, '.mp4$2');
-    if (!/\.mp4(\?|$)/i.test(rest)) {
-      const qIndex = rest.indexOf('?');
-      if (qIndex >= 0) {
-        rest = `${rest.slice(0, qIndex)}.mp4${rest.slice(qIndex)}`;
-      } else {
-        rest = `${rest}.mp4`;
-      }
-    }
-    return `${prefix}/upload/${rest}`;
-  } catch {
-    return url;
-  }
-}
 
 interface VariantWithOptions extends ProductVariant {
   selectedOptions?: Array<{
@@ -54,9 +24,10 @@ interface VariantWithOptions extends ProductVariant {
 
 interface ProductCardProps {
   product: Product & { variants?: VariantWithOptions[] }
+  compact?: boolean
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, compact = false }: ProductCardProps) {
   const router = useRouter()
   const addToCart = useCartStore((state) => state.addToCart)
   const setDirectBuy = useCartStore((state) => state.setDirectBuy)
@@ -69,10 +40,10 @@ export function ProductCard({ product }: ProductCardProps) {
   // Find variant with minimum price (handle empty variants array)
   const minPriceVariant = variants.length > 0
     ? variants.reduce((min, v) => {
-        const price = parseFloat(v.price)
-        const minPrice = parseFloat(min.price)
-        return price < minPrice ? v : min
-      })
+      const price = parseFloat(v.price)
+      const minPrice = parseFloat(min.price)
+      return price < minPrice ? v : min
+    })
     : null
 
   const minPrice = minPriceVariant ? parseFloat(minPriceVariant.price) : 0
@@ -83,6 +54,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const discountPercentage = hasDiscount
     ? Math.round(((minPriceCompare - minPrice) / minPriceCompare) * 100)
     : 0
+
+  const savedAmount = hasDiscount ? (minPriceCompare - minPrice) : 0
 
   const priceDisplay = minPrice > 0 ? `TK ${minPrice.toFixed(2)}` : 'Price not available'
 
@@ -196,23 +169,23 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="block">
       <article
-        className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 overflow-hidden cursor-pointer"
+        className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group/card border border-gray-100 overflow-hidden cursor-pointer"
         aria-label={`View product ${product.title}`}
       >
-        <Link href={`/product/${product.handle}`} prefetch={false} onClick={handleProductClick} className="block focus:outline-none focus:ring-2 focus:ring-orange-200/70">
+        <Link href={`/product/${product.handle}`} prefetch={false} onClick={handleProductClick} className="block focus:outline-none focus:ring-2 focus:ring-brand-yellow/70">
           {/* Product Image */}
-          <div className="p-1.5">
+          <div className={compact ? "p-1" : "p-1.5"}>
             <div className="relative rounded-lg overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">
               <AspectRatio ratio={1}>
                 {/* Discount badge */}
                 {hasDiscount && isInStock && (
-                  <div className="absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow">
+                  <div className={`absolute top-2 right-2 z-10 bg-red-600 text-white rounded-full font-bold shadow ${compact ? 'text-[8px] px-1.5 py-0' : 'text-[10px] px-2 py-0.5'}`}>
                     -{discountPercentage}%
                   </div>
                 )}
                 {/* Out of stock badge */}
                 {!isInStock && minPriceVariant && (
-                  <div className="absolute top-2 right-2 z-10 bg-gray-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow">
+                  <div className={`absolute top-2 right-2 z-10 bg-gray-600 text-white rounded-full font-bold shadow ${compact ? 'text-[8px] px-1.5 py-0' : 'text-[10px] px-2 py-0.5'}`}>
                     Out of Stock
                   </div>
                 )}
@@ -220,12 +193,12 @@ export function ProductCard({ product }: ProductCardProps) {
                   (() => {
                     const firstMedia = normalizeMediaItem(product.images[0]);
                     const isVideo = firstMedia.type === 'video';
-                    
+
                     return isVideo ? (
                       <div className="relative w-full h-full">
                         <video
                           src={forceCloudinaryMp4(firstMedia.url)}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover/card:scale-105"
                           preload="metadata"
                           muted
                           playsInline
@@ -241,9 +214,9 @@ export function ProductCard({ product }: ProductCardProps) {
                         src={firstMedia.url}
                         alt={product.title}
                         fill
-                        sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                        sizes={compact ? "(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 50vw, 100vw" : "(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"}
                         loading="lazy"
-                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        className="object-cover transition-transform duration-500 ease-out group-hover/card:scale-105"
                       />
                     );
                   })()
@@ -257,45 +230,54 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Card Content (Title + Price) */}
-          <div className="px-3 pb-2 pt-0">
+          <div className={`pt-0 ${compact ? 'px-1.5 pb-1.5' : 'px-3 pb-2'}`}>
             {/* Product Name */}
-            <h3 className="text-gray-800 text-[13px] md:text-sm font-semibold mb-0.5 line-clamp-2 min-h-[2.1rem] md:min-h-[2.5rem]">
+            <h3 className={`text-gray-800 font-semibold mb-0.5 line-clamp-2 ${compact ? 'text-[11px] leading-tight min-h-[1.8rem]' : 'text-[13px] md:text-sm min-h-[2.1rem] md:min-h-[2.5rem]'}`}>
               {product.title}
             </h3>
 
             {/* Price */}
-            <div className="mb-0 min-h-[1.5rem]">
-              <span className="text-base md:text-lg font-bold text-green-600">{priceDisplay}</span>
+            <div className={`mb-0 flex flex-wrap items-center gap-1.5 ${compact ? 'min-h-[1rem]' : 'min-h-[1.5rem] gap-2'}`}>
+              <span className={`font-bold text-brand-navy ${compact ? 'text-sm' : 'text-base md:text-lg'}`}>
+                TK {minPrice.toFixed(0)}
+              </span>
+              {hasDiscount && (
+                <span className={`text-gray-400 line-through decoration-gray-400 font-medium translate-y-[0.5px] ${compact ? 'text-[9px]' : 'text-xs translate-y-[1px]'}`}>
+                  TK {minPriceCompare.toFixed(0)}
+                </span>
+              )}
             </div>
           </div>
         </Link>
 
         {/* Action Buttons */}
-        <div className="px-3 pb-3 pt-0">
+        <div className={`pt-0 ${compact ? 'px-1.5 pb-2' : 'px-3 pb-3'}`}>
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <Button
                 onClick={handleBuyNow}
-                className="w-full h-8 md:h-9 font-semibold text-[13px]"
+                className={`w-full font-semibold bg-brand-red text-white hover:bg-brand-red/90 ${compact ? 'h-7 text-[10px]' : 'h-8 md:h-9 text-[13px]'}`}
                 size="sm"
                 disabled={!canPurchase}
               >
-                {!minPriceVariant ? 'View Details' : !isInStock ? 'Out of Stock' : 'Buy Now'}
+                {!minPriceVariant ? 'Details' : !isInStock ? 'No Stock' : 'Order Now'}
               </Button>
             </div>
 
-            <div className="flex-shrink-0">
-              <Button
-                onClick={handleAddToCart}
-                variant="outline"
-                size="sm"
-                aria-label="Add to cart"
-                className="w-8 h-8 md:w-9 md:h-9"
-                disabled={!canPurchase}
-              >
-                <ShoppingCart className="h-3.5 w-3.5" />
-              </Button>
-            </div>
+            {!compact && (
+              <div className="flex-shrink-0">
+                <Button
+                  onClick={handleAddToCart}
+                  variant="outline"
+                  size="sm"
+                  aria-label="Add to cart"
+                  className="w-8 h-8 md:w-9 md:h-9"
+                  disabled={!canPurchase}
+                >
+                  <ShoppingCart className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </article>

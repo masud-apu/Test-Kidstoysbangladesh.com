@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { FacebookPixel } from '@/components/FacebookPixel'
 import { PHProvider } from '@/components/posthog-provider'
 import { AuthProvider } from '@/components/auth-provider'
+import { FloatingSupport } from '@/components/floating-support'
 import "./globals.css";
 
 const nunito = Nunito({
@@ -148,6 +149,7 @@ export default function RootLayout({
             {/* Overlays rendered at the end of body to avoid stacking issues */}
             <GlobalOverlays />
             <Toaster />
+            <FloatingSupport />
             <Suspense fallback={null}>
               <FacebookPixel />
             </Suspense>

@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ShoppingCart, Sparkles, Flame, Star, PackageSearch, UserCircle } from 'lucide-react'
+import { ShoppingCart, Sparkles, Flame, Star, PackageSearch, UserCircle, Search } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
 import { useOverlayStore } from '@/lib/ui-store'
 import { cn } from '@/lib/utils'
@@ -15,9 +16,11 @@ import { HeaderAuth } from '@/components/header-auth'
 export function Header() {
   const totalItems = useCartStore((s) => s.getTotalItems())
   const openCart = useOverlayStore((s) => s.openCart)
+  const router = useRouter()
 
   const [isScrolled, setIsScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Track scroll to shrink header and swap desktop logo
   useEffect(() => {
@@ -64,7 +67,7 @@ export function Header() {
         'sticky top-0 z-50 w-full transition-all duration-500 ease-out',
         isScrolled
           ? 'bg-transparent border-0 shadow-none pt-4'
-          : 'bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 border-b border-gray-100 shadow-sm'
+          : 'bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 shadow-sm'
       )}
     >
       <div
@@ -77,8 +80,8 @@ export function Header() {
           className={cn(
             'relative flex items-center transition-all duration-500 ease-out',
             isScrolled
-              ? 'h-20 rounded-full border border-gray-200 bg-white/90 backdrop-blur-md shadow-md px-4 md:px-5 justify-end md:justify-between'
-              : 'h-24 justify-end md:justify-between'
+              ? 'h-20 md:h-20 rounded-full border border-gray-200 bg-white/90 backdrop-blur-md shadow-md px-4 md:px-5 justify-end md:justify-between'
+              : 'h-24 md:h-24 justify-end md:justify-between'
           )}
         >
           {/* Logo */}
@@ -93,26 +96,28 @@ export function Header() {
             <div
               className={cn(
                 'relative transition-transform duration-500 ease-out group-hover:scale-105',
-                isScrolled ? 'w-20 h-20 md:w-28 md:h-28' : 'w-24 h-24 md:w-36 md:h-36'
+                isScrolled ? 'w-12 h-12 md:w-16 md:h-16' : 'w-16 h-16 md:w-20 md:h-20'
               )}
             >
               {/* Mobile: always show the main logo */}
               <Image
-                src="/main-logo.svg"
+                src="/main-logo.png"
                 alt="Kids Toys Bangladesh"
                 fill
                 className="object-contain md:hidden"
                 priority
-                sizes="(max-width: 767px) 112px"
+                sizes="(max-width: 767px) 64px"
+                unoptimized
               />
               {/* Desktop: use same logo asset; only size changes on scroll */}
               <Image
-                src="/main-logo.svg"
+                src="/main-logo.png"
                 alt="Kids Toys Bangladesh"
                 fill
                 className="hidden md:block object-contain"
                 priority
-                sizes={isScrolled ? '(min-width: 768px) 56px' : '(min-width: 768px) 160px'}
+                sizes={isScrolled ? '(min-width: 768px) 64px' : '(min-width: 768px) 80px'}
+                unoptimized
               />
             </div>
           </Link>
@@ -125,8 +130,7 @@ export function Header() {
             )}
           >
             {[
-              { id: 'new-arrivals', href: '/#new-arrivals', label: 'New Arrival', Icon: Sparkles },
-              { id: 'sale', href: '/#sale', label: 'Sale', Icon: Flame },
+              { id: 'sale', href: '/#sale', label: 'On Sale', Icon: Flame },
               { id: 'all-products', href: '/#all-products', label: 'All Products', Icon: Star },
               { id: 'track-order', href: '/track-order', label: 'Track Order', Icon: PackageSearch },
             ].map(({ id, href, label, Icon }) => {
@@ -145,7 +149,7 @@ export function Header() {
                   <span>{label}</span>
                   <span
                     className={cn(
-                      'pointer-events-none absolute -bottom-1 left-3 right-3 h-0.5 rounded-full bg-yellow-400 transition-opacity',
+                      'pointer-events-none absolute -bottom-1 left-3 right-3 h-0.5 rounded-full bg-brand-yellow transition-opacity',
                       active ? 'opacity-100' : 'opacity-0 group-hover/link:opacity-60'
                     )}
                   />
@@ -161,24 +165,51 @@ export function Header() {
               isScrolled ? 'space-x-2' : 'space-x-4'
             )}
           >
-            {/* Account / Sign In - TEMPORARILY COMMENTED OUT */}
-            {/* <HeaderAuth isScrolled={isScrolled} /> */}
+            {/* Search Bar */}
+            <div className={cn(
+              "hidden md:flex items-center relative transition-all duration-300",
+              isScrolled ? "w-48" : "w-64"
+            )}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  if (searchQuery.trim()) {
+                    router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`)
+                  }
+                }}
+                className="relative w-full group"
+              >
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:border-brand-yellow focus:ring-0 outline-none text-sm transition-all duration-300"
+                />
+                <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-brand-yellow transition-colors">
+                  <Search className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+
+            {/* Account / Sign In */}
+            <HeaderAuth isScrolled={isScrolled} />
 
             {/* Cart */}
             <Button
               aria-label="Cart"
               className={cn(
                 'relative rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-all duration-500 ease-out',
-                isScrolled ? 'w-11 h-11 md:w-12 md:h-12' : 'w-11 h-11 md:w-12 md:h-12'
+                isScrolled ? 'w-10 h-10' : 'w-10 h-10'
               )}
               onClick={() => {
                 Analytics.trackButtonClick('cart_icon', 'header')
                 openCart()
               }}
             >
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-4 w-4" />
               {totalItems > 0 && (
-                <Badge className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-[10px] bg-yellow-500 text-gray-900 font-bold">
+                <Badge className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-[10px] bg-brand-yellow text-brand-navy font-bold">
                   {totalItems}
                 </Badge>
               )}

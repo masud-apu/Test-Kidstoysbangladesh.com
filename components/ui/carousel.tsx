@@ -119,8 +119,8 @@ function Carousel({
       }}
     >
       <div
-  onKeyDownCapture={handleKeyDown}
-  className={cn("relative group", className)}
+        onKeyDownCapture={handleKeyDown}
+        className={cn("relative group/carousel", className)}
         role="region"
         aria-roledescription="carousel"
         data-slot="carousel"

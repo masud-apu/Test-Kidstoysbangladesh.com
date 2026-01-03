@@ -46,7 +46,22 @@
   --radius-xl: calc(var(--radius) + 4px);
   --animate-collapsible-down: collapsible-down 0.3s ease-out;
   --animate-collapsible-up: collapsible-up 0.3s ease-out;
+  --animate-marquee: marquee 60s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 60s linear infinite;
+
+  /* Brand Colors */
+  --color-brand-red: #E64C4C;
+  --color-brand-yellow: #F4C430;
+  --color-brand-blue: #5D9CEC;
+  --color-brand-green: #8CC63F;
+  --color-brand-navy: #2C3E50;
 }
+
+/* Marquee Definitions - Handled by react-fast-marquee */
+
+
+
+
 
 :root {
   --radius: 0.625rem;
@@ -122,14 +137,20 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-  @apply bg-background text-foreground;
-  scroll-behavior: smooth;
+    @apply bg-background text-foreground;
+    scroll-behavior: smooth;
   }
+
   .font-bengali {
     font-family: var(--font-bengali);
   }
-  h1, h2, h3, .font-heading {
+
+  h1,
+  h2,
+  h3,
+  .font-heading {
     font-family: var(--font-heading), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
     letter-spacing: 0.02em;
   }
@@ -146,6 +167,7 @@
     height: 0;
     opacity: 0;
   }
+
   to {
     height: var(--radix-collapsible-content-height);
     opacity: 1;
@@ -157,6 +179,7 @@
     height: var(--radix-collapsible-content-height);
     opacity: 1;
   }
+
   to {
     height: 0;
     opacity: 0;
@@ -165,7 +188,8 @@
 
 /* Mobile-specific optimizations for Capacitor */
 /* Prevent overscroll bounce on mobile */
-html, body {
+html,
+body {
   overscroll-behavior: none;
 }
 
@@ -189,7 +213,8 @@ html {
 }
 
 /* Improve touch targets for mobile */
-button, a {
+button,
+a {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
@@ -199,4 +224,34 @@ button, a {
     padding-left: max(0px, env(safe-area-inset-left));
     padding-right: max(0px, env(safe-area-inset-right));
   }
+}
+
+/* Floating Support Button Animations */
+@keyframes ping-slow {
+
+  75%,
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes bounce-subtle {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
 }
