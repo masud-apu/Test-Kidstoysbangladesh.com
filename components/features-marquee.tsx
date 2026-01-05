@@ -19,19 +19,19 @@ export function FeaturesMarquee() {
             icon: Truck,
             title: "Super Fast Delivery",
             description: "Order now, get it tomorrow in Dhaka",
-            color: "text-brand-green bg-brand-green/10",
+            color: "text-brand-blue bg-brand-blue/10",
         },
         {
             icon: Banknote,
             title: "Cash on Delivery",
             description: "No advance needed. Pay on delivery",
-            color: "text-brand-blue bg-brand-blue/10",
+            color: "text-brand-navy bg-brand-navy/10",
         },
         {
             icon: ShieldCheck,
             title: "Verified Orders",
             description: "We verify every order personally",
-            color: "text-brand-green bg-brand-green/10",
+            color: "text-brand-green bg-brand-navy/10",
         },
         {
             icon: Ship,
@@ -55,13 +55,13 @@ export function FeaturesMarquee() {
             icon: Replace,
             title: "Easy Replacement",
             description: "Damaged item? We replace instantly",
-            color: "text-brand-navy bg-brand-navy/10",
+            color: "text-brand-blue bg-brand-blue/10",
         },
         {
             icon: PackageCheck,
             title: "Secure Packing",
             description: "Secure packing for safe delivery",
-            color: "text-brand-blue bg-brand-blue/10",
+            color: "text-brand-yellow bg-brand-yellow/10",
         },
     ];
 

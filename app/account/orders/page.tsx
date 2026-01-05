@@ -97,7 +97,7 @@ export default async function OrdersPage() {
                       {order.status.replace('_', ' ')}
                     </Badge>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/track-order?orderId=${order.orderId}`}>
+                      <Link href={`/?orderId=${order.orderId}#track-order`}>
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Track
                       </Link>

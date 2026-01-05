@@ -206,7 +206,7 @@ export function GlobalOverlays() {
               <Button
                 onClick={() => {
                   hideSuccessDialog()
-                  window.location.href = `/track-order?orderId=${orderId}`
+                  window.location.href = `/?orderId=${orderId}#track-order`
                 }}
                 className="w-full"
                 size="lg"

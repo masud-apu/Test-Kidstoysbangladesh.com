@@ -18,7 +18,7 @@ import { useOverlayStore } from "@/lib/ui-store";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { checkoutSchema, type CheckoutType } from "@/lib/validations";
-import { Minus, Plus, Trash2, ShoppingBag, Tag, Loader2 } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, Tag, Loader2, ChevronDown, ChevronUp, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Analytics } from "@/lib/analytics";
 import { fbPixelEvents } from "@/lib/facebook-pixel-events";
@@ -89,6 +89,7 @@ function CheckoutContent() {
   } | null>(null);
   const [promoCodeLoading, setPromoCodeLoading] = useState(false);
   const [promoCodeError, setPromoCodeError] = useState("");
+  const [isMobileOrderSummaryOpen, setIsMobileOrderSummaryOpen] = useState(false);
 
   // Load products from URL if productIds parameter exists
   useEffect(() => {
@@ -657,17 +658,166 @@ function CheckoutContent() {
   return (
     <>
       <div className="container mx-auto max-w-6xl px-4 py-4 pb-24 md:pb-4">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Checkout</h1>
-          <div className="text-sm text-muted-foreground">
-            {checkoutType === "direct"
-              ? "Direct Purchase"
-              : checkoutType === "url"
-                ? "From URL"
-                : "From Cart"}
-          </div>
-        </div>
 
+
+        {/* Mobile Order Summary */}
+        <div className="md:hidden mb-6 bg-muted/30 border-y -mx-4 px-4 py-4">
+          <Collapsible
+            open={isMobileOrderSummaryOpen}
+            onOpenChange={setIsMobileOrderSummaryOpen}
+          >
+            <button
+              type="button"
+              className="flex items-center justify-between w-full"
+              onClick={() => setIsMobileOrderSummaryOpen(!isMobileOrderSummaryOpen)}
+            >
+              <div className="flex items-center gap-2 text-sm font-medium text-brand-navy cursor-pointer">
+                <span className="text-brand-navy flex items-center gap-2">
+                  Show order summary
+                  {isMobileOrderSummaryOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </span>
+              </div>
+              <div className="flex flex-col items-end">
+                <div className="font-bold text-lg text-brand-navy">
+                  TK {totalPrice.toFixed(2)}
+                </div>
+                <span className="text-xs text-muted-foreground font-normal">
+                  {deliveryType === "inside" ? "Inside Dhaka" : "Outside Dhaka"}
+                </span>
+              </div>
+            </button>
+
+            <CollapsibleContent className="pt-6 space-y-6">
+              {/* Items List */}
+              <div className="space-y-4">
+                {checkoutItems.map((item) => {
+                  const itemKey = getItemKey(item);
+                  return (
+                    <div key={itemKey} className="flex gap-3">
+                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded border bg-background">
+                        {item.images && item.images[0] && (
+                          <Image src={getMediaUrl(item.images[0])} alt={item.title} fill className="object-cover" />
+                        )}
+                        <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-xs font-medium rounded-full h-5 w-5 flex items-center justify-center z-10 ring-2 ring-white">
+                          {item.quantity}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <h4 className="text-sm font-medium line-clamp-2">{item.title}</h4>
+                        <p className="text-xs text-muted-foreground">{item.variantTitle !== "Default Title" ? item.variantTitle : ""}</p>
+                      </div>
+                      <div className="text-sm font-medium">
+                        TK {(parseFloat(item.variantPrice || "0") * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+
+
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Delivery Location</Label>
+                <RadioGroup
+                  value={deliveryType}
+                  onValueChange={(val) =>
+                    setDeliveryType(val as DeliveryType)
+                  }
+                  className="grid grid-cols-1 gap-3"
+                >
+                  <label
+                    htmlFor="mobile-checkout-inside"
+                    className="relative flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy/5 transition-all"
+                    data-state={deliveryType === "inside" ? "checked" : "unchecked"}
+                  >
+                    <div className="flex items-center gap-3">
+                      <RadioGroupItem value="inside" id="mobile-checkout-inside" />
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">Inside Dhaka</span>
+                        <span className="text-xs text-muted-foreground">24 Hours</span>
+                      </div>
+                    </div>
+                    <span className="font-bold text-brand-navy">TK 60</span>
+                  </label>
+                  <label
+                    htmlFor="mobile-checkout-outside"
+                    className="relative flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy/5 transition-all"
+                    data-state={deliveryType === "outside" ? "checked" : "unchecked"}
+                  >
+                    <div className="flex items-center gap-3">
+                      <RadioGroupItem value="outside" id="mobile-checkout-outside" />
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">Outside Dhaka</span>
+                        <span className="text-xs text-muted-foreground">2-3 Days</span>
+                      </div>
+                    </div>
+                    <span className="font-bold text-brand-navy">TK 120</span>
+                  </label>
+                </RadioGroup>
+              </div>
+
+              <Separator />
+
+              {/* Promo Code Input (Mobile) */}
+              <div className="space-y-3">
+                {appliedPromoCode ? (
+                  <div className="flex items-center justify-between p-3 bg-brand-green/5 border border-brand-green/20 rounded-lg">
+                    <div>
+                      <p className="font-medium text-brand-green text-sm">{appliedPromoCode.code}</p>
+                      <p className="text-xs text-brand-green/80">Saved ৳{appliedPromoCode.discountAmount.toFixed(2)}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={removePromoCode} className="text-red-600 h-8 px-2">Remove</Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter promo code"
+                      value={promoCode}
+                      onChange={(e) => {
+                        setPromoCode(e.target.value.toUpperCase());
+                        setPromoCodeError("");
+                      }}
+                      className="bg-background"
+                      disabled={promoCodeLoading}
+                    />
+                    <Button onClick={applyPromoCode} disabled={promoCodeLoading || !promoCode.trim()}>
+                      Apply
+                    </Button>
+                  </div>
+                )}
+                {promoCodeError && <p className="text-xs text-red-600">{promoCodeError}</p>}
+              </div>
+
+              <Separator />
+
+              {/* Totals */}
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>TK {itemsTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span>TK {shippingCost.toFixed(2)}</span>
+                </div>
+                {appliedPromoCode && (
+                  <div className="flex justify-between text-brand-green">
+                    <span>Discount</span>
+                    <span>-TK {discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg text-brand-navy pt-2 border-t mt-2">
+                  <span>Total</span>
+                  <span>TK {totalPrice.toFixed(2)}</span>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Checkout Form */}
@@ -725,6 +875,47 @@ function CheckoutContent() {
                         {errors.address.message}
                       </p>
                     )}
+                  </div>
+
+                  {/* Delivery Location Selection - Moved here for better UX */}
+                  <div className="pt-2 hidden md:block">
+                    <Label className="block mb-3">Delivery Location</Label>
+                    <RadioGroup
+                      value={deliveryType}
+                      onValueChange={(val) =>
+                        setDeliveryType(val as DeliveryType)
+                      }
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                    >
+                      <label
+                        htmlFor="checkout-inside"
+                        className="relative flex items-center justify-between rounded-lg border p-4 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy/5 transition-all"
+                        data-state={deliveryType === "inside" ? "checked" : "unchecked"}
+                      >
+                        <div className="flex items-center gap-3">
+                          <RadioGroupItem value="inside" id="checkout-inside" />
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">Inside Dhaka</span>
+                            <span className="text-xs text-muted-foreground">24 Hours</span>
+                          </div>
+                        </div>
+                        <span className="font-bold text-brand-navy">TK 60</span>
+                      </label>
+                      <label
+                        htmlFor="checkout-outside"
+                        className="relative flex items-center justify-between rounded-lg border p-4 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy/5 transition-all"
+                        data-state={deliveryType === "outside" ? "checked" : "unchecked"}
+                      >
+                        <div className="flex items-center gap-3">
+                          <RadioGroupItem value="outside" id="checkout-outside" />
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">Outside Dhaka</span>
+                            <span className="text-xs text-muted-foreground">2-3 Days</span>
+                          </div>
+                        </div>
+                        <span className="font-bold text-brand-navy">TK 120</span>
+                      </label>
+                    </RadioGroup>
                   </div>
 
                   {/* Optional Fields Section - only shown when required fields are filled */}
@@ -793,43 +984,13 @@ function CheckoutContent() {
           </div>
 
           {/* Order Summary */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 hidden md:block">
             <Card>
               <CardHeader>
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium mb-2">Delivery Location</p>
-                  <RadioGroup
-                    value={deliveryType}
-                    onValueChange={(val) =>
-                      setDeliveryType(val as DeliveryType)
-                    }
-                    className="grid grid-cols-2 gap-2"
-                  >
-                    <label
-                      htmlFor="checkout-outside"
-                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-yellow data-[state=checked]:bg-brand-yellow/5 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <RadioGroupItem value="outside" id="checkout-outside" />
-                        <span className="text-sm">Outside Dhaka</span>
-                      </div>
-                      <span className="text-sm font-medium text-brand-navy">TK 120</span>
-                    </label>
-                    <label
-                      htmlFor="checkout-inside"
-                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-yellow data-[state=checked]:bg-brand-yellow/5 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <RadioGroupItem value="inside" id="checkout-inside" />
-                        <span className="text-sm">Inside Dhaka</span>
-                      </div>
-                      <span className="text-sm font-medium text-brand-navy">TK 60</span>
-                    </label>
-                  </RadioGroup>
-                </div>
+                {/* Delivery Location moved to form */}
 
                 {checkoutItems.map((item) => {
                   const itemKey = getItemKey(item);
@@ -1044,10 +1205,10 @@ function CheckoutContent() {
             </Card>
           </div>
         </div>
-      </div>
+      </div >
 
       {/* Fixed Footer with Place Order Button - Mobile Only */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background px-4 py-3 z-50">
+      < div className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background px-4 py-3 z-50" >
         <Button
           onClick={handleSubmit(onSubmit)}
           className="w-full h-12 text-base font-semibold bg-brand-navy hover:bg-brand-navy/90"
@@ -1056,7 +1217,7 @@ function CheckoutContent() {
         >
           {isLoading ? "Processing..." : "Place Order"}
         </Button>
-      </div>
+      </div >
     </>
   );
 }

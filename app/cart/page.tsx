@@ -192,7 +192,7 @@ export default function CartPage() {
                         item.variantTitle !== "Default Title" && (
                           <div className="mt-1 text-sm text-muted-foreground">
                             {item.selectedOptions &&
-                            item.selectedOptions.length > 0 ? (
+                              item.selectedOptions.length > 0 ? (
                               <span>
                                 {item.selectedOptions
                                   .map((opt) => opt.valueName)
@@ -216,7 +216,7 @@ export default function CartPage() {
                         </span>
                         {displayComparePrice &&
                           parseFloat(displayComparePrice) >
-                            parseFloat(displayPrice) && (
+                          parseFloat(displayPrice) && (
                             <span className="text-sm text-muted-foreground line-through">
                               TK {displayComparePrice}
                             </span>
@@ -229,6 +229,7 @@ export default function CartPage() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
+                            aria-label="Decrease quantity"
                             onClick={() =>
                               updateQuantity(itemKey, item.quantity - 1)
                             }
@@ -242,6 +243,7 @@ export default function CartPage() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
+                            aria-label="Increase quantity"
                             onClick={() =>
                               updateQuantity(itemKey, item.quantity + 1)
                             }
@@ -261,6 +263,7 @@ export default function CartPage() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            aria-label="Remove item"
                             onClick={() => removeFromCart(itemKey)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -304,7 +307,7 @@ export default function CartPage() {
               <Button
                 onClick={handleCheckout}
                 disabled={selectedItemsData.length === 0}
-                className="w-full h-12 text-base font-semibold"
+                className="w-full h-12 text-base font-semibold bg-brand-navy hover:bg-brand-navy/90"
                 size="lg"
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />

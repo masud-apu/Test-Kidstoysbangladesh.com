@@ -137,7 +137,7 @@ export default async function AccountPage() {
                     </p>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/track-order?orderId=${order.orderId}`}>
+                    <Link href={`/?orderId=${order.orderId}#track-order`}>
                       Track Order
                     </Link>
                   </Button>

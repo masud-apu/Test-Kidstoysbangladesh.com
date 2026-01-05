@@ -1,6 +1,7 @@
 import { ProductCard } from '@/components/product-card'
 import { FilteredProductSection } from '@/components/filtered-product-section'
 import { FeaturesMarquee } from '@/components/features-marquee'
+import { TrackOrderSection } from '@/components/track-order-section'
 
 
 import Link from 'next/link'
@@ -384,6 +385,9 @@ export default async function Home() {
 
       {/* All Products Section */}
       <FilteredProductSection products={allProducts} />
+
+      {/* Track Order Section */}
+      <TrackOrderSection />
 
 
 

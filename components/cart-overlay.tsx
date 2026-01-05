@@ -70,6 +70,7 @@ export default function CartOverlay() {
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
+                      aria-label="Decrease quantity"
                       onClick={() => updateQuantity(itemKey, Math.max(0, item.quantity - 1))}
                     >
                       <Minus className="h-4 w-4" />
@@ -79,6 +80,7 @@ export default function CartOverlay() {
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
+                      aria-label="Increase quantity"
                       onClick={() => updateQuantity(itemKey, item.quantity + 1)}
                     >
                       <Plus className="h-4 w-4" />
@@ -113,7 +115,7 @@ export default function CartOverlay() {
           <span>TK {total.toFixed(0)}</span>
         </div>
         <Button
-          className="mt-3 w-full h-12 text-base font-semibold"
+          className="mt-3 w-full h-12 text-base font-semibold bg-brand-navy hover:bg-brand-navy/90"
           size="lg"
           onClick={() => { selectAllItems(); openCheckout('cart') }}
         >

@@ -134,7 +134,7 @@ export function Header() {
               {[
                 { id: 'sale', href: '/#sale', label: 'Sale', labelDesktop: 'On Sale', Icon: Flame },
                 { id: 'all-products', href: '/#all-products', label: 'Products', labelDesktop: 'All Products', Icon: Star },
-                { id: 'track-order', href: '/track-order', label: 'Track', labelDesktop: 'Track Order', Icon: PackageSearch },
+                { id: 'track-order', href: '/#track-order', label: 'Track', labelDesktop: 'Track Order', Icon: PackageSearch },
               ].map(({ id, href, label, labelDesktop, Icon }) => {
                 const active = activeSection === id
                 return (
