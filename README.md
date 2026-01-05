@@ -231,12 +231,3 @@ This project is proprietary software for KidsToysBangladesh.
 Built with ❤️ for kids and parents in Bangladesh.
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
