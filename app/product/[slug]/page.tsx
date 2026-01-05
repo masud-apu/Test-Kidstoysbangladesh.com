@@ -8,23 +8,25 @@ function getMediaUrl(item: string | MediaItem): string {
   return typeof item === 'string' ? item : item.url
 }
 
-export async function generateStaticParams() {
-  // Fetch all product handles from admin API for static generation
-  const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=100`, {
-    next: { revalidate: 3600 } // 1 hour cache
-  })
+// Disabled during build to prevent connection errors on Vercel
+// Products will be generated dynamically on-demand
+// export async function generateStaticParams() {
+//   // Fetch all product handles from admin API for static generation
+//   const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=100`, {
+//     next: { revalidate: 3600 } // 1 hour cache
+//   })
 
-  if (!response.ok) {
-    return []
-  }
+//   if (!response.ok) {
+//     return []
+//   }
 
-  const data = await response.json()
-  const allProducts = data.products || []
+//   const data = await response.json()
+//   const allProducts = data.products || []
 
-  return allProducts.map((product: { handle: string }) => ({
-    slug: product.handle,
-  }))
-}
+//   return allProducts.map((product: { handle: string }) => ({
+//     slug: product.handle,
+//   }))
+// }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -103,7 +105,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { product, variants, options } = data
 
   // Fetch recommended products
-  let recommendedProducts: Product[] = []
+  type RecommendedProduct = { id: number; title: string; handle: string; images: unknown[]; variants: unknown[] }
+  let recommendedProducts: RecommendedProduct[] = []
   try {
     const recommendedResponse = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=5`, {
       next: { revalidate: 3600 }

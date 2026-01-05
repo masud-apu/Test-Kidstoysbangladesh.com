@@ -129,56 +129,109 @@ export default async function Home() {
       {/* Integrated Features Section - Scrolling Marquee with Brand Colors */}
       <FeaturesMarquee />
 
-      {/* Quick Filters - Modern Single Line Bar */}
-      <div className="top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm supports-[backdrop-filter]:bg-white/60">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="flex items-center justify-center gap-3 py-3 overflow-x-auto no-scrollbar">
-
-            {/* Age Group */}
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mr-1">Age</span>
-              {[
-                { label: '0-6m', val: '0-6' },
-                { label: '6m-1y', val: '6-12' },
-                { label: '1y-2y', val: '12-24' },
-                { label: '2y-3y', val: '24-36' },
-                { label: '3y-4y', val: '36-48' },
-                { label: '4y-5y', val: '48-60' },
-              ].map((age) => (
-                <Link
-                  key={age.label}
-                  href={`/products?age_min=${age.val.split('-')[0]}&age_max=${age.val.split('-')[1]}`}
-                  className="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-700 whitespace-nowrap transition-all hover:bg-brand-navy hover:text-white hover:border-brand-navy hover:shadow-md active:scale-95"
-                >
-                  {age.label}
-                </Link>
-              ))}
+      {/* Quick Filters - Modern Clean Design */}
+      <div className="top-0 z-30 bg-white border-b border-gray-200/60 shadow-sm">
+        <div className="container mx-auto max-w-7xl">
+          {/* Mobile: Clean Two-Row Layout */}
+          <div className="md:hidden py-3 px-4 space-y-2.5">
+            {/* Age Section - Row 1 */}
+            <div className="overflow-x-auto scrollbar-hide px-4">
+              <div className="flex items-center gap-2 px-3 py-2 bg-brand-red/5 rounded-full border border-brand-red/20 w-fit">
+                <span className="text-[10px] font-extrabold uppercase tracking-wide text-brand-red">Age</span>
+                <div className="flex gap-1.5">
+                  {[
+                    { label: '0-6m', val: '0-6' },
+                    { label: '6m-1y', val: '6-12' },
+                    { label: '1-2y', val: '12-24' },
+                    { label: '2-3y', val: '24-36' },
+                    { label: '3-4y', val: '36-48' },
+                    { label: '4-5y', val: '48-60' },
+                  ].map((age) => (
+                    <Link
+                      key={age.label}
+                      href={`/products?age_min=${age.val.split('-')[0]}&age_max=${age.val.split('-')[1]}`}
+                      className="px-2.5 py-1 rounded-md bg-white border border-brand-red/30 text-[11px] font-bold text-brand-red whitespace-nowrap transition-all active:bg-brand-red active:text-white active:scale-95 shadow-sm hover:shadow-md"
+                    >
+                      {age.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Divider */}
-            <div className="h-6 w-px bg-gray-200 mx-2 shrink-0"></div>
+            {/* Budget Section - Row 2 */}
+            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+              <div className="flex items-center gap-2 px-3 py-2 bg-brand-blue/5 rounded-full border border-brand-blue/20 w-fit">
+                <span className="text-[10px] font-extrabold uppercase tracking-wide text-brand-blue">Budget</span>
+                <div className="flex gap-1.5">
+                  {[
+                    { label: '<300', min: 0, max: 300 },
+                    { label: '300-700', min: 300, max: 700 },
+                    { label: '700-1k', min: 700, max: 1000 },
+                    { label: '1-2k', min: 1000, max: 2000 },
+                    { label: '2-5k', min: 2000, max: 5000 },
+                    { label: '>5k', min: 5000, max: 100000 }
+                  ].map((budget) => (
+                    <Link
+                      key={budget.label}
+                      href={`/products?min_price=${budget.min}&max_price=${budget.max}`}
+                      className="px-2.5 py-1 rounded-md bg-white border border-brand-blue/30 text-[11px] font-bold text-brand-blue whitespace-nowrap transition-all active:bg-brand-blue active:text-white active:scale-95 shadow-sm hover:shadow-md"
+                    >
+                      {budget.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
 
-            {/* Budget Group */}
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mr-1">Budget</span>
-              {[
-                { label: '< 300', min: 0, max: 300 },
-                { label: '300-700', min: 300, max: 700 },
-                { label: '700-1k', min: 700, max: 1000 },
-                { label: '1k-2k', min: 1000, max: 2000 },
-                { label: '2k-5k', min: 2000, max: 5000 },
-                { label: '> 5k', min: 5000, max: 100000 }
-              ].map((budget) => (
-                <Link
-                  key={budget.label}
-                  href={`/products?min_price=${budget.min}&max_price=${budget.max}`}
-                  className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-semibold text-gray-700 whitespace-nowrap transition-all hover:bg-brand-blue hover:text-white hover:border-brand-blue hover:shadow-md active:scale-95 shadow-sm"
-                >
-                  {budget.label}
-                </Link>
-              ))}
+          {/* Desktop: Modern Grouped Layout */}
+          <div className="hidden md:flex items-center justify-center gap-4 py-3 px-4">
+            {/* Age Section */}
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-brand-red/5 rounded-full border border-brand-red/20">
+              <span className="text-xs font-extrabold uppercase tracking-wide text-brand-red">Age</span>
+              <div className="flex gap-2">
+                {[
+                  { label: '0-6m', val: '0-6' },
+                  { label: '6m-1y', val: '6-12' },
+                  { label: '1y-2y', val: '12-24' },
+                  { label: '2y-3y', val: '24-36' },
+                  { label: '3y-4y', val: '36-48' },
+                  { label: '4y-5y', val: '48-60' },
+                ].map((age) => (
+                  <Link
+                    key={age.label}
+                    href={`/products?age_min=${age.val.split('-')[0]}&age_max=${age.val.split('-')[1]}`}
+                    className="px-3 py-1.5 rounded-lg bg-white border border-brand-red/30 text-xs font-bold text-brand-red whitespace-nowrap transition-all hover:bg-brand-red hover:text-white hover:border-brand-red hover:shadow-lg hover:shadow-brand-red/20 active:scale-95 shadow-sm"
+                  >
+                    {age.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
+            {/* Budget Section */}
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-brand-blue/5 rounded-full border border-brand-blue/20">
+              <span className="text-xs font-extrabold uppercase tracking-wide text-brand-blue">Budget</span>
+              <div className="flex gap-2">
+                {[
+                  { label: '< 300', min: 0, max: 300 },
+                  { label: '300-700', min: 300, max: 700 },
+                  { label: '700-1k', min: 700, max: 1000 },
+                  { label: '1k-2k', min: 1000, max: 2000 },
+                  { label: '2k-5k', min: 2000, max: 5000 },
+                  { label: '> 5k', min: 5000, max: 100000 }
+                ].map((budget) => (
+                  <Link
+                    key={budget.label}
+                    href={`/products?min_price=${budget.min}&max_price=${budget.max}`}
+                    className="px-3 py-1.5 rounded-lg bg-white border border-brand-blue/30 text-xs font-bold text-brand-blue whitespace-nowrap transition-all hover:bg-brand-blue hover:text-white hover:border-brand-blue hover:shadow-lg hover:shadow-brand-blue/20 active:scale-95 shadow-sm"
+                  >
+                    {budget.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

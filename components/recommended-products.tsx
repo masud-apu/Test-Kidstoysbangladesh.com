@@ -1,11 +1,11 @@
 'use client'
 
-import { Product, ProductVariant } from '@/lib/schema'
+import { Product } from '@/lib/schema'
 import { ProductCard } from '@/components/product-card'
 
-// Define a type that includes optional variants as used by ProductCard
-interface ProductWithVariants extends Product {
-    variants?: ProductVariant[]
+// Extend Product to ensure variants are included for ProductCard
+type ProductWithVariants = Product & {
+    variants?: unknown[]
 }
 
 interface RecommendedProductsProps {

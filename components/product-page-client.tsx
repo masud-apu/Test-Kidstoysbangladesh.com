@@ -8,7 +8,7 @@ import { useCartStore } from "@/lib/store";
 import { useOverlayStore } from "@/lib/ui-store";
 import {
   ShoppingCart,
-  MessageCircle,
+
   Zap,
   Truck,
   RotateCcw,
@@ -60,7 +60,7 @@ interface ProductPageClientProps {
   variants?: VariantWithOptions[];
 
   options?: Array<ProductOption & { values: ProductOptionValue[] }>;
-  recommendedProducts?: Product[];
+  recommendedProducts?: Array<{ id: number; title: string; handle: string; images: unknown[]; variants: unknown[] }>;
 }
 
 export function ProductPageClient({
@@ -357,21 +357,50 @@ export function ProductPageClient({
     openCheckout("direct");
   };
 
-  const handleWhatsApp = () => {
-    const productUrl = `https://kidstoysbangladesh.com/product/${product.handle}`;
-    const variantText = selectedVariant ? ` (${selectedVariant.title})` : "";
-    const priceText = selectedVariant
-      ? selectedVariant.price
-      : priceInfo.displayPrice;
-    const message = `Hi! I'm interested in this product: ${product.title}${variantText} - ${priceText}\n\nProduct link: ${productUrl}`;
-    const whatsappUrl = `https://wa.me/8801337411948?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
-  };
+
 
   return (
     <>
       <ProductStructuredData product={product} variants={variants} />
       <div className="container mx-auto max-w-7xl py-8 pb-8">
+        {/* Mobile Header (Title & Price) */}
+        <div className="lg:hidden px-4 mb-6 space-y-4">
+          <div>
+            <h1 className="text-2xl font-bold leading-tight">
+              {mainTitle}
+            </h1>
+            {subTitle && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {subTitle}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-end gap-3 flex-wrap">
+              {priceInfo.comparePrice && (
+                <span className="text-lg text-muted-foreground line-through">
+                  {priceInfo.comparePrice}
+                </span>
+              )}
+              <span className="text-3xl font-extrabold text-green-600">
+                {priceInfo.displayPrice}
+              </span>
+              {priceInfo.hasDiscount && (
+                <span className="text-sm font-medium text-green-700">
+                  (Save {priceInfo.discountPercentage}%)
+                </span>
+              )}
+              {priceInfo.maxSaving && !selectedVariant && (
+                <span className="text-sm font-medium text-green-700">
+                  (Save up to {priceInfo.maxSaving})
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">VAT/Tax included</p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Column - Images */}
           <div className="px-4">
@@ -385,7 +414,7 @@ export function ProductPageClient({
 
           {/* Right Column - Product Details */}
           <div className="space-y-6 px-4">
-            <div>
+            <div className="hidden lg:block">
               <h1 className="text-3xl lg:text-4xl font-bold leading-tight">
                 {mainTitle}
               </h1>
@@ -410,7 +439,7 @@ export function ProductPageClient({
             )}
 
             {/* Price Block */}
-            <div className="space-y-1">
+            <div className="space-y-1 hidden lg:block">
               <div className="flex items-end gap-3 flex-wrap">
                 {priceInfo.comparePrice && (
                   <span className="text-xl text-muted-foreground line-through">
@@ -458,17 +487,7 @@ export function ProductPageClient({
                   Order Now
                 </Button>
               </div>
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleWhatsApp}
-                  variant="default"
-                  size="lg"
-                  className="flex-1 h-12 text-base font-semibold bg-[#25D366] hover:bg-[#1ebe57] text-white"
-                >
-                  <MessageCircle className="mr-2 h-5 w-5" />
-                  Chat on WhatsApp • +880 1337-411948
-                </Button>
-              </div>
+
 
               {/* Delivery & Return Information */}
               <DeliveryInfo />
@@ -534,17 +553,7 @@ export function ProductPageClient({
               Order Now
             </Button>
           </div>
-          <div className="mt-3">
-            <Button
-              onClick={handleWhatsApp}
-              variant="default"
-              size="lg"
-              className="w-full h-11 text-base font-semibold bg-[#25D366] hover:bg-[#1ebe57] text-white"
-            >
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Chat on WhatsApp
-            </Button>
-          </div>
+
           <div className="h-[env(safe-area-inset-bottom)]" />
         </div>
       </div >

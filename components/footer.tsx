@@ -49,7 +49,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
             <ul className="space-y-3 text-sm">
-              <li>
+              {/* <li>
                 <button
                   type="button"
                   onClick={() => {
@@ -60,7 +60,7 @@ export function Footer() {
                 >
                   Cart
                 </button>
-              </li>
+              </li> */}
               <li><Link href="/policies#returns" className="text-gray-600 hover:text-gray-900">Returns &amp; Refunds</Link></li>
               <li><Link href="/policies#privacy" className="text-gray-600 hover:text-gray-900">Privacy Policy</Link></li>
               <li><Link href="/policies#terms" className="text-gray-600 hover:text-gray-900">Terms of Service</Link></li>

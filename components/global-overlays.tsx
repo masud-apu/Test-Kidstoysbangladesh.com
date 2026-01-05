@@ -11,7 +11,7 @@ import CartOverlay from '@/components/cart-overlay'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store'
-import { CheckCircle2, Package, Phone, Mail } from 'lucide-react'
+import { CheckCircle2, Package, Phone, Mail, X } from 'lucide-react'
 
 // Wrapper to render either Drawer (mobile) or Sheet (desktop) with a unified API
 function ResponsiveOverlay(props: {
@@ -40,7 +40,7 @@ function ResponsiveOverlay(props: {
 
   return (
     <Sheet open={props.open} onOpenChange={props.onOpenChange}>
-  <SheetContent side={side} className={side === 'bottom' ? 'max-h-[85vh]' : ''}>
+      <SheetContent side={side} className={side === 'bottom' ? 'max-h-[85vh]' : ''}>
         <SheetHeader>
           <SheetTitle>{props.title}</SheetTitle>
         </SheetHeader>
@@ -66,7 +66,7 @@ export function GlobalOverlays() {
   // Reset snap point when checkout closes
   useEffect(() => {
     if (!checkoutOpen) {
-      setCheckoutSnapPoint(0.7)
+      setCheckoutSnapPoint(1)
     }
   }, [checkoutOpen])
 
@@ -104,14 +104,18 @@ export function GlobalOverlays() {
         open={checkoutOpen}
         onOpenChange={(open) => (open ? undefined : closeCheckout())}
         direction="bottom"
-        snapPoints={isMobile ? [0.7, 1] : undefined}
+        snapPoints={isMobile ? [1] : undefined}
         activeSnapPoint={isMobile ? checkoutSnapPoint : undefined}
         setActiveSnapPoint={isMobile ? setCheckoutSnapPoint : undefined}
       >
         <DrawerContent className={isMobile ? "flex flex-col [&[data-vaul-snap-points]]:h-full" : "max-h-[70vh] flex flex-col"}>
-          <DrawerHeader className="border-b flex-shrink-0">
+          <DrawerHeader className="border-b flex-shrink-0 relative flex items-center justify-center">
             <DrawerTitle>Checkout</DrawerTitle>
-            <DrawerClose />
+            <DrawerClose asChild className="absolute right-4 top-1/2 -translate-y-1/2">
+              <Button variant="ghost" size="icon">
+                <X className="h-5 w-5" />
+              </Button>
+            </DrawerClose>
           </DrawerHeader>
           <div
             className="flex-1"
@@ -131,18 +135,18 @@ export function GlobalOverlays() {
             {/* Success Icon Animation */}
             <div className="mx-auto mb-6 relative">
               <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full w-20 h-20 mx-auto flex items-center justify-center shadow-lg animate-in zoom-in-50 duration-500">
-                <svg 
-                  className="w-10 h-10" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="w-10 h-10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
                   strokeWidth={3}
-                  strokeLinecap="round" 
+                  strokeLinecap="round"
                   strokeLinejoin="round"
                 >
                   <circle cx="12" cy="12" r="10" className="opacity-20" />
-                  <path 
-                    d="m9 12 2 2 4-4" 
+                  <path
+                    d="m9 12 2 2 4-4"
                     className="animate-in draw-in duration-700 delay-300"
                     style={{
                       strokeDasharray: '12',
@@ -153,7 +157,7 @@ export function GlobalOverlays() {
                 </svg>
               </div>
             </div>
-            
+
             {/* Content */}
             <DialogHeader className="space-y-3">
               <DialogTitle className="text-2xl font-bold text-center">
@@ -168,7 +172,7 @@ export function GlobalOverlays() {
                     Please save this ID for your reference
                   </p>
                 </div>
-                
+
                 <div className="grid gap-3 text-left">
                   <div className="flex items-start gap-3">
                     <Package className="w-5 h-5 text-green-600 mt-0.5" />
@@ -177,7 +181,7 @@ export function GlobalOverlays() {
                       <p className="text-xs text-muted-foreground">Your order has been received and confirmed</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <Mail className="w-5 h-5 text-blue-600 mt-0.5" />
                     <div className="space-y-1">
@@ -185,7 +189,7 @@ export function GlobalOverlays() {
                       <p className="text-xs text-muted-foreground">We&apos;ve sent you an email with your invoice</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <Phone className="w-5 h-5 text-orange-600 mt-0.5" />
                     <div className="space-y-1">
@@ -196,7 +200,7 @@ export function GlobalOverlays() {
                 </div>
               </DialogDescription>
             </DialogHeader>
-            
+
             {/* Actions */}
             <div className="mt-6 flex flex-col gap-2">
               <Button
