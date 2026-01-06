@@ -48,6 +48,7 @@
   --animate-collapsible-up: collapsible-up 0.3s ease-out;
   --animate-marquee: marquee 60s linear infinite;
   --animate-marquee-reverse: marquee-reverse 60s linear infinite;
+  --animate-shake: shake 0.5s ease-in-out infinite;
 
   /* Brand Colors */
   --color-brand-red: #E64C4C;
@@ -252,9 +253,27 @@ a {
   animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
+
 .animate-bounce-subtle {
   animation: bounce-subtle 2s ease-in-out infinite;
 }
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-10deg);
+  }
+
+  75% {
+    transform: rotate(10deg);
+  }
+}
+
 
 /* Hide scrollbar utility */
 .scrollbar-hide {

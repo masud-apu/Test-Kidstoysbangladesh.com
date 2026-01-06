@@ -271,10 +271,10 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
                   variant="outline"
                   size="sm"
                   aria-label="Add to cart"
-                  className="w-8 h-8 md:w-9 md:h-9"
+                  className="w-8 h-8 md:w-9 md:h-9 group/cart-btn"
                   disabled={!canPurchase}
                 >
-                  <ShoppingCart className="h-3.5 w-3.5" />
+                  <ShoppingCart className="h-3.5 w-3.5 group-hover/cart-btn:animate-shake" />
                 </Button>
               </div>
             )}

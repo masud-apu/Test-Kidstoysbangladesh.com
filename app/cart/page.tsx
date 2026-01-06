@@ -262,7 +262,7 @@ export default function CartPage() {
                           <Button
                             variant="outline"
                             size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            className="h-8 w-8 text-destructive hover:bg-red-50 hover:text-red-600 border-transparent hover:border-red-200"
                             aria-label="Remove item"
                             onClick={() => removeFromCart(itemKey)}
                           >
