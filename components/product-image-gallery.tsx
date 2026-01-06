@@ -117,6 +117,16 @@ export function ProductImageGallery({
     }
   };
 
+  // Helper to optimize Cloudinary images
+  const getOptimizedCloudinaryUrl = (url: string, width: number) => {
+    if (!url || !url.includes('res.cloudinary.com') || !url.includes('/upload/')) {
+      return url;
+    }
+    // Inject width, quality, and format transformations
+    // Use conservative optimizations: reasonable quality, auto format
+    return url.replace('/upload/', `/upload/w_${width},f_auto,q_auto/`);
+  };
+
   return (
     <div className="space-y-4">
       {/* Main Carousel */}
@@ -135,6 +145,7 @@ export function ProductImageGallery({
           <CarouselContent>
             {displayMedia.map((media, index) => {
               const isVideo = media.type === 'video';
+              const isFirst = index === 0;
 
               return (
                 <CarouselItem key={index}>
@@ -148,12 +159,15 @@ export function ProductImageGallery({
                         onEnded={() => plugin.current.reset()}
                       />
                     ) : (
-                      <Zoom>
+                      <Zoom zoomImg={{ src: media.url }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={media.url}
+                          src={getOptimizedCloudinaryUrl(media.url, 800)}
                           alt={`${productTitle} - Image ${index + 1}`}
                           className="w-full h-full object-cover cursor-zoom-in"
+                          loading={isFirst ? "eager" : "lazy"}
+                          // @ts-ignore
+                          fetchPriority={isFirst ? "high" : "auto"}
                         />
                       </Zoom>
                     )}
@@ -203,7 +217,7 @@ export function ProductImageGallery({
             // For videos, use thumbnail if available, otherwise generate from Cloudinary
             const thumbnailSrc = isVideo
               ? (media.thumbnail || generateCloudinaryThumbnail(media.url))
-              : media.url;
+              : getOptimizedCloudinaryUrl(media.url, 200);
 
             return (
               <button
