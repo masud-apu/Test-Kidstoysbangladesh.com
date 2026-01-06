@@ -401,7 +401,7 @@ export function ProductPageClient({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12">
           {/* Left Column - Images */}
           <div className="px-4">
             <ProductImageGallery
@@ -496,7 +496,7 @@ export function ProductPageClient({
         </div>
 
         {/* Description Section */}
-        <div className="mt-16 px-4">
+        <div className="mt-6 lg:mt-16 px-4">
           <div className="relative flex items-center justify-center mb-6">
             <div className="flex-grow border-t border-border"></div>
             <span className="px-4 text-3xl font-semibold text-foreground">
