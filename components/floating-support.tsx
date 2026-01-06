@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle } from 'lucide-react'
+import { Headset } from 'lucide-react'
 import { useState } from 'react'
 
 export function FloatingSupport() {
@@ -14,13 +14,13 @@ export function FloatingSupport() {
     }
 
     return (
-        <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex items-center gap-3">
+        <div className={`fixed bottom-24 md:bottom-6 right-6 z-50 flex items-center transition-all duration-300 ${isHovered ? 'gap-3' : 'gap-0'}`}>
             {/* Tooltip text */}
             <div
                 className={`
-          bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-2 rounded-full
-          shadow-lg font-medium whitespace-nowrap transition-all duration-300
-          ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}
+          bg-gradient-to-r from-teal-500 to-teal-600 text-white py-2 rounded-full
+          shadow-lg font-medium whitespace-nowrap transition-all duration-300 overflow-hidden
+          ${isHovered ? 'max-w-[300px] px-4 opacity-100 translate-x-0' : 'max-w-0 px-0 opacity-0 translate-x-4 pointer-events-none'}
         `}
             >
                 Need help? Chat with us!
@@ -49,12 +49,12 @@ export function FloatingSupport() {
                 <span className="absolute inset-0 rounded-full bg-teal-400 opacity-75 animate-ping-slow" />
 
                 {/* Icon */}
-                <MessageCircle
+                <Headset
                     className="w-6 h-6 text-white relative z-10 transition-transform group-hover:rotate-12"
                 />
 
                 {/* Notification badge (optional - remove if not needed) */}
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white flex items-center justify-center">
                     <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 </span>
             </button>
