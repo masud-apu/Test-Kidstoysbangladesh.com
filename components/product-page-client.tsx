@@ -25,7 +25,7 @@ import {
 import { fbPixelEvents } from "@/lib/facebook-pixel-events";
 import { Analytics } from "@/lib/analytics";
 import { SelectedOption } from "@/lib/store";
-import { RecommendedProducts } from "@/components/recommended-products";
+
 import { FeaturesMarquee } from "@/components/features-marquee";
 
 
@@ -60,7 +60,7 @@ interface ProductPageClientProps {
   variants?: VariantWithOptions[];
 
   options?: Array<ProductOption & { values: ProductOptionValue[] }>;
-  recommendedProducts?: Array<{ id: number; title: string; handle: string; images: unknown[]; variants: unknown[] }>;
+  recommendedProductsSlot?: React.ReactNode;
 }
 
 export function ProductPageClient({
@@ -68,7 +68,7 @@ export function ProductPageClient({
   variants = [],
 
   options = [],
-  recommendedProducts = [],
+  recommendedProductsSlot,
 }: ProductPageClientProps) {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -518,7 +518,7 @@ export function ProductPageClient({
         </div>
         {/* Recommended Products */}
         <div className="mt-12">
-          <RecommendedProducts products={recommendedProducts} />
+          {recommendedProductsSlot}
         </div>
 
       </div>

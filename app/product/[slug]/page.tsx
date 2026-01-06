@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { ProductPageClient } from '@/components/product-page-client'
 import { MediaItem } from '@/lib/schema'
+import { Suspense } from 'react'
+import { RecommendedProductsSection } from '@/components/recommended-products-section'
+import { RecommendedProductsSkeleton } from '@/components/recommended-products-skeleton'
 
 // Helper function to get URL from media item
 function getMediaUrl(item: string | MediaItem): string {
@@ -104,31 +107,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const data = await response.json()
   const { product, variants, options } = data
 
-  // Fetch recommended products
-  type RecommendedProduct = { id: number; title: string; handle: string; images: unknown[]; variants: unknown[] }
-  let recommendedProducts: RecommendedProduct[] = []
-  try {
-    const recommendedResponse = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=20`, {
-      next: { revalidate: 60 } // Revalidate more frequently for randomness
-    })
 
-    if (recommendedResponse.ok) {
-      const recommendedData = await recommendedResponse.json()
-      // Randomly shuffle and take 6
-      recommendedProducts = (recommendedData.products || [])
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 6)
-    }
-  } catch (error) {
-    console.error('Failed to fetch recommended products:', error)
-  }
 
   return (
     <ProductPageClient
       product={product}
       variants={variants}
       options={options}
-      recommendedProducts={recommendedProducts}
+      recommendedProductsSlot={
+        <Suspense fallback={<RecommendedProductsSkeleton />}>
+          <RecommendedProductsSection />
+        </Suspense>
+      }
     />
   )
 }
