@@ -172,7 +172,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
         className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group/card border border-gray-100 overflow-hidden cursor-pointer"
         aria-label={`View product ${product.title}`}
       >
-        <Link href={`/product/${product.handle}`} prefetch={false} onClick={handleProductClick} className="block focus:outline-none focus:ring-2 focus:ring-brand-yellow/70">
+        <Link href={`/product/${product.handle}`} prefetch={false} onClick={handleProductClick} className="block focus:outline-none">
           {/* Product Image */}
           <div className={compact ? "p-1" : "p-1.5"}>
             <div className="relative rounded-lg overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">

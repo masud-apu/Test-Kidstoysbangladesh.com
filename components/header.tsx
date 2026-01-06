@@ -33,7 +33,7 @@ export function Header() {
 
   // Scrollspy for highlighting active nav link (desktop only use-case, safe on mobile too)
   useEffect(() => {
-    const ids = ['new-arrivals', 'sale', 'all-products']
+    const ids = ['new-arrivals', 'sale', 'all-products', 'track-order']
     const elements = ids
       .map((id) => (typeof document !== 'undefined' ? document.getElementById(id) : null))
       .filter((el): el is HTMLElement => !!el)
