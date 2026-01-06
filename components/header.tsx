@@ -127,7 +127,7 @@ export function Header() {
             {/* Mobile & Desktop Navigation - Centered on mobile */}
             <nav
               className={cn(
-                'flex items-center gap-3 md:gap-2 transition-all duration-500 ease-out absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0',
+                'flex items-center gap-6 md:gap-2 transition-all duration-500 ease-out absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0',
                 isScrolled ? 'text-xs md:text-sm' : 'text-xs md:text-base'
               )}
             >
