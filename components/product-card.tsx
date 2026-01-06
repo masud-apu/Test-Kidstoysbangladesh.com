@@ -238,7 +238,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 
             {/* Price */}
             <div className={`mb-0 flex flex-wrap items-center gap-1.5 ${compact ? 'min-h-[1rem]' : 'min-h-[1.5rem] gap-2'}`}>
-              <span className={`font-bold text-brand-navy ${compact ? 'text-sm' : 'text-base md:text-lg'}`}>
+              <span className={`font-bold text-green-600 ${compact ? 'text-sm' : 'text-base md:text-lg'}`}>
                 TK {minPrice.toFixed(0)}
               </span>
               {hasDiscount && (
