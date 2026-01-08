@@ -42,7 +42,12 @@ export default async function ProductsPage(props: {
   let allProducts: any[] = [...productsWithVariants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   const searchQuery = typeof searchParams?.search === 'string' ? searchParams.search : undefined
+  const minPrice = typeof searchParams?.min_price === 'string' ? parseFloat(searchParams.min_price) : undefined
+  const maxPrice = typeof searchParams?.max_price === 'string' ? parseFloat(searchParams.max_price) : undefined
+  const ageMinParam = typeof searchParams?.age_min === 'string' ? parseInt(searchParams.age_min) : undefined
+  const ageMaxParam = typeof searchParams?.age_max === 'string' ? parseInt(searchParams.age_max) : undefined
 
+  // 1. Text Search Filter
   if (searchQuery) {
     const query = searchQuery.toLowerCase()
     allProducts = allProducts.filter((product) =>
@@ -50,6 +55,105 @@ export default async function ProductsPage(props: {
       product.description?.toLowerCase().includes(query) ||
       product.category?.toLowerCase().includes(query)
     )
+  }
+
+  // 2. Price Range Filter
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    allProducts = allProducts.filter((product) => {
+      // If no variants, skip (safeguard)
+      if (!Array.isArray(product.variants) || product.variants.length === 0) return false
+
+      // Check if *any* variant falls within the price range
+      return product.variants.some((v: any) => {
+        const price = parseFloat(v.price)
+        if (isNaN(price)) return false
+
+        const passesMin = minPrice === undefined || price >= minPrice
+        const passesMax = maxPrice === undefined || price <= maxPrice
+
+        return passesMin && passesMax
+      })
+    })
+  }
+
+  // 3. Age Range Filter (Months)
+  if (ageMinParam !== undefined || ageMaxParam !== undefined) {
+    const filterMin = ageMinParam ?? 0
+    const filterMax = ageMaxParam ?? 1200 // Default to 100 years if no max
+
+    allProducts = allProducts.filter((product) => {
+      const tags = Array.isArray(product.tags) ? product.tags.map((t: any) => String(t).toLowerCase().trim()) : []
+
+      // Heuristic: Try to find age-related tags and see if they overlap with the filter range
+      // Supported formats in tags: "0-6m", "6m-1y", "1-2y", "3y+", "0-6 months", "1 year"
+
+      let productMatches = false
+      let hasAgeTags = false
+
+      for (const tag of tags) {
+        let min = -1
+        let max = -1
+
+        // Regex for "0-6m" or "0-6 months"
+        const monthRangeMatch = tag.match(/^(\d+)-(\d+)\s*m(onths?)?$/)
+        if (monthRangeMatch) {
+          min = parseInt(monthRangeMatch[1])
+          max = parseInt(monthRangeMatch[2])
+          hasAgeTags = true
+        }
+
+        // Regex for "1-2y" or "1-2 years"
+        const yearRangeMatch = tag.match(/^(\d+)-(\d+)\s*y(ears?)?$/)
+        if (yearRangeMatch) {
+          min = parseInt(yearRangeMatch[1]) * 12
+          max = parseInt(yearRangeMatch[2]) * 12
+          hasAgeTags = true
+        }
+
+        // Regex for "3y+" or "3+ years"
+        const yearPlusMatch = tag.match(/^(\d+)\+?\s*y(ears?)?(\s*\+)?$/)
+        if (yearPlusMatch) {
+          min = parseInt(yearPlusMatch[1]) * 12
+          max = 1200 // 100 years
+          hasAgeTags = true
+        }
+
+        // Regex for "6m+"
+        const monthPlusMatch = tag.match(/^(\d+)\s*m(onths?)?(\s*\+)?$/)
+        if (monthPlusMatch && !tag.includes('-')) {
+          min = parseInt(monthPlusMatch[1])
+          max = 1200
+          hasAgeTags = true
+        }
+
+        if (min !== -1 && max !== -1) {
+          // Check for overlap: (StartA <= EndB) and (EndA >= StartB)
+          if (min <= filterMax && max >= filterMin) {
+            productMatches = true
+            break // Found a matching tag, keep product
+          }
+        }
+      }
+
+      // If product has specific age tags, we filter strictly.
+      // If product has NO age tags, should we show it? 
+      // Decision: Only show if it matches. 
+      // But for "Curated" lists often manual tags are used. 
+      // Let's also check for broad keywords if strict ranges fail.
+      if (!productMatches && !hasAgeTags) {
+        // Fallback keywords logic?
+        // If filter is 0-12m (baby/infant)
+        if (filterMax <= 12) {
+          if (tags.includes('baby') || tags.includes('infant') || tags.includes('newborn')) productMatches = true
+        }
+        // If filter is 12-36m (toddler)
+        if (filterMin >= 12 && filterMax <= 36) {
+          if (tags.includes('toddler')) productMatches = true
+        }
+      }
+
+      return productMatches
+    })
   }
 
   return (
