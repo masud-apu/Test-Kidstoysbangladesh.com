@@ -91,6 +91,7 @@ export default async function ProductsPage(props: {
       if (!Array.isArray(product.variants) || product.variants.length === 0) return false
 
       // Check if *any* variant falls within the price range
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return product.variants.some((v: any) => {
         const price = parseFloat(v.price)
         if (isNaN(price)) return false
@@ -109,6 +110,7 @@ export default async function ProductsPage(props: {
     const filterMax = ageMaxParam ?? 1200 // Default to 100 years if no max
 
     allProducts = allProducts.filter((product) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tags = Array.isArray(product.tags) ? product.tags.map((t: any) => String(t).toLowerCase().trim()) : []
 
       // Heuristic: Try to find age-related tags and see if they overlap with the filter range
