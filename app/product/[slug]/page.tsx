@@ -92,6 +92,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
+import { ProductStructuredData, BreadcrumbStructuredData } from '@/components/structured-data'
+
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
 
@@ -107,18 +109,26 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const data = await response.json()
   const { product, variants, options } = data
 
-
+  const breadcrumbItems = [
+    { name: 'Home', item: 'https://kidstoysbangladesh.com' },
+    { name: 'Products', item: 'https://kidstoysbangladesh.com/products' },
+    { name: product.title, item: `https://kidstoysbangladesh.com/product/${product.handle}` }
+  ]
 
   return (
-    <ProductPageClient
-      product={product}
-      variants={variants}
-      options={options}
-      recommendedProductsSlot={
-        <Suspense fallback={<RecommendedProductsSkeleton />}>
-          <RecommendedProductsSection />
-        </Suspense>
-      }
-    />
+    <>
+      <ProductStructuredData product={product} variants={variants} />
+      <BreadcrumbStructuredData items={breadcrumbItems} />
+      <ProductPageClient
+        product={product}
+        variants={variants}
+        options={options}
+        recommendedProductsSlot={
+          <Suspense fallback={<RecommendedProductsSkeleton />}>
+            <RecommendedProductsSection />
+          </Suspense>
+        }
+      />
+    </>
   )
 }

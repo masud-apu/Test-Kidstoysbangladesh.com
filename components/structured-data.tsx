@@ -1,5 +1,49 @@
 import { Product, ProductVariant, MediaItem } from '@/lib/schema'
 
+interface BreadcrumbItem {
+  name: string
+  item: string
+}
+
+export function BreadcrumbStructuredData({ items }: { items: BreadcrumbItem[] }) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": items.map((item, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "name": item.name,
+      "item": item.item
+    }))
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+    />
+  )
+}
+
+export function CollectionPageStructuredData({ name, description, url }: { name: string, description: string, url: string }) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": name,
+    "description": description,
+    "url": url
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+    />
+  )
+}
+
+
+
 interface ProductStructuredDataProps {
   product: Product
   variants?: ProductVariant[]

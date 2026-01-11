@@ -18,6 +18,33 @@ import {
 } from "@/components/ui/select"
 import { ProductsPageClient } from '@/components/products-page-client'
 
+import { CollectionPageStructuredData, BreadcrumbStructuredData } from '@/components/structured-data'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
+  const params = await searchParams
+  const query = typeof params?.search === 'string' ? params.search : undefined
+
+  const title = query ? `Search Results for "${query}" | KidsToysBangladesh` : 'All Products | KidsToysBangladesh'
+  const description = query
+    ? `Shop for ${query} at KidsToysBangladesh. Best collection of kids toys in Bangladesh.`
+    : 'Browse our complete collection of kids toys. Find educational, vehicles, building blocks and more at the best prices in Bangladesh.'
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: 'https://kidstoysbangladesh.com/products',
+    },
+    alternates: {
+      canonical: 'https://kidstoysbangladesh.com/products',
+    }
+  }
+}
+
 export default async function ProductsPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
@@ -158,6 +185,17 @@ export default async function ProductsPage(props: {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <CollectionPageStructuredData
+        name={searchQuery ? `Search Results for "${searchQuery}"` : "All Products"}
+        description={searchQuery ? `Search results for ${searchQuery}` : "Browse our complete collection of kids toys."}
+        url={`https://kidstoysbangladesh.com/products${searchQuery ? `?search=${searchQuery}` : ''}`}
+      />
+      <BreadcrumbStructuredData
+        items={[
+          { name: 'Home', item: 'https://kidstoysbangladesh.com' },
+          { name: 'Products', item: 'https://kidstoysbangladesh.com/products' }
+        ]}
+      />
       <ProductsPageClient productCount={allProducts.length} category={searchQuery ? `Search: ${searchQuery}` : "All Products"} />
       <div className="container mx-auto max-w-7xl px-4 py-8">
         {/* Page Header */}

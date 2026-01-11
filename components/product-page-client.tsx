@@ -34,7 +34,7 @@ const Markdown = dynamic(() => import("@/components/markdown").then(mod => ({ de
   loading: () => <div className="animate-pulse bg-gray-200 h-32 rounded-lg" />,
 });
 
-const ProductStructuredData = dynamic(() => import("./structured-data").then(mod => ({ default: mod.ProductStructuredData })));
+// ProductStructuredData moved to server component
 
 const VariantSelector = dynamic(() => import("./variant-selector").then(mod => ({ default: mod.VariantSelector })), {
   loading: () => <div className="animate-pulse bg-gray-100 h-20 rounded-lg" />,
@@ -361,7 +361,7 @@ export function ProductPageClient({
 
   return (
     <>
-      <ProductStructuredData product={product} variants={variants} />
+      {/* ProductStructuredData rendered on server in page.tsx */}
       <div className="container mx-auto max-w-7xl py-8 pb-8">
         {/* Mobile Header (Title & Price) */}
         <div className="lg:hidden px-4 mb-6 space-y-4">
