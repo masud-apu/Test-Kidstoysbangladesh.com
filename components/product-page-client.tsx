@@ -25,6 +25,9 @@ import {
 import { fbPixelEvents } from "@/lib/facebook-pixel-events";
 import { Analytics } from "@/lib/analytics";
 import { SelectedOption } from "@/lib/store";
+import { RecommendedProducts } from "@/components/recommended-products";
+import { FeaturesMarquee } from "@/components/features-marquee";
+
 
 import { FeaturesMarquee } from "@/components/features-marquee";
 
@@ -60,7 +63,11 @@ interface ProductPageClientProps {
   variants?: VariantWithOptions[];
 
   options?: Array<ProductOption & { values: ProductOptionValue[] }>;
+<<<<<<< HEAD
   recommendedProductsSlot?: React.ReactNode;
+=======
+  recommendedProducts?: Array<{ id: number; title: string; handle: string; images: unknown[]; variants: unknown[] }>;
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
 }
 
 export function ProductPageClient({
@@ -68,7 +75,11 @@ export function ProductPageClient({
   variants = [],
 
   options = [],
+<<<<<<< HEAD
   recommendedProductsSlot,
+=======
+  recommendedProducts = [],
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
 }: ProductPageClientProps) {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -361,6 +372,7 @@ export function ProductPageClient({
 
   return (
     <>
+<<<<<<< HEAD
       {/* ProductStructuredData rendered on server in page.tsx */}
       <div className="container mx-auto max-w-7xl py-8 pb-8">
         {/* Mobile Header (Title & Price) */}
@@ -402,6 +414,11 @@ export function ProductPageClient({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12">
+=======
+      <ProductStructuredData product={product} variants={variants} />
+      <div className="container mx-auto max-w-7xl py-8 pb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
           {/* Left Column - Images */}
           <div className="px-4">
             <ProductImageGallery
@@ -485,6 +502,20 @@ export function ProductPageClient({
                 >
                   <Zap className="mr-2 h-5 w-5" />
                   Order Now
+<<<<<<< HEAD
+=======
+                </Button>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleWhatsApp}
+                  variant="default"
+                  size="lg"
+                  className="flex-1 h-12 text-base font-semibold bg-[#25D366] hover:bg-[#1ebe57] text-white"
+                >
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  Chat on WhatsApp • +880 1337-411948
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
                 </Button>
               </div>
 
@@ -518,7 +549,11 @@ export function ProductPageClient({
         </div>
         {/* Recommended Products */}
         <div className="mt-12">
+<<<<<<< HEAD
           {recommendedProductsSlot}
+=======
+          <RecommendedProducts products={recommendedProducts} />
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
         </div>
 
       </div>
@@ -551,6 +586,20 @@ export function ProductPageClient({
             >
               <Zap className="mr-2 h-5 w-5" />
               Order Now
+<<<<<<< HEAD
+=======
+            </Button>
+          </div>
+          <div className="mt-3">
+            <Button
+              onClick={handleWhatsApp}
+              variant="default"
+              size="lg"
+              className="w-full h-11 text-base font-semibold bg-[#25D366] hover:bg-[#1ebe57] text-white"
+            >
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Chat on WhatsApp
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
             </Button>
           </div>
 

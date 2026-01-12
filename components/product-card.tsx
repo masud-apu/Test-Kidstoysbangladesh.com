@@ -172,7 +172,11 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
         className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group/card border border-gray-100 overflow-hidden cursor-pointer"
         aria-label={`View product ${product.title}`}
       >
+<<<<<<< HEAD
         <Link href={`/product/${product.handle}`} prefetch={false} onClick={handleProductClick} className="block focus:outline-none">
+=======
+        <Link href={`/product/${product.handle}`} prefetch={false} onClick={handleProductClick} className="block focus:outline-none focus:ring-2 focus:ring-brand-yellow/70">
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
           {/* Product Image */}
           <div className={compact ? "p-1" : "p-1.5"}>
             <div className="relative rounded-lg overflow-hidden ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-50">
@@ -238,7 +242,11 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 
             {/* Price */}
             <div className={`mb-0 flex flex-wrap items-center gap-1.5 ${compact ? 'min-h-[1rem]' : 'min-h-[1.5rem] gap-2'}`}>
+<<<<<<< HEAD
               <span className={`font-bold text-green-600 ${compact ? 'text-sm' : 'text-base md:text-lg'}`}>
+=======
+              <span className={`font-bold text-brand-navy ${compact ? 'text-sm' : 'text-base md:text-lg'}`}>
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
                 TK {minPrice.toFixed(0)}
               </span>
               {hasDiscount && (
@@ -271,10 +279,17 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
                   variant="outline"
                   size="sm"
                   aria-label="Add to cart"
+<<<<<<< HEAD
                   className="w-8 h-8 md:w-9 md:h-9 group/cart-btn"
                   disabled={!canPurchase}
                 >
                   <ShoppingCart className="h-3.5 w-3.5 group-hover/cart-btn:animate-shake" />
+=======
+                  className="w-8 h-8 md:w-9 md:h-9"
+                  disabled={!canPurchase}
+                >
+                  <ShoppingCart className="h-3.5 w-3.5" />
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
                 </Button>
               </div>
             )}

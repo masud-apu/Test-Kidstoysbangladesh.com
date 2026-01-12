@@ -127,14 +127,22 @@ export function Header() {
             {/* Mobile & Desktop Navigation - Centered on mobile */}
             <nav
               className={cn(
+<<<<<<< HEAD
                 'flex items-center gap-6 md:gap-2 transition-all duration-500 ease-out absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0',
+=======
+                'flex items-center gap-0.5 md:gap-2 transition-all duration-500 ease-out absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0',
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
                 isScrolled ? 'text-xs md:text-sm' : 'text-xs md:text-base'
               )}
             >
               {[
                 { id: 'sale', href: '/#sale', label: 'Sale', labelDesktop: 'On Sale', Icon: Flame },
                 { id: 'all-products', href: '/#all-products', label: 'Products', labelDesktop: 'All Products', Icon: Star },
+<<<<<<< HEAD
                 { id: 'track-order', href: '/#track-order', label: 'Track', labelDesktop: 'Track Order', Icon: PackageSearch },
+=======
+                { id: 'track-order', href: '/track-order', label: 'Track', labelDesktop: 'Track Order', Icon: PackageSearch },
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
               ].map(({ id, href, label, labelDesktop, Icon }) => {
                 const active = activeSection === id
                 return (

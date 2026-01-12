@@ -660,7 +660,8 @@ function CheckoutContent() {
       <div className="container mx-auto max-w-6xl px-4 py-4 pb-24 md:pb-4">
 
 
-        {/* Mobile Order Summary */}
+<<<<<<< HEAD
+  {/* Mobile Order Summary */ }
         <div className="md:hidden mb-6 bg-muted/30 border-y -mx-4 px-4 py-4">
           <Collapsible
             open={isMobileOrderSummaryOpen}
@@ -819,6 +820,8 @@ function CheckoutContent() {
           </Collapsible>
         </div>
 
+=======
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Checkout Form */}
           <div>
@@ -984,128 +987,168 @@ function CheckoutContent() {
           </div>
 
           {/* Order Summary */}
-          <div className="lg:col-span-2 hidden md:block">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Delivery Location moved to form */}
-
-                {checkoutItems.map((item) => {
-                  const itemKey = getItemKey(item);
-                  const displayPrice = item.variantPrice || "0";
-
-                  return (
-                    <div key={itemKey} className="flex gap-4 p-4 rounded-lg border border-border/50 hover:border-border transition-colors">
-                      <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border">
-                        {item.images && item.images[0] ? (
-                          <Image
-                            src={getMediaUrl(item.images[0])}
-                            alt={item.title}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
-                            No image
-                          </div>
-                        )}
+<<<<<<< HEAD
+  <div className="lg:col-span-2 hidden md:block">
+=======
+          <div className="lg:col-span-2">
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
+      <Card>
+        <CardHeader>
+          <CardTitle>Order Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+<<<<<<< HEAD
+  {/* Delivery Location moved to form */ }
+=======
+                <div>
+                  <p className="text-sm font-medium mb-2">Delivery Location</p>
+                  <RadioGroup
+                    value={deliveryType}
+                    onValueChange={(val) =>
+                      setDeliveryType(val as DeliveryType)
+                    }
+                    className="grid grid-cols-2 gap-2"
+                  >
+                    <label
+                      htmlFor="checkout-outside"
+                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-yellow data-[state=checked]:bg-brand-yellow/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="outside" id="checkout-outside" />
+                        <span className="text-sm">Outside Dhaka</span>
                       </div>
-
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-semibold text-base line-clamp-2 mb-1">
-                            {item.title}
-                          </h3>
-
-                          {/* Display variant information - only if NOT a default variant product */}
-                          {!item.hasOnlyDefaultVariant &&
-                            item.variantTitle &&
-                            item.variantTitle !== "Default Title" && (
-                              <div className="text-sm text-muted-foreground">
-                                {item.selectedOptions &&
-                                  item.selectedOptions.length > 0 ? (
-                                  <span>
-                                    {item.selectedOptions
-                                      .map((opt) => opt.valueName)
-                                      .join(" / ")}
-                                  </span>
-                                ) : (
-                                  <span>{item.variantTitle}</span>
-                                )}
-                              </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center justify-between mt-3">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-9 w-9 rounded-full"
-                              onClick={() =>
-                                checkoutType === "direct"
-                                  ? updateDirectBuyQuantity(item.quantity - 1)
-                                  : checkoutType === "url"
-                                    ? updateUrlProductQuantity(
-                                      item.id,
-                                      item.quantity - 1,
-                                    )
-                                    : updateQuantity(itemKey, item.quantity - 1)
-                              }
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="min-w-[2rem] text-center font-medium">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-9 w-9 rounded-full"
-                              onClick={() =>
-                                checkoutType === "direct"
-                                  ? updateDirectBuyQuantity(item.quantity + 1)
-                                  : checkoutType === "url"
-                                    ? updateUrlProductQuantity(
-                                      item.id,
-                                      item.quantity + 1,
-                                    )
-                                    : updateQuantity(itemKey, item.quantity + 1)
-                              }
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                            {checkoutType !== "direct" && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 ml-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                onClick={() =>
-                                  checkoutType === "url"
-                                    ? removeUrlProduct(item.id)
-                                    : removeFromCart(itemKey)
-                                }
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-
-                          <div className="text-right">
-                            <p className="text-lg font-bold text-brand-navy">
-                              TK {(parseFloat(displayPrice) * item.quantity).toFixed(2)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              TK {displayPrice} × {item.quantity}
-                            </p>
-                          </div>
-                        </div>
+                      <span className="text-sm font-medium text-brand-navy">TK 120</span>
+                    </label>
+                    <label
+                      htmlFor="checkout-inside"
+                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:border-brand-yellow data-[state=checked]:border-brand-yellow data-[state=checked]:bg-brand-yellow/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="inside" id="checkout-inside" />
+                        <span className="text-sm">Inside Dhaka</span>
                       </div>
-                    </div>
-                  );
-                })}
+                      <span className="text-sm font-medium text-brand-navy">TK 60</span>
+                    </label>
+                  </RadioGroup>
+                </div>
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
+
+  {
+    checkoutItems.map((item) => {
+      const itemKey = getItemKey(item);
+      const displayPrice = item.variantPrice || "0";
+
+      return (
+        <div key={itemKey} className="flex gap-4 p-4 rounded-lg border border-border/50 hover:border-border transition-colors">
+          <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border">
+            {item.images && item.images[0] ? (
+              <Image
+                src={getMediaUrl(item.images[0])}
+                alt={item.title}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
+                No image
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 flex flex-col justify-between">
+            <div>
+              <h3 className="font-semibold text-base line-clamp-2 mb-1">
+                {item.title}
+              </h3>
+
+              {/* Display variant information - only if NOT a default variant product */}
+              {!item.hasOnlyDefaultVariant &&
+                item.variantTitle &&
+                item.variantTitle !== "Default Title" && (
+                  <div className="text-sm text-muted-foreground">
+                    {item.selectedOptions &&
+                      item.selectedOptions.length > 0 ? (
+                      <span>
+                        {item.selectedOptions
+                          .map((opt) => opt.valueName)
+                          .join(" / ")}
+                      </span>
+                    ) : (
+                      <span>{item.variantTitle}</span>
+                    )}
+                  </div>
+                )}
+            </div>
+
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-full"
+                  onClick={() =>
+                    checkoutType === "direct"
+                      ? updateDirectBuyQuantity(item.quantity - 1)
+                      : checkoutType === "url"
+                        ? updateUrlProductQuantity(
+                          item.id,
+                          item.quantity - 1,
+                        )
+                        : updateQuantity(itemKey, item.quantity - 1)
+                  }
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="min-w-[2rem] text-center font-medium">
+                  {item.quantity}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-full"
+                  onClick={() =>
+                    checkoutType === "direct"
+                      ? updateDirectBuyQuantity(item.quantity + 1)
+                      : checkoutType === "url"
+                        ? updateUrlProductQuantity(
+                          item.id,
+                          item.quantity + 1,
+                        )
+                        : updateQuantity(itemKey, item.quantity + 1)
+                  }
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                {checkoutType !== "direct" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 ml-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() =>
+                      checkoutType === "url"
+                        ? removeUrlProduct(item.id)
+                        : removeFromCart(itemKey)
+                    }
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+
+              <div className="text-right">
+                <p className="text-lg font-bold text-brand-navy">
+                  TK {(parseFloat(displayPrice) * item.quantity).toFixed(2)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  TK {displayPrice} × {item.quantity}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    })
+  }
 
                 <Separator />
                 <div className="space-y-3">
@@ -1125,11 +1168,11 @@ function CheckoutContent() {
                     <span className="text-brand-navy">TK {totalPrice.toFixed(2)}</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </CardContent >
+            </Card >
 
-            {/* Promo Code Section */}
-            <Card className="mt-4">
+    {/* Promo Code Section */ }
+    < Card className = "mt-4" >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Tag className="h-5 w-5" />
@@ -1202,21 +1245,21 @@ function CheckoutContent() {
                   </div>
                 )}
               </CardContent>
-            </Card>
-          </div>
-        </div>
+            </Card >
+          </div >
+        </div >
       </div >
 
-      {/* Fixed Footer with Place Order Button - Mobile Only */}
-      < div className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background px-4 py-3 z-50" >
-        <Button
-          onClick={handleSubmit(onSubmit)}
-          className="w-full h-12 text-base font-semibold bg-brand-navy hover:bg-brand-navy/90"
-          size="lg"
-          disabled={isLoading}
-        >
-          {isLoading ? "Processing..." : "Place Order"}
-        </Button>
+    {/* Fixed Footer with Place Order Button - Mobile Only */ }
+    < div className = "md:hidden fixed bottom-0 left-0 right-0 border-t bg-background px-4 py-3 z-50" >
+      <Button
+        onClick={handleSubmit(onSubmit)}
+        className="w-full h-12 text-base font-semibold bg-brand-navy hover:bg-brand-navy/90"
+        size="lg"
+        disabled={isLoading}
+      >
+        {isLoading ? "Processing..." : "Place Order"}
+      </Button>
       </div >
     </>
   );

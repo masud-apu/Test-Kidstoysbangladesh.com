@@ -48,8 +48,8 @@
   --animate-collapsible-up: collapsible-up 0.3s ease-out;
   --animate-marquee: marquee 60s linear infinite;
   --animate-marquee-reverse: marquee-reverse 60s linear infinite;
-  --animate-shake: shake 0.5s ease-in-out infinite;
-
+  <<<<<<< HEAD --animate-shake: shake 0.5s ease-in-out infinite;
+  =======>>>>>>>167f0f14762c8a986d45f5a859c5bc001d3b96b9
   /* Brand Colors */
   --color-brand-red: #E64C4C;
   --color-brand-yellow: #F4C430;
@@ -253,12 +253,11 @@ a {
   animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-
-.animate-bounce-subtle {
+<<<<<<< HEAD=======>>>>>>>167f0f14762c8a986d45f5a859c5bc001d3b96b9 .animate-bounce-subtle {
   animation: bounce-subtle 2s ease-in-out infinite;
 }
 
-@keyframes shake {
+<<<<<<< HEAD @keyframes shake {
 
   0%,
   100% {
@@ -274,6 +273,8 @@ a {
   }
 }
 
+
+=======>>>>>>>167f0f14762c8a986d45f5a859c5bc001d3b96b9
 
 /* Hide scrollbar utility */
 .scrollbar-hide {

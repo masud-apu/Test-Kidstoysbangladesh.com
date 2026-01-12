@@ -19,19 +19,31 @@ export function FeaturesMarquee() {
             icon: Truck,
             title: "Super Fast Delivery",
             description: "Order now, get it tomorrow in Dhaka",
+<<<<<<< HEAD
             color: "text-brand-blue bg-brand-blue/10",
+=======
+            color: "text-brand-green bg-brand-green/10",
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
         },
         {
             icon: Banknote,
             title: "Cash on Delivery",
             description: "No advance needed. Pay on delivery",
+<<<<<<< HEAD
             color: "text-brand-navy bg-brand-navy/10",
+=======
+            color: "text-brand-blue bg-brand-blue/10",
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
         },
         {
             icon: ShieldCheck,
             title: "Verified Orders",
             description: "We verify every order personally",
+<<<<<<< HEAD
             color: "text-brand-green bg-brand-navy/10",
+=======
+            color: "text-brand-green bg-brand-green/10",
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
         },
         {
             icon: Ship,
@@ -55,13 +67,21 @@ export function FeaturesMarquee() {
             icon: Replace,
             title: "Easy Replacement",
             description: "Damaged item? We replace instantly",
+<<<<<<< HEAD
             color: "text-brand-blue bg-brand-blue/10",
+=======
+            color: "text-brand-navy bg-brand-navy/10",
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
         },
         {
             icon: PackageCheck,
             title: "Secure Packing",
             description: "Secure packing for safe delivery",
+<<<<<<< HEAD
             color: "text-brand-yellow bg-brand-yellow/10",
+=======
+            color: "text-brand-blue bg-brand-blue/10",
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
         },
     ];
 

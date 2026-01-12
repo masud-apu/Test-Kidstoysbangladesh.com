@@ -1,7 +1,10 @@
 import { ProductCard } from '@/components/product-card'
 import { FilteredProductSection } from '@/components/filtered-product-section'
 import { FeaturesMarquee } from '@/components/features-marquee'
+<<<<<<< HEAD
 import { TrackOrderSection } from '@/components/track-order-section'
+=======
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
 
 
 import Link from 'next/link'
@@ -386,9 +389,12 @@ export default async function Home() {
       {/* All Products Section */}
       <FilteredProductSection products={allProducts} />
 
+<<<<<<< HEAD
       {/* Track Order Section */}
       <TrackOrderSection />
 
+=======
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
 
 
       {/* Footer appears globally via ConditionalLayout */}

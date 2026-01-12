@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { ProductsPageClient } from '@/components/products-page-client'
 
+<<<<<<< HEAD
 import { CollectionPageStructuredData, BreadcrumbStructuredData } from '@/components/structured-data'
 import { Metadata } from 'next'
 
@@ -45,6 +46,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   }
 }
 
+=======
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
 export default async function ProductsPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
@@ -69,12 +72,16 @@ export default async function ProductsPage(props: {
   let allProducts: any[] = [...productsWithVariants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   const searchQuery = typeof searchParams?.search === 'string' ? searchParams.search : undefined
+<<<<<<< HEAD
   const minPrice = typeof searchParams?.min_price === 'string' ? parseFloat(searchParams.min_price) : undefined
   const maxPrice = typeof searchParams?.max_price === 'string' ? parseFloat(searchParams.max_price) : undefined
   const ageMinParam = typeof searchParams?.age_min === 'string' ? parseInt(searchParams.age_min) : undefined
   const ageMaxParam = typeof searchParams?.age_max === 'string' ? parseInt(searchParams.age_max) : undefined
 
   // 1. Text Search Filter
+=======
+
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
   if (searchQuery) {
     const query = searchQuery.toLowerCase()
     allProducts = allProducts.filter((product) =>
@@ -83,6 +90,7 @@ export default async function ProductsPage(props: {
       product.category?.toLowerCase().includes(query)
     )
   }
+<<<<<<< HEAD
 
   // 2. Price Range Filter
   if (minPrice !== undefined || maxPrice !== undefined) {
@@ -198,6 +206,11 @@ export default async function ProductsPage(props: {
           { name: 'Products', item: 'https://kidstoysbangladesh.com/products' }
         ]}
       />
+=======
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
       <ProductsPageClient productCount={allProducts.length} category={searchQuery ? `Search: ${searchQuery}` : "All Products"} />
       <div className="container mx-auto max-w-7xl px-4 py-8">
         {/* Page Header */}

@@ -109,6 +109,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const data = await response.json()
   const { product, variants, options } = data
 
+<<<<<<< HEAD
   const breadcrumbItems = [
     { name: 'Home', item: 'https://kidstoysbangladesh.com' },
     { name: 'Products', item: 'https://kidstoysbangladesh.com/products' },
@@ -130,5 +131,30 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         }
       />
     </>
+=======
+  // Fetch recommended products
+  type RecommendedProduct = { id: number; title: string; handle: string; images: unknown[]; variants: unknown[] }
+  let recommendedProducts: RecommendedProduct[] = []
+  try {
+    const recommendedResponse = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3001'}/api/products?limit=5`, {
+      next: { revalidate: 3600 }
+    })
+
+    if (recommendedResponse.ok) {
+      const recommendedData = await recommendedResponse.json()
+      recommendedProducts = recommendedData.products || []
+    }
+  } catch (error) {
+    console.error('Failed to fetch recommended products:', error)
+  }
+
+  return (
+    <ProductPageClient
+      product={product}
+      variants={variants}
+      options={options}
+      recommendedProducts={recommendedProducts}
+    />
+>>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
   )
 }
