@@ -1,10 +1,7 @@
 import { ProductCard } from '@/components/product-card'
 import { FilteredProductSection } from '@/components/filtered-product-section'
 import { FeaturesMarquee } from '@/components/features-marquee'
-<<<<<<< HEAD
 import { TrackOrderSection } from '@/components/track-order-section'
-=======
->>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
 
 
 import Link from 'next/link'
@@ -21,11 +18,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import { MediaItem } from '@/lib/schema'
-
+import { Metadata } from 'next'
 
 // Revalidate homepage every 5 minutes to keep it fresh while serving static
 export const revalidate = 300
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: 'https://kidstoysbangladesh.com',
+  },
+}
 
 export default async function Home() {
   // Fetch products from admin API backend
@@ -241,9 +243,6 @@ export default async function Home() {
       </div>
 
 
-
-
-
       {/* Sale Section */}
       <section id="sale" className="py-8 bg-white scroll-mt-24">
         <div className="container mx-auto max-w-7xl px-4">
@@ -389,12 +388,8 @@ export default async function Home() {
       {/* All Products Section */}
       <FilteredProductSection products={allProducts} />
 
-<<<<<<< HEAD
       {/* Track Order Section */}
       <TrackOrderSection />
-
-=======
->>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
 
 
       {/* Footer appears globally via ConditionalLayout */}

@@ -108,9 +108,7 @@ export const metadata: Metadata = {
     description: 'Discover the best collection of kids toys in Bangladesh. Safe, educational, and fun toys for children of all ages.',
     images: ['https://kidstoysbangladesh.com/og-image.png'],
   },
-  alternates: {
-    canonical: 'https://kidstoysbangladesh.com',
-  },
+
   category: 'shopping',
 };
 

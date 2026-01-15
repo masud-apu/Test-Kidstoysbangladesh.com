@@ -246,5 +246,9 @@ Built with ❤️ for kids and parents in Bangladesh.
  
  
  
+<<<<<<< HEAD
 =======
 >>>>>>> 167f0f14762c8a986d45f5a859c5bc001d3b96b9
+=======
+ 
+>>>>>>> 32f0b2d68257721857a84d2ef7ebfd3a0718dd46
